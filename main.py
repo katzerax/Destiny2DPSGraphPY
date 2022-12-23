@@ -46,9 +46,7 @@ for i in range(dataPoints):
   
 dps = [0]
 for z in range(dataPoints):
-  if(z==0):
-    z = z
-  else:
+  if not z==0:
     dps.append(tDMG[z]/x[z])
 
 # Plot x axis, dps point on Y
