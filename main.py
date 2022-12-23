@@ -53,8 +53,8 @@ for z in range(dataPoints):
 plt.plot(x,dps)
 # Add a legend and labels
 plt.legend(['dps'])
-plt.xlabel('x')
-plt.ylabel('value')
+plt.xlabel('Time (Seconds)')
+plt.ylabel('Damage Per Second')
 
 # Show the plot
 plt.show()
