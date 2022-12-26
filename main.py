@@ -59,7 +59,7 @@ def plot_dps_graph(fire_delay, reload_time, damage_per_shot, mag_cap, ammo_reser
   legend_labels.append(legend_label)
 
 # example function calls (fire_delay, reload_time, damage_per_shot, mag_cap, ammo_reserve, legend_label, delay_first_shot)
-plot_dps_graph(0.067, 0.73, 5200, 150, 547, "mystery weapon 1", True)
+plot_dps_graph(0.067, 0.73, 5200, 150, 547, "lmg", False)
 plot_dps_graph(3, 1.25, 193000, 2, 8, "rocket launcher", False)
 plot_dps_graph(0.5, 0.83, 98000, 8, 26, "charge up rifle", True)
 
