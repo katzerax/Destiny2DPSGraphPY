@@ -7,7 +7,7 @@ Runs on Python 3.11.0, requires Matplotlib:
 pip install matplotlib
 
 #
-![Figure_1](https://user-images.githubusercontent.com/65287118/209513367-614be540-a768-4b1f-8c75-6f0d07f9d499.png)
+![Figure_1](https://user-images.githubusercontent.com/65287118/210054539-a0629674-e846-43ed-8e1f-808482d20a66.png)
 
 #
 ![Figure_1](https://user-images.githubusercontent.com/65287118/209410562-fc720bb0-fd7c-492b-8a41-7422d72d4cf2.png)
