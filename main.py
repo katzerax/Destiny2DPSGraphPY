@@ -1,4 +1,12 @@
 import matplotlib.pyplot as plt
+import argparse, json
+
+agp = argparse.ArgumentParser()
+agp.add_argument("-rf", "--read-file", default="weapons.json", type=str, help="file of weapon information to read. default: weapons.json")
+
+args = agp.parse_args()
+
+weaponData = json.load(open(args.read_file))
 
 # Predefined variables used in the functions, modifiable
 data_points = 45000  # please make data_points and x_scale in multiples of 10
@@ -59,10 +67,8 @@ def plot_dps_graph(fire_delay, reload_time, damage_per_shot, magazine_capacity, 
   # Add legend label to list
     legend_labels.append(legend_label)
 
-# example function calls (fire_delay, reload_time, damage_per_shot, magazine_capacity, ammo_reserve, legend_label, delay_first_shot)
-plot_dps_graph(0.067, 0.73, 5200, 150, 547, "lmg", False)
-plot_dps_graph(3, 1.25, 193000, 2, 8, "rocket launcher", False)
-plot_dps_graph(0.5, 0.83, 98000, 8, 26, "charge up rifle", True)
+for weapon in weaponData['weapons']:
+	plot_dps_graph(weapon['fire_delay'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'])
 
 # Add a legend with all labels
 plt.legend(legend_labels)
