@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 
 # Predefined variables used in the functions, modifiable
-data_points = 450000  # please make data_points and x_scale in multiples of 10
+data_points = 45000  # please make data_points and x_scale in multiples of 10
 x_scale = 45  # scale of the X axis
 y_scale = 300000  # scale of the Y axis
 x_increments = x_scale / data_points
@@ -21,24 +21,25 @@ legend_labels = []
 def plot_dps_graph(fire_delay, reload_time, damage_per_shot, magazine_capacity, ammo_reserve, legend_label, delay_first_shot):
     # Initialize t_dmg list
     t_dmg = []
-    shots_fired = 0
+    shots_fired = 0 if delay_first_shot else 1
     next_fire = fire_delay
     total_damage = 0 if delay_first_shot else damage_per_shot
     time_elapsed = 0
-    shots_fired_total = 0
+    shots_fired_total = 0 if delay_first_shot else 1
 
     # Calculate total damage over time
     for i in range(data_points):
         if shots_fired_total == ammo_reserve:
             total_damage = total_damage
         else:
-            if shots_fired > magazine_capacity:
+            if shots_fired >= magazine_capacity:
                 next_fire += reload_time
+                next_fire = round(next_fire, 5)
                 shots_fired = 0
             elif time_elapsed == next_fire:
                 total_damage += damage_per_shot
                 next_fire += fire_delay
-                next_fire = round(next_fire, 5)
+                next_fire = round(next_fire, 5) #changing this to 2 makes lmg funny
                 shots_fired += 1
                 shots_fired_total += 1
             else:
