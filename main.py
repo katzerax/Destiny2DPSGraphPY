@@ -31,19 +31,18 @@ def plot_dps_graph(fire_delay, reload_time, damage_per_shot, magazine_capacity, 
     for i in range(data_points):
         if shots_fired_total == ammo_reserve:
             total_damage = total_damage
+        elif shots_fired >= magazine_capacity:
+            next_fire += reload_time
+            next_fire = round(next_fire, 5)
+            shots_fired = 0
+        elif time_elapsed == next_fire:
+            total_damage += damage_per_shot
+            next_fire += fire_delay
+            next_fire = round(next_fire, 5)
+            shots_fired += 1
+            shots_fired_total += 1
         else:
-            if shots_fired >= magazine_capacity:
-                next_fire += reload_time
-                next_fire = round(next_fire, 5)
-                shots_fired = 0
-            elif time_elapsed == next_fire:
-                total_damage += damage_per_shot
-                next_fire += fire_delay
-                next_fire = round(next_fire, 5) #changing this to 2 makes lmg funny
-                shots_fired += 1
-                shots_fired_total += 1
-            else:
-                total_damage = total_damage
+            total_damage = total_damage
         time_elapsed += x_increments
         time_elapsed = round(time_elapsed, 8)
         t_dmg.append(total_damage)
