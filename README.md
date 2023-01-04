@@ -29,7 +29,7 @@ python [location of main.py] [-im cli] [-rf filename.json]
 
 --read-file (shortened to -rf) you can choose another file other than weapons.json to run the graph from. If you arent sure what this is then don't worry about it.
 
-#
+#Example graphs
 ![Figure_1](https://user-images.githubusercontent.com/65287118/210054539-a0629674-e846-43ed-8e1f-808482d20a66.png)
 
 #
