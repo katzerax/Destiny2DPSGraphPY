@@ -21,7 +21,7 @@ if args.input_mode == "cli":
         weapon["damage_per_shot"] = float(input("Enter damage per shot: "))
         weapon["magazine_capacity"] = int(input("Enter magazine capacity: "))
         weapon["ammo_reserve"] = int(input("Enter ammo reserve: "))
-        weapon["delay_first_shot"] = bool(input("Enter wether or not to delay the first shot: "))
+        weapon["delay_first_shot"] = bool(input("Enter wether to delay the first shot (true for true, press ENTER for false): "))
         
         # Add weapon to list
         weapons.append(weapon)
