@@ -2,11 +2,43 @@ import matplotlib.pyplot as plt
 import argparse, json
 
 agp = argparse.ArgumentParser()
+agp.add_argument("-im", "--input-mode", default="file", choices=["file", "cli"], type=str, help="mode for inputting data. options: 'file' or 'cli'. default: 'file'")
 agp.add_argument("-rf", "--read-file", default="weapons.json", type=str, help="file of weapon information to read. default: weapons.json")
 
 args = agp.parse_args()
 
-weaponData = json.load(open(args.read_file))
+if args.input_mode == "cli":
+    # Initialize list to store weapon dictionaries
+    weapons = []
+    
+    # Loop to input weapon data
+    while True:
+        # Input weapon data
+        weapon = {}
+        weapon["name"] = input("Enter weapon name: ")
+        weapon["fire_delay"] = float(input("Enter fire delay: "))
+        weapon["reload_time"] = float(input("Enter reload time: "))
+        weapon["damage_per_shot"] = float(input("Enter damage per shot: "))
+        weapon["magazine_capacity"] = int(input("Enter magazine capacity: "))
+        weapon["ammo_reserve"] = int(input("Enter ammo reserve: "))
+        weapon["delay_first_shot"] = bool(input("Enter wether to delay the first shot (true for true, press ENTER for false): "))
+        
+        # Add weapon to list
+        weapons.append(weapon)
+        
+        # Check if user wants to add more weapons
+        add_more = input("Add more weapons? (y/n) ")
+        if add_more.lower() != "y":
+            break
+    
+    # Write weapons data to JSON file
+    with open(args.read_file, "w") as f:
+        json.dump({"weapons": weapons}, f)
+
+# Read weapon data from JSON file
+with open(args.read_file, "r") as f:
+    weaponData = json.load(f)
+
 
 # Predefined variables used in the functions, modifiable
 data_points = 45000  # please make data_points and x_scale in multiples of 10
