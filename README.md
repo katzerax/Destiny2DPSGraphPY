@@ -2,7 +2,9 @@
 
 This is a python file that will produce a graph showing the destiny 2 DPS for certain weapons. It is configurable for several things, but is presuming that you are firing until your mag is empty, reloading, and immediately firing until you are out of ammo. This dps assumes the best, that you always hit the target. Initial logic done with the help of Roxy (https://twitter.com/rokishee), with additional support from snark.
 
-Currently main.py requires a "weapons.json" (or alternative .json with a -rf cli arg) to input data for the graphs. It is highly recommended that you edit the currently existing weapons.json file to use with main.py.
+Currently main.py requires a "weapons.json" (or alternative .json with a -rf cli arg) to input data for the graphs. It is highly recommended that you edit the currently existing weapons.json file to use with main.py, alternatively see the Usage section below to see how to loop user inputs through the command line.
+
+Lastly, feel free to edit main.py and change values like x and y scale, as well as data points. I like to keep data points as a multiple of 10 of x_scale. It would probably work as a non multiple of 10, but I havent tried that so it may not work right. Also, some graphs misfunction without enough data points. 45000 is the amount currently in main.py (per weapon), which made it so everything we have tried thus far works. If something isnt looking right, again, feel free to mess around with these values.
 
 # Install
 Install Python 3.11.0 and pip, then:
