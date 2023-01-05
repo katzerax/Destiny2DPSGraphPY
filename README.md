@@ -25,6 +25,7 @@ The command you will need to do should look like the following:
 python [location of main.py] [-im cli] [-rf filename.json]
 
 --input-mode (shortened to -im) you can choose between file or cli. if you do cli, it will ask you for the inputs of the weapons until you are done inputting. Default is file, argument not needed if you just want to run from the weapons.json file.
+
 ![image](https://user-images.githubusercontent.com/65287118/210480652-d4d5aeb2-826b-472c-b432-b3870225d1ad.png)
 
 --read-file (shortened to -rf) you can choose another file other than weapons.json to run the graph from. If you arent sure what this is then don't worry about it.
