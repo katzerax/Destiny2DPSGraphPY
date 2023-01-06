@@ -35,3 +35,8 @@ python main.py [-im cli] [-rf filename.json]
 # Example graphs
 ![Figure_1](https://user-images.githubusercontent.com/65287118/210054539-a0629674-e846-43ed-8e1f-808482d20a66.png)
 ![Figure_1](https://user-images.githubusercontent.com/65287118/209410562-fc720bb0-fd7c-492b-8a41-7422d72d4cf2.png)
+
+# To-Do
+1. Auto install matplotlib (and maybe pip)
+2. By default ask if the user wants to run the program by looping for weapon inputs or by running a .json file
+3. Add functionality if #2 is implemented to run the program through cli with an arg that will allow you to skip the more beginner friendly questions implemented through #2.
