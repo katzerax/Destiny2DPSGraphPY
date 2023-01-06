@@ -1,11 +1,26 @@
-import matplotlib.pyplot as plt
+import sys
+
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    print("matplotlib is not installed\npip install matplotlib")
+    sys.exit()
+
 import argparse, json
 
 agp = argparse.ArgumentParser()
 agp.add_argument("-im", "--input-mode", default="file", choices=["file", "cli"], type=str, help="mode for inputting data. options: 'file' or 'cli'. default: 'file'")
 agp.add_argument("-rf", "--read-file", default="weapons.json", type=str, help="file of weapon information to read. default: weapons.json")
+agp.add_argument("-d", "--dialogue", default="y", choices=["y","n"], type=str, help="beginner friendly dialogue to choose between input modes. options: 'y' or 'n'. default: 'y'")
 
 args = agp.parse_args()
+
+if args.dialogue == "y":
+    print("*Note: this dialogue can be toggled off using '-d n' or '--dialogue n' from the command line")
+    choice = ""
+    while choice not in ("cli", "file"):
+        choice = input("Choose an input mode:\n\tcli - input weapon information via command line\n\tfile - input weapon information via the 'weapons.json' file\n")
+    args.input_mode = choice
 
 if args.input_mode == "cli":
     # Initialize list to store weapon dictionaries
