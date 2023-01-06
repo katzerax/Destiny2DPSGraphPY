@@ -33,10 +33,7 @@ python main.py [-im cli] [-rf filename.json]
 --read-file (shortened to -rf) you can choose another file other than weapons.json to run the graph from. If you arent sure what this is then don't worry about it.
 
 # To-Do
-1. Auto install matplotlib (and maybe pip? if thats a thing?)
-2. By default ask if the user wants to run the program by looping for weapon inputs or by running a .json file
-3. Add functionality if #2 is implemented to run the program through cli with an arg that will allow you to skip the more beginner friendly questions implemented through #2.
-4. Make the weapon input question about delay first shot be usable through true or false inputs instead of string or empty string
+1. Update README.md
 
 # Example graphs
 ![Figure_1](https://user-images.githubusercontent.com/65287118/210054539-a0629674-e846-43ed-8e1f-808482d20a66.png)
