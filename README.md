@@ -22,9 +22,9 @@ I would highly recommend to run through the command prompt if EITHER:
 1. You want to run a .json that is named anything other than "weapons.json"
 2. You want to manually enter values prompted from the command prompt, instead of editing files.
 
-The command you will need to do should look like the following:
+The command you will need to do should look like the following (in the directory of main.py [cd {directory of main.py}] first):
 
-python [location of main.py] [-im cli] [-rf filename.json]
+python main.py [-im cli] [-rf filename.json]
 
 --input-mode (shortened to -im) you can choose between file or cli. if you do cli, it will ask you for the inputs of the weapons until you are done inputting. Default is file, argument not needed if you just want to run from the weapons.json file.
 
