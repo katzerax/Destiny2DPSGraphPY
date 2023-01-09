@@ -9,7 +9,7 @@ Please see the Install and Usage sections of this readme.
 Lastly, feel free to edit main.py and change values like x and y scale, as well as data points. I like to keep data points as a multiple of 10 of x_scale. It would probably work as a non multiple of 10, but I havent tried that so it may not work right. Also, some graphs misfunction without enough data points. 45000 is the amount currently in main.py (per weapon), which made it so everything we have tried thus far works. If something isnt looking right, again, feel free to mess around with these values. Remember that for every weapon, it does that many data points. If your computer is not very powerful then I would either limit the data points or lower the weapon count.
 
 ## Install
-Install Python 3.11.0, then run:
+Install [Python 3.11.0](https://www.python.org/downloads/release/python-3110/), then open command prompt and run:
 ```
 pip install matplotlib
 ```
