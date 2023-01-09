@@ -21,16 +21,24 @@ This method is enabled by default when you double click the python file, and wil
 
 ### Through CLI With Args
 The main command is as follows:
-```python main.py```
+```
+python main.py
+```
 
 To run the code without the user-friendly dialogue, use the **--dialogue (shortened to -d) [y/n]** arg (This will run the code directly from the "weapons.json" file.)
-```python main.py -d n```
+```
+python main.py -d n
+```
 
 To run through cli loops but skip the user friendly dialogue, specify with the **--input-mode (shortened to -im) [cli/file]** arg. 
-```python main.py -d n -im cli```
+```
+python main.py -d n -im cli
+```
 
 Additionally you can point the file to another file not labelled "weapons.json" to read from with the **--read-from (shortened to -rf) [filename.json]** arg.
-```python main.py -d n -rf yippee.json```
+```
+python main.py -d n -rf yippee.json
+```
 
 ## To-Do
 1. maybe a whole ui. maybe installing a requirements.txt for matplotlib. dunno
