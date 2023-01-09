@@ -6,14 +6,14 @@ This is heavily based on the styling of [Prelapse's DPS overgraphs on YouTube](h
 
 Please see the Install and Usage sections of this readme.
 
-Lastly, feel free to edit main.py and change values like x and y scale, as well as data points. I like to keep data points as a multiple of 10 of x_scale. It would probably work as a non multiple of 10, but I havent tried that so it may not work right. Also, some graphs misfunction without enough data points. 45000 is the amount currently in main.py (per weapon), which made it so everything we have tried thus far works. If something isnt looking right, again, feel free to mess around with these values. Remember that for every weapon, it does that many data points. If your computer is not very powerful then I would either limit the data points or lower the weapon count.
+Lastly, feel free to edit "main.py" and change values like x and y scale, as well as data points. I like to keep data points as a multiple of 10 of x_scale. It would probably work as a non multiple of 10, but I havent tried that so it may not work right. Also, some graphs misfunction without enough data points. 45000 is the amount currently in main.py (per weapon), which made it so everything we have tried thus far works. If something isnt looking right, again, feel free to mess around with these values. Remember that for every weapon, it does that many data points. If your computer is not very powerful then I would either limit the data points or lower the weapon count.
 
 ## Install
 Install [Python 3.11.0](https://www.python.org/downloads/release/python-3110/). If the option to add to PATH is available while installing, do so. Afterwards, open command prompt and run:
 ```
 pip install matplotlib
 ```
-Download main.py and optionally weapons.json (which has example weapons) from the [latest release](https://github.com/katzerax/Destiny2DPSGraphPY/releases/latest) in the [releases](https://github.com/katzerax/Destiny2DPSGraphPY/releases) tab (this is considered the stable release), or from the main github repo directly (this is considered the development release).
+Download "main.py" and optionally "weapons.json" (which has example weapons) from the [latest release](https://github.com/katzerax/Destiny2DPSGraphPY/releases/latest) in the [releases](https://github.com/katzerax/Destiny2DPSGraphPY/releases) tab (this is considered the stable release), or from the main github repo directly (this is considered the development release).
 
 ## Usage
 As of release 5.0, there are 2 ways to use this code. I will explain them below.
