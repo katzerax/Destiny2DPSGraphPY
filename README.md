@@ -2,39 +2,39 @@
 
 This is a python file that will produce a graph showing the destiny 2 DPS for certain weapons. It is configurable for several things, but is presuming that you are firing until your mag is empty, reloading, and immediately firing until you are out of ammo. This dps assumes the best, that you always hit the target. Initial logic done with the help of [Roxy](https://twitter.com/rokishee), with additional support from snark.
 
-Currently main.py requires a "weapons.json" (or alternative .json with a -rf cli arg) to input data for the graphs. It is highly recommended that you edit the currently existing weapons.json file to use with main.py, alternatively see the Usage section below to see how to loop user inputs through the command line.
+Please see the Install and Usage sections of this readme.
 
-Lastly, feel free to edit main.py and change values like x and y scale, as well as data points. I like to keep data points as a multiple of 10 of x_scale. It would probably work as a non multiple of 10, but I havent tried that so it may not work right. Also, some graphs misfunction without enough data points. 45000 is the amount currently in main.py (per weapon), which made it so everything we have tried thus far works. If something isnt looking right, again, feel free to mess around with these values.
+Lastly, feel free to edit main.py and change values like x and y scale, as well as data points. I like to keep data points as a multiple of 10 of x_scale. It would probably work as a non multiple of 10, but I havent tried that so it may not work right. Also, some graphs misfunction without enough data points. 45000 is the amount currently in main.py (per weapon), which made it so everything we have tried thus far works. If something isnt looking right, again, feel free to mess around with these values. Remember that for every weapon, it does that many data points. If your computer is not very powerful then I would either limit the data points or lower the weapon count.
 
-# Install
-Install Python 3.11.0 and pip, then:
-
+## Install
+Install Python 3.11.0, then run:
+```
 pip install matplotlib
+```
+Download main.py and optionally weapons.json (which has example weapons) from the latest release in the releases tab (this is considered the stable release), or from the main github repo directly (this is considered the development release).
 
-Download main.py and optionally weapons.json (which has example weapons) from the latest release in the releases tab.
+## Usage
+As of release 5.0, there are 2 ways to use this code. I will explain them below.
 
-# Usage
-There is 2 primary ways to use this code. Through command line, or by editing weapons.json and running main.py without arguments.
+### Built in user-friendly command line prompts
+This method is enabled by default when you double click the python file, and will be the most beginner friendly to use. It will walk you through every step.
 
-By default, weapons.json contains a few weapons that will create a graph similar to the one below. Editing the weapons in this file directly should work fine.
+### Through CLI With Args
+The main command is as follows:
+```python main.py```
 
-I would highly recommend to run through the command prompt if EITHER:
-1. You want to run a .json that is named anything other than "weapons.json"
-2. You want to manually enter values prompted from the command prompt, instead of editing files.
+To run the code without the user-friendly dialogue, use the **--dialogue (shortened to -d) [y/n]** arg (This will run the code directly from the "weapons.json" file.)
+```python main.py -d n```
 
-The command you will need to do should look like the following (in the directory of main.py [cd {directory of main.py}] first):
+To run through cli loops but skip the user friendly dialogue, specify with the **--input-mode (shortened to -im) [cli/file]** arg. 
+```python main.py -d n -im cli```
 
-python main.py [-im cli] [-rf filename.json]
+Additionally you can point the file to another file not labelled "weapons.json" to read from with the **--read-from (shortened to -rf) [filename.json]** arg.
+```python main.py -d n -rf yippee.json```
 
---input-mode (shortened to -im) you can choose between file or cli. if you do cli, it will ask you for the inputs of the weapons until you are done inputting. Default is file, argument not needed if you just want to run from the weapons.json file.
+## To-Do
+1. maybe a whole ui. maybe installing a requirements.txt for matplotlib. dunno
 
-![image](https://user-images.githubusercontent.com/65287118/210480652-d4d5aeb2-826b-472c-b432-b3870225d1ad.png)
-
---read-file (shortened to -rf) you can choose another file other than weapons.json to run the graph from. If you arent sure what this is then don't worry about it.
-
-# To-Do
-1. Update README.md
-
-# Example graphs
+## Example graphs
 ![Figure_1](https://user-images.githubusercontent.com/65287118/210054539-a0629674-e846-43ed-8e1f-808482d20a66.png)
 ![Figure_1](https://user-images.githubusercontent.com/65287118/209410562-fc720bb0-fd7c-492b-8a41-7422d72d4cf2.png)
