@@ -2,6 +2,8 @@
 
 This is a python file that will produce a graph showing the destiny 2 DPS for certain weapons. It is configurable for several things, but is presuming that you are firing until your mag is empty, reloading, and immediately firing until you are out of ammo. This dps assumes the best, that you always hit the target. Initial logic done with the help of [Roxy](https://twitter.com/rokishee), with additional support from snark.
 
+They are heavily based on the styling of [Prelapse's DPS overgraphs on YouTube](https://www.youtube.com/playlist?list=PLmMhH44rl0aVkIqWzaCr_wrYkk5EFAeIZ). The key difference is that Prelapse manually enters every data point into a spreadsheet to graph them. These are done automatically with variables.
+
 Please see the Install and Usage sections of this readme.
 
 Lastly, feel free to edit main.py and change values like x and y scale, as well as data points. I like to keep data points as a multiple of 10 of x_scale. It would probably work as a non multiple of 10, but I havent tried that so it may not work right. Also, some graphs misfunction without enough data points. 45000 is the amount currently in main.py (per weapon), which made it so everything we have tried thus far works. If something isnt looking right, again, feel free to mess around with these values. Remember that for every weapon, it does that many data points. If your computer is not very powerful then I would either limit the data points or lower the weapon count.
