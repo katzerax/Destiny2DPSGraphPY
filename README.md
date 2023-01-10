@@ -44,7 +44,7 @@ python main.py -d n -rf yippee.json
 
 ## To-Do
 1. maybe a whole gui. maybe installing a requirements.txt for matplotlib. dunno
-2. Roxy is still working on some logic for some additional variables, apparently. So I intend to add to the code some more to support additional variables in the future. I dont personally know a whole lot about the logic behind the calculations so I dont know what is currently missing, I just put her logic into code.
+2. Roxy is still working on some logic for some additional variables, apparently. So I intend to add to the code some more to support additional variables in the future. I dont personally know a whole lot about the logic behind the calculations so I dont know what is currently missing.
 
 ## Example graphs
 ![Figure_1](https://user-images.githubusercontent.com/65287118/210054539-a0629674-e846-43ed-8e1f-808482d20a66.png)
