@@ -78,12 +78,14 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
     # Initialize t_dmg list
     t_dmg = []
     shots_fired = 0 if delay_first_shot else 1
-    fire_delay = 60/fire_rate #conversion from RPM to time in seconds between shots
+    roundingcoeff = len(str(x_increments).split(".")[1])
+    fire_delay = round(60/fire_rate, roundingcoeff) #conversion from RPM to time in seconds between shots
     next_fire = fire_delay
     total_damage = 0 if delay_first_shot else damage_per_shot
     time_elapsed = 0
     shots_left_reserve = ammo_reserve if delay_first_shot else (ammo_reserve - 1)
     shots_left_mag = magazine_capacity if delay_first_shot else (magazine_capacity - 1)
+    
 
     # Calculate total damage over time
     for i in range(data_points):
