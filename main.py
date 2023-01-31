@@ -31,7 +31,7 @@ if args.input_mode == "cli":
         # Input weapon data
         weapon = {}
         weapon["name"] = input("Enter weapon name: ")
-        weapon["fire_delay"] = float(input("Enter fire delay: "))
+        weapon["fire_rate"] = float(input("Enter Rounds Per Minute: "))
         weapon["reload_time"] = float(input("Enter reload time: "))
         weapon["damage_per_shot"] = float(input("Enter damage per shot: "))
         weapon["magazine_capacity"] = int(input("Enter magazine capacity: "))
@@ -58,7 +58,7 @@ with open(args.read_file, "r") as f:
 # Predefined variables used in the functions, modifiable
 data_points = 45000  # please make data_points and x_scale in multiples of 10
 x_scale = 45  # scale of the X axis
-y_scale = 300000  # scale of the Y axis
+y_scale = 300000  # scale of the Y axis // roxy: could we find the peak of the graph and set this to be 105% of said peak?
 x_increments = x_scale / data_points
 
 # graph limits
@@ -73,29 +73,31 @@ for i in range(data_points):
 # Initialize list to store legend labels
 legend_labels = []
 
-def plot_dps_graph(fire_delay, reload_time, damage_per_shot, magazine_capacity, ammo_reserve, legend_label, delay_first_shot):
+def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, ammo_reserve, legend_label, delay_first_shot):
     # Initialize t_dmg list
     t_dmg = []
     shots_fired = 0 if delay_first_shot else 1
+    fire_delay = 60/fire_rate #conversion from RPM to time in seconds between shots
     next_fire = fire_delay
     total_damage = 0 if delay_first_shot else damage_per_shot
     time_elapsed = 0
-    shots_fired_total = 0 if delay_first_shot else 1
+    shots_left_reserve = ammo_reserve if delay_first_shot else (ammo_reserve - 1)
+    shots_left_mag = magazine_capacity if delay_first_shot else (magazine_capacity - 1)
 
     # Calculate total damage over time
     for i in range(data_points):
-        if shots_fired_total == ammo_reserve:
+        if shots_left_reserve == 0:
             total_damage = total_damage
-        elif shots_fired >= magazine_capacity:
+        elif shots_left_mag == 0:
             next_fire += reload_time
             next_fire = round(next_fire, 5)
-            shots_fired = 0
+            shots_left_mag = magazine_capacity
         elif time_elapsed == next_fire:
             total_damage += damage_per_shot
             next_fire += fire_delay
             next_fire = round(next_fire, 5)
-            shots_fired += 1
-            shots_fired_total += 1
+            shots_left_mag -= 1
+            shots_left_reserve -= 1
         else:
             total_damage = total_damage
         time_elapsed += x_increments
@@ -115,7 +117,7 @@ def plot_dps_graph(fire_delay, reload_time, damage_per_shot, magazine_capacity, 
     legend_labels.append(legend_label)
 
 for weapon in weaponData['weapons']:
-	plot_dps_graph(weapon['fire_delay'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'])
+	plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'])
 
 # Add a legend with all labels
 plt.legend(legend_labels)
