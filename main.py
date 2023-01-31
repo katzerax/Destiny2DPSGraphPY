@@ -1,4 +1,5 @@
 import sys
+from modifiers import *
 
 try:
     import matplotlib.pyplot as plt
