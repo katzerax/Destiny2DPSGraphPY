@@ -1,5 +1,5 @@
 import sys
-from modifiers import *
+#from modifiers import *
 
 try:
     import matplotlib.pyplot as plt
@@ -85,28 +85,29 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
     shots_left_reserve = ammo_reserve if delay_first_shot else (ammo_reserve - 1)
     shots_left_mag = magazine_capacity if delay_first_shot else (magazine_capacity - 1)
     shots_fired = 0 if delay_first_shot else 1
+    shot_dmg_output = damage_per_shot #this is to save the initial starting damage number, and calculate using another variable, makes it so much easier to revert buffs without killing damage
     
 
     # Calculate total damage over time
     for i in range(data_points):
-        if shots_left_reserve == 0:
+        if shots_left_reserve == 0: # reserve check
             total_damage = total_damage
-        elif shots_left_mag == 0:
+        elif shots_left_mag == 0: # reload
             next_fire += reload_time
             next_fire -= fire_delay if delay_first_shot == 0 else 0 #roxy: previously was waiting for fire delay, 
-            next_fire = round(next_fire, 5) #even when the weapon would not be a charge weapon (contributed to rockets looking bad)
-            shots_fired = 0 #resetting shots fired for triple tap and fourth times the charm
+            next_fire = round(next_fire, roundingcoeff) #even when the weapon would not be a charge weapon (contributed to rockets looking bad)
+            shots_fired = 0 #resetting shots fired for triple tap and fourth times the charm on reload
             shots_left_mag = magazine_capacity
-        elif time_elapsed == next_fire:
-            total_damage += damage_per_shot
+        elif time_elapsed == next_fire: # checks for weapon fire rate
+            total_damage += shot_dmg_output
             next_fire += fire_delay
-            next_fire = round(next_fire, 5)
+            next_fire = round(next_fire, roundingcoeff) #rounding because i love python
             shots_left_mag -= 1
             shots_left_reserve -= 1
-        else:
+        else: #non statement if the gun is out of ammo, but keeps the cycle running so the rest of the graph works
             total_damage = total_damage
         time_elapsed += x_increments
-        time_elapsed = round(time_elapsed, 8)
+        time_elapsed = round(time_elapsed, roundingcoeff)
         t_dmg.append(total_damage)
 
     dps = [0]
