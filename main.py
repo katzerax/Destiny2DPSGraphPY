@@ -1,5 +1,5 @@
 import sys
-#from modifiers import *
+from modifiers import *
 
 try:
     import matplotlib.pyplot as plt
@@ -26,7 +26,8 @@ if args.dialogue == "y":
 if args.input_mode == "cli":
     # Initialize list to store weapon dictionaries
     weapons = []
-    
+    modifier = 0
+    modifiers = []
     # Loop to input weapon data
     while True:
         # Input weapon data
@@ -38,7 +39,15 @@ if args.input_mode == "cli":
         weapon["magazine_capacity"] = int(input("Enter magazine capacity: "))
         weapon["ammo_reserve"] = int(input("Enter ammo reserve: "))
         weapon["delay_first_shot"] = bool(int(input("Enter wether to delay the first shot (1 - true, 0 - false): ")))
+        weapon["add_modifiers"] = bool(int(input("Enter wether to apply modifiers (1 - true, 0 - false): ")))
         
+        if weapon["add_modifiers"] == True:
+            while(modifier!=-1):
+                modifier = int(input("Enter a modifier from the following list to add (-1 to stop)\n1) TripleTap\n2) FTTC\n3) VorpalWeapon\n4) FocusedFury\n5) HighImpactReserves\n6) FiringLine\n7) WellOfRadiance\n"))
+                if((modifier!=-1) and ((modifier>=1) and (modifier<=7))): #change upper bound with new modifiers
+                    modifiers.append(modifier)
+            weapon["modifiers"] = modifiers
+
         # Add weapon to list
         weapons.append(weapon)
         
@@ -74,7 +83,7 @@ for i in range(data_points):
 # Initialize list to store legend labels
 legend_labels = []
 
-def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, ammo_reserve, legend_label, delay_first_shot):
+def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, ammo_reserve, legend_label, delay_first_shot, add_modifiers, modifiers):
     # Initialize t_dmg list
     t_dmg = []
     roundingcoeff = len(str(x_increments).split(".")[1])
@@ -108,6 +117,12 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
             total_damage = total_damage
         time_elapsed += x_increments
         time_elapsed = round(time_elapsed, roundingcoeff)
+
+#idk if it should go here but fuck it we ball
+        if(add_modifiers==True):
+           total_damage = applyModifiers(modifiers, total_damage, time_elapsed, shots_left_mag, shots_left_reserve, shot_dmg_output, shots_fired, magazine_capacity, damage_per_shot) #add to with whatever the functions need
+        
+
         t_dmg.append(total_damage)
 
     dps = [0]
@@ -122,8 +137,33 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
   # Add legend label to list
     legend_labels.append(legend_label)
 
+
+def applyModifiers(modifiers, total_damage, time_elapsed, shots_left_mag, shots_left_reserve, shot_dmg_output, shots_fired, magazine_capacity, damage_per_shot):
+    i = 0
+    modifier = 0
+    total_damage = total_damage
+    for i in range(modifiers):
+        modifier = modifiers[i]
+        if(modifier == 1):
+            total_damage = TripleTap(shots_fired,shots_left_mag,shots_left_reserve)
+        elif(modifier == 2):
+            total_damage = FTTC(shots_fired,shots_left_mag,shots_left_reserve)
+        elif(modifier == 3):
+            total_damage = VorpalWeapon(shot_dmg_output) #vorpalactive is not a variable yet? so not passing it, same with other "Active" vars later
+        elif(modifier == 3):
+            total_damage = FocusedFury(shots_fired,magazine_capacity,damage_per_shot,time_elapsed)
+        elif(modifier == 3):
+            total_damage = HighImpactReserves(shots_left_mag,magazine_capacity,damage_per_shot)
+        elif(modifier == 3):
+            total_damage = FiringLine(shot_dmg_output)
+        elif(modifier == 3):
+            total_damage = WellofRadiance()
+        modifier = 0
+    return(total_damage) #example of what this function will be like. 
+
+
 for weapon in weaponData['weapons']:
-	plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'])
+	plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_modifiers'], weapon['modifiers'])
 
 # Add a legend with all labels
 plt.legend(legend_labels)
