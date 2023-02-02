@@ -150,13 +150,13 @@ def applyModifiers(modifiers, total_damage, time_elapsed, shots_left_mag, shots_
             total_damage = FTTC(shots_fired,shots_left_mag,shots_left_reserve)
         elif(modifier == 3):
             total_damage = VorpalWeapon(shot_dmg_output) #vorpalactive is not a variable yet? so not passing it, same with other "Active" vars later
-        elif(modifier == 3):
+        elif(modifier == 4):
             total_damage = FocusedFury(shots_fired,magazine_capacity,damage_per_shot,time_elapsed)
-        elif(modifier == 3):
+        elif(modifier == 5):
             total_damage = HighImpactReserves(shots_left_mag,magazine_capacity,damage_per_shot)
-        elif(modifier == 3):
+        elif(modifier == 6):
             total_damage = FiringLine(shot_dmg_output)
-        elif(modifier == 3):
+        elif(modifier == 7):
             total_damage = WellofRadiance()
         modifier = 0
     return(total_damage) #example of what this function will be like. 
