@@ -46,7 +46,7 @@ python main.py -d n -rf yippee.json
 
 ## To-Do
 1. maybe a whole gui. maybe installing a requirements.txt for matplotlib. dunno
-2. Roxy is still working on some logic for some additional variables, apparently. So I intend to add to the code some more to support additional variables in the future. I dont personally know a whole lot about the logic behind the calculations so I dont know what is currently missing.
+2. roxy is currently working on functions to call for weapon perks that should modify the damage correctly, including accounting for time and reproc-ing perks. interactions between things such as old veist stinger and triple tap should work like in game, although for things like the new veist stinger and other upcoming changes to mods, it is more of a factor of waiting and seeing what the heck be going on.
 
 ## Example graphs
 ![Figure_1](https://user-images.githubusercontent.com/65287118/210054539-a0629674-e846-43ed-8e1f-808482d20a66.png)
