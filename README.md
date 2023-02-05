@@ -15,7 +15,9 @@ Install [Python 3.11.0](https://www.python.org/downloads/release/python-3110/). 
 ```
 pip install matplotlib
 ```
-Download "main.py" and optionally "weapons.json" (which has example weapons) from the [latest release](https://github.com/katzerax/Destiny2DPSGraphPY/releases/latest) in the [releases](https://github.com/katzerax/Destiny2DPSGraphPY/releases) tab (this is considered the stable release), or from the main github repo directly (this is considered the development release).
+Download "main.py" and optionally "weapons.json" (which has example weapons) from the [latest release](https://github.com/katzerax/Destiny2DPSGraphPY/releases/latest) in the [releases](https://github.com/katzerax/Destiny2DPSGraphPY/releases) tab (this is considered the stable release)
+
+Alternatively, download from the main github repo directly (this is considered the development release, which may not be stable).
 
 ## Usage
 As of release 5.0, there are 2 ways to use this code. I will explain them below.
