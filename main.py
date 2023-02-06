@@ -1,5 +1,5 @@
 import sys
-from modifiers import *
+#from modifiers import *
 
 try:
     import matplotlib.pyplot as plt
@@ -119,6 +119,7 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
         time_elapsed = round(time_elapsed, roundingcoeff)
 
 #idk if it should go here but fuck it we ball
+#roxy here - fix your fucking code !!!!
         if(add_modifiers==True):
            total_damage = applyModifiers(modifiers, total_damage, time_elapsed, shots_left_mag, shots_left_reserve, shot_dmg_output, shots_fired, magazine_capacity, damage_per_shot) #add to with whatever the functions need
         
