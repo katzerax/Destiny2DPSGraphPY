@@ -51,17 +51,13 @@ def RapidHit():
     print("OOPS")
 
 #damage perks
-def VorpalWeapon(VorpalActive,shot_dmg_output): #check before damage calculations as it is always active, passive bonus
-    if VorpalActive == 0: #maybe i should ask for weapon classification? (i.e. ammo type) similarly, ask if enhanced perks active????
-        if VorpalWeapon == 1: #primary ammo
-            shot_dmg_output = shot_dmg_output * 1.2
-            VorpalActive = 1
-        elif VorpalWeapon == 2: #special ammo
-            shot_dmg_output = shot_dmg_output * 1.15
-            VorpalActive = 1
-        elif VorpalWeapon == 3: #heavy ammo
-            shot_dmg_output = shot_dmg_output * 1.1
-            VorpalActive = 1
+def VorpalWeapon(weapon_class,shot_dmg_output): #check before damage calculations as it is always active, passive bonus
+    if weapon_class == 1: #primary ammo
+        shot_dmg_output = shot_dmg_output * 1.2
+    elif weapon_class == 2: #special ammo
+        shot_dmg_output = shot_dmg_output * 1.15
+    elif weapon_class == 3: #heavy ammo
+        shot_dmg_output = shot_dmg_output * 1.1
     return shot_dmg_output
 
 def FocusedFury(FFActive,shots_fired_ff,magazine_capacity,damage_per_shot,time_elapsed,shot_dmg_output,ff_time_check): #checks for whether it is active, then for whether it should activate, then the activation requirements before setting itself active, followed by a check on how to turn it back

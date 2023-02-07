@@ -44,11 +44,16 @@ if args.input_mode == "cli":
         weapon["ammo_reserve"] = int(input("Enter ammo reserve: "))
         weapon["delay_first_shot"] = bool(int(input("Enter whether to delay the first shot (1 - true, 0 - false): ")))
         weapon["add_perks"] = bool(int(input("Enter whether to apply perks (1 - true, 0 - false): ")))
-        weapon["enhanced_perks"] = bool(int(input("Assume all perks are enhanced? (1 - true, 0 - false): ")))
         
         if weapon["add_perks"] == True:
+            weapon["enhanced_perks"] = bool(int(input("Assume all perks are enhanced? (1 - true, 0 - false): ")))
+            weapon["weapon_class"] = int(input("Weapon Ammo Type (1 - Primary, 2 - Special, 3 - Heavy): "))
+            print("Enter a perk from the following list to add (-1 to stop)\n1) Triple Tap\n2) Fourth Time's\n3) Veist Stinger\n4) Clown Cartidge\n5) Overflow\n6) Rapid Hit\n7) Vorpal Weapon\n8) Focused Fury\n9) High Impact Reserves\n")
+            teehee = 0
             while(perk!=-1):
-                perk = int(input("Enter a perk from the following list to add (-1 to stop)\n1) Triple Tap\n2) Fourth Time's\n3) Veist Stinger\n4) Clown Cartidge\n5) Overflow\n6) Rapid Hit\n7) Vorpal Weapon\n8) Focused Fury\n9) High Impact Reserves\n"))
+                teehee += 1
+                [print("Perk", teehee)]
+                perk = int(input("input: "))
                 if((perk!=-1) and ((perk>=1) and (perk<=9))): #change upper bound with new perks
                     perks.append(perk)
             weapon["perks"] = perks
@@ -88,7 +93,7 @@ for i in range(data_points):
 # Initialize list to store legend labels
 legend_labels = []
 
-def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, ammo_reserve, legend_label, delay_first_shot, add_perks, perks, enhanced_perks):
+def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, ammo_reserve, legend_label, delay_first_shot, add_perks, perks, enhanced_perks, weapon_class):
     # Initialize t_dmg list
     t_dmg = []
     roundingcoeff = len(str(x_increments).split(".")[1])
@@ -172,7 +177,7 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
         if RH_On:
             print("remove")
         if VW_On:
-            print("remove")
+            shot_dmg_output = VorpalWeapon(weapon_class,shot_dmg_output)
         if FF_On:
             shot_dmg_output, FFActive, ff_time_check, shots_fired_ff = FocusedFury(FFActive,shots_fired_ff,magazine_capacity,damage_per_shot,time_elapsed,shot_dmg_output,ff_time_check)
         if HIR_On:
@@ -202,6 +207,7 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
             shots_left_reserve -= 1
         time_elapsed += x_increments
         time_elapsed = round(time_elapsed, roundingcoeff)
+        
 
         t_dmg.append(total_damage)
 
@@ -217,9 +223,10 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
   # Add legend label to list
     legend_labels.append(legend_label)
 
+
 for weapon in weaponData['weapons']:
     if 'perks' in weapon:
-        plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], weapon['perks'], weapon['enhanced_perks'])
+        plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], weapon['perks'], weapon['enhanced_perks'], weapon['weapon_class'])
     else:
         perks = []
         plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], perks)
