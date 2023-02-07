@@ -4,7 +4,7 @@ This is a python file that will produce a graph showing the destiny 2 DPS for ce
 
 This is heavily based on the styling of [Prelapse's DPS over time graphs on YouTube](https://www.youtube.com/playlist?list=PLmMhH44rl0aVkIqWzaCr_wrYkk5EFAeIZ). The key difference is that [Prelapse manually enters every data point into a spreadsheet to graph them.](https://media.discordapp.net/attachments/1005973866075664504/1061868926239248416/image.png?width=810&height=117) In this project, this is done automatically with variables. This is fundamentally useful for automating the process, as well as allowing you to measure dps over time graphs on your own for whatever weapon you want.
 
-YOU WILL NEED TO KNOW THE STATS FOR THE WEAPONS YOU ARE GRAPHING. That is, you'll need to know the following: the delay between firing (fire delay), the time it takes to reload (reload time), the damage of each individual shot (damage per shot), the individual magazine capacity (magazine capacity), the ammo left in your reserve (ammo reserve), and wether or not the first shot is delayed (delay first shot).
+YOU WILL NEED TO KNOW THE STATS FOR THE WEAPONS YOU ARE GRAPHING. That is, you'll need to know the following: the delay between firing (fire delay), the time it takes to reload (reload time), the damage of each individual shot (damage per shot), the individual magazine capacity (magazine capacity), the ammo left in your reserve (ammo reserve), and whether it is a charge type weapon, typically fusion rifles (delay first shot).
 
 Please see the Install and Usage sections of this readme.
 
@@ -49,7 +49,7 @@ python main.py -d n -rf yippee.json
 ## To-Do
 1. maybe a whole gui. maybe installing a requirements.txt for matplotlib. dunno
 2. roxy is currently working on functions to call for weapon perks that should modify the damage correctly, including accounting for time and reproc-ing perks. interactions between things such as old veist stinger and triple tap should work like in game, although for things like the new veist stinger and other upcoming changes to mods, it is more of a factor of waiting and seeing what the heck be going on.
-3. burst type weapons (fuck)
+3. burst type weapons (fuck (this will require understanding how RoF affects the time between bursts but like also delay between burst fires????))
 
 ## Example graphs
 ![Figure_1](https://user-images.githubusercontent.com/65287118/210054539-a0629674-e846-43ed-8e1f-808482d20a66.png)
