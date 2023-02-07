@@ -34,6 +34,7 @@ if args.input_mode == "cli":
     while True:
         # Input weapon data
         perks = []
+	modifier = 0
         weapon = {}
         weapon["name"] = input("Enter weapon name: ")
         weapon["fire_rate"] = float(input("Enter Rounds Per Minute: "))
