@@ -202,7 +202,6 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
             shots_left_reserve -= 1
         time_elapsed += x_increments
         time_elapsed = round(time_elapsed, roundingcoeff)
-        
 
         t_dmg.append(total_damage)
 
@@ -217,7 +216,6 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
 
   # Add legend label to list
     legend_labels.append(legend_label)
-
 
 for weapon in weaponData['weapons']:
     if 'perks' in weapon:
