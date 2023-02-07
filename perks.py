@@ -89,7 +89,7 @@ def HighImpactReserves(shots_left_mag,magazine_capacity,shot_dmg_output): #scale
 def HIREnhanced(shots_left_mag,magazine_capacity,shot_dmg_output): #first of many enhanced perks because this game fucking sucks
     if shots_left_mag < magazine_capacity/(4/3):
         c = shots_left_mag / magazine_capacity/(4/3)
-        hir_scalar_dmg = c(shot_dmg_output * 1.125) + (1-c)(shot_dmg_output * 1.25)
+        hir_scalar_dmg = (c * (shot_dmg_output * 1.125)) + ((1 - c) * (shot_dmg_output * 1.25))
         hir_bonus_dmg = hir_scalar_dmg - shot_dmg_output #important that it is shot dmg output as it scales based off buffed dmg as is, not starting dmg
         shot_dmg_output += hir_bonus_dmg #alt. calculation i mentioned in an above comment
     return shot_dmg_output

@@ -28,13 +28,13 @@ if args.dialogue == "y":
 if args.input_mode == "cli":
     # Initialize list to store weapon dictionaries
     weapons = []
-    modifier = 0
+    perk = 0
     perks = []
     # Loop to input weapon data
     while True:
         # Input weapon data
         perks = []
-        modifier = 0
+        perk = 0
         weapon = {}
         weapon["name"] = input("Enter weapon name: ")
         weapon["fire_rate"] = float(input("Enter Rounds Per Minute: "))
@@ -42,14 +42,15 @@ if args.input_mode == "cli":
         weapon["damage_per_shot"] = float(input("Enter damage per shot: "))
         weapon["magazine_capacity"] = int(input("Enter magazine capacity: "))
         weapon["ammo_reserve"] = int(input("Enter ammo reserve: "))
-        weapon["delay_first_shot"] = bool(int(input("Enter wether to delay the first shot (1 - true, 0 - false): ")))
-        weapon["add_perks"] = bool(int(input("Enter wether to apply perks (1 - true, 0 - false): ")))
+        weapon["delay_first_shot"] = bool(int(input("Enter whether to delay the first shot (1 - true, 0 - false): ")))
+        weapon["add_perks"] = bool(int(input("Enter whether to apply perks (1 - true, 0 - false): ")))
+        weapon["enhanced_perks"] = bool(int(input("Assume all perks are enhanced? (1 - true, 0 - false): ")))
         
         if weapon["add_perks"] == True:
-            while(modifier!=-1):
-                modifier = int(input("Enter a modifier from the following list to add (-1 to stop)\n1) TripleTap\n2) FTTC\n3) VorpalWeapon\n4) FocusedFury\n5) HighImpactReserves\n6) FiringLine\n7) WellOfRadiance\n"))
-                if((modifier!=-1) and ((modifier>=1) and (modifier<=7))): #change upper bound with new perks
-                    perks.append(modifier)
+            while(perk!=-1):
+                perk = int(input("Enter a perk from the following list to add (-1 to stop)\n1) Triple Tap\n2) Fourth Time's\n3) Veist Stinger\n4) Clown Cartidge\n5) Overflow\n6) Rapid Hit\n7) Vorpal Weapon\n8) Focused Fury\n9) High Impact Reserves\n"))
+                if((perk!=-1) and ((perk>=1) and (perk<=9))): #change upper bound with new perks
+                    perks.append(perk)
             weapon["perks"] = perks
 
         # Add weapon to list
@@ -87,7 +88,7 @@ for i in range(data_points):
 # Initialize list to store legend labels
 legend_labels = []
 
-def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, ammo_reserve, legend_label, delay_first_shot, add_perks, perks):
+def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, ammo_reserve, legend_label, delay_first_shot, add_perks, perks, enhanced_perks):
     # Initialize t_dmg list
     t_dmg = []
     roundingcoeff = len(str(x_increments).split(".")[1])
@@ -103,12 +104,20 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
     #debug_counter = 0
 
     #perk variables that so suck
-    
+    #1
     tt_delay = 0 #god please work
     tt_delay_check = 0 #IT WORKED HAHAHAHAHAHAH
+    #2
     fttc_delay = 0
     fttc_delay_check = 0
+    #5
+    of_check = 0
+    #8
+    ff_time_check = 0
+    FFActive = 0
+    shots_fired_ff = 0
 
+    #it was sobbing that i didnt declare ones that were not flagged as true
     TT_On = False
     FTTC_On = False
     VS_On = False
@@ -118,6 +127,7 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
     VW_On = False
     FF_On = False
     HIR_On = False
+    FL_On = False
 
     if(add_perks == True):
         for z in range(len(perks)):
@@ -140,10 +150,14 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
                 FF_On = True
             elif number == 9:
                 HIR_On = True
+            elif number == 10:
+                FL_On = True
 
 
     # Calculate total damage over time
     for i in range(data_points):
+
+        #perks
         shot_dmg_output = damage_per_shot
         if TT_On:
             shots_left_mag, shots_left_reserve, tt_delay, tt_delay_check = TripleTap(shots_fired,shots_left_mag,shots_left_reserve,tt_delay,tt_delay_check)
@@ -154,15 +168,22 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
         if CC_On:
             print("remove")
         if OF_On:
-            print("remove")
+            shots_left_mag, of_check = Overflow(shots_left_mag,of_check,delay_first_shot)
         if RH_On:
             print("remove")
         if VW_On:
             print("remove")
         if FF_On:
-            print("remove")
+            shot_dmg_output, FFActive, ff_time_check, shots_fired_ff = FocusedFury(FFActive,shots_fired_ff,magazine_capacity,damage_per_shot,time_elapsed,shot_dmg_output,ff_time_check)
         if HIR_On:
-            shot_dmg_output = HighImpactReserves(shots_left_mag,magazine_capacity,shot_dmg_output)
+            if enhanced_perks == 1:
+                shot_dmg_output = HIREnhanced(shots_left_mag,magazine_capacity,shot_dmg_output)
+            else:
+                shot_dmg_output = HighImpactReserves(shots_left_mag,magazine_capacity,shot_dmg_output)
+        if FL_On:
+            shot_dmg_output = FiringLine(shot_dmg_output)
+
+        #weapon firing
         if shots_left_reserve == 0: # reserve check
             total_damage = total_damage
         elif shots_left_mag == 0: # reload
@@ -176,10 +197,12 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
             next_fire += fire_delay
             next_fire = round(next_fire, roundingcoeff) #rounding because i love python
             shots_fired += 1
+            shots_fired_ff += 1 #for focused fury specifically :P
             shots_left_mag -= 1
             shots_left_reserve -= 1
         time_elapsed += x_increments
-        time_elapsed = round(time_elapsed, roundingcoeff)       
+        time_elapsed = round(time_elapsed, roundingcoeff)
+        
 
         t_dmg.append(total_damage)
 
@@ -195,12 +218,14 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
   # Add legend label to list
     legend_labels.append(legend_label)
 
+
 for weapon in weaponData['weapons']:
     if 'perks' in weapon:
-        plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], weapon['perks'])
+        plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], weapon['perks'], weapon['enhanced_perks'])
     else:
         perks = []
         plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], perks)
+
 # Add a legend with all labels
 plt.legend(legend_labels)
 
