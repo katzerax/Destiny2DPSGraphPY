@@ -96,6 +96,15 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
     shots_fired = 0 if delay_first_shot else 1
     shot_dmg_output = damage_per_shot #this is to save the initial starting damage number, and calculate using another variable, makes it so much easier to revert buffs without killing damage
     
+    if(add_modifiers == True):
+        for z in range(modifiers):
+            number = modifiers[z]
+            if number == 1:
+                triple_tap_active = True
+            elif number == 2:
+                FTTC_active = True
+            #etc
+
 
     # Calculate total damage over time
     for i in range(data_points):
@@ -119,9 +128,8 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
         time_elapsed = round(time_elapsed, roundingcoeff)
 
 #idk if it should go here but fuck it we ball
-#roxy here - fix your fucking code !!!!
-#        if(add_modifiers==True):
-#           total_damage = applyModifiers(modifiers, total_damage, time_elapsed, shots_left_mag, shots_left_reserve, shot_dmg_output, shots_fired, magazine_capacity, damage_per_shot) #add to with whatever the functions need
+   #     if(add_modifiers==True):
+   #        total_damage = applyModifiers(modifiers, total_damage, time_elapsed, shots_left_mag, shots_left_reserve, shot_dmg_output, shots_fired, magazine_capacity, damage_per_shot) #add to with whatever the functions need
         
 
         t_dmg.append(total_damage)
