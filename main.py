@@ -33,6 +33,7 @@ if args.input_mode == "cli":
     # Loop to input weapon data
     while True:
         # Input weapon data
+        perks = []
         weapon = {}
         weapon["name"] = input("Enter weapon name: ")
         weapon["fire_rate"] = float(input("Enter Rounds Per Minute: "))
@@ -45,8 +46,8 @@ if args.input_mode == "cli":
         
         if weapon["add_perks"] == True:
             while(modifier!=-1):
-                modifier = int(input("Enter a modifier from the following list to add (-1 to stop)\n1) Triple Tap\n2) Fourth Time's\n3) Veist Stinger\n4) Clown Cartidge\n5) Overflow\n6) Rapid Hit\n7) Vorpal Weapon\n8) Focused Fury\n9) High Impact Reserves\n"))
-                if((modifier!=-1) and ((modifier>=1) and (modifier<=9))): #change upper bound with new perks
+                modifier = int(input("Enter a modifier from the following list to add (-1 to stop)\n1) TripleTap\n2) FTTC\n3) VorpalWeapon\n4) FocusedFury\n5) HighImpactReserves\n6) FiringLine\n7) WellOfRadiance\n"))
+                if((modifier!=-1) and ((modifier>=1) and (modifier<=7))): #change upper bound with new perks
                     perks.append(modifier)
             weapon["perks"] = perks
 
@@ -101,20 +102,12 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
     #debug_counter = 0
 
     #perk variables that so suck
-    #1
+    
     tt_delay = 0 #god please work
     tt_delay_check = 0 #IT WORKED HAHAHAHAHAHAH
-    #2
     fttc_delay = 0
     fttc_delay_check = 0
-    #5
-    of_check = 0
-    #8
-    ff_time_check = 0
-    FFActive = 0
-    shots_fired_ff = 0
 
-    #it was sobbing that i didnt declare ones that were not flagged as false
     TT_On = False
     FTTC_On = False
     VS_On = False
@@ -124,7 +117,6 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
     VW_On = False
     FF_On = False
     HIR_On = False
-    FL_On = False
 
     if(add_perks == True):
         for z in range(len(perks)):
@@ -147,8 +139,6 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
                 FF_On = True
             elif number == 9:
                 HIR_On = True
-            elif number == 10:
-                FL_On = True
 
 
     # Calculate total damage over time
@@ -163,17 +153,15 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
         if CC_On:
             print("remove")
         if OF_On:
-            shots_left_mag, of_check = Overflow(shots_left_mag,of_check,delay_first_shot)
+            print("remove")
         if RH_On:
             print("remove")
         if VW_On:
             print("remove")
         if FF_On:
-            shot_dmg_output, FFActive, ff_time_check, shots_fired_ff = FocusedFury(FFActive,shots_fired_ff,magazine_capacity,damage_per_shot,time_elapsed,shot_dmg_output,ff_time_check)
+            print("remove")
         if HIR_On:
             shot_dmg_output = HighImpactReserves(shots_left_mag,magazine_capacity,shot_dmg_output)
-        if FL_On:
-            shot_dmg_output = FiringLine(shot_dmg_output)
         if shots_left_reserve == 0: # reserve check
             total_damage = total_damage
         elif shots_left_mag == 0: # reload
@@ -187,12 +175,10 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
             next_fire += fire_delay
             next_fire = round(next_fire, roundingcoeff) #rounding because i love python
             shots_fired += 1
-            shots_fired_ff += 1 #for focused fury specifically :P
             shots_left_mag -= 1
             shots_left_reserve -= 1
         time_elapsed += x_increments
-        time_elapsed = round(time_elapsed, roundingcoeff)
-        
+        time_elapsed = round(time_elapsed, roundingcoeff)       
 
         t_dmg.append(total_damage)
 
@@ -207,7 +193,6 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
 
   # Add legend label to list
     legend_labels.append(legend_label)
-
 
 for weapon in weaponData['weapons']:
 	plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], weapon['perks'])
