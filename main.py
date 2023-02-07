@@ -134,6 +134,9 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
     HIR_On = False
     FL_On = False
 
+    #debug
+    stale_value = 0
+
     if(add_perks == True):
         for z in range(len(perks)):
             number = perks[z]
@@ -168,14 +171,14 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
             shots_left_mag, shots_left_reserve, tt_delay, tt_delay_check = TripleTap(shots_fired,shots_left_mag,shots_left_reserve,tt_delay,tt_delay_check)
         if FTTC_On:
             shots_left_mag, shots_left_reserve, fttc_delay, fttc_delay_check = FTTC(shots_fired,shots_left_mag,shots_left_reserve,fttc_delay,fttc_delay_check)
-        if VS_On:
-            print("remove")
-        if CC_On:
-            print("remove")
+        #if VS_On:
+
+        #if CC_On:
+
         if OF_On:
             shots_left_mag, of_check = Overflow(shots_left_mag,of_check,delay_first_shot)
-        if RH_On:
-            print("remove")
+        #if RH_On:
+            
         if VW_On:
             shot_dmg_output = VorpalWeapon(weapon_class,shot_dmg_output)
         if FF_On:
@@ -187,6 +190,12 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
                 shot_dmg_output = HighImpactReserves(shots_left_mag,magazine_capacity,shot_dmg_output)
         if FL_On:
             shot_dmg_output = FiringLine(shot_dmg_output)
+
+        #debug on seeing how the damage changes
+        if weapon['name'] == ('all'):
+            if stale_value != shot_dmg_output:
+                stale_value = shot_dmg_output
+                print(weapon['name'], "dmg: ", shot_dmg_output, "time: ", time_elapsed)
 
         #weapon firing
         if shots_left_reserve == 0: # reserve check

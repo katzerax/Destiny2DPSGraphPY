@@ -69,7 +69,7 @@ def FocusedFury(FFActive,shots_fired_ff,magazine_capacity,damage_per_shot,time_e
     else:
         shot_dmg_output = shot_dmg_output * 1.2
         if (time_elapsed - ff_time_check) >= 10: 
-            shot_dmg_output = damage_per_shot
+            shot_dmg_output = shot_dmg_output * (1/1.2)
             shots_fired_ff = 0
             FFActive = 0
     return shot_dmg_output, FFActive, ff_time_check, shots_fired_ff
