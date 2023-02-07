@@ -5,14 +5,20 @@ import random
 
 
 #magazine + reload perks/traits
-def TripleTap(shots_fired,shots_left_mag,shots_left_reserve): #every three shots fired (and presumably hit), it gives one bullet into the mag for free (technically giving more reserves)
+def TripleTap(shots_fired,shots_left_mag,shots_left_reserve,tt_delay,i_hate_this): #every three shots fired (and presumably hit), it gives one bullet into the mag for free (technically giving more reserves)
     if shots_fired != 0:
-        print("bitch")
-        if shots_fired % 3 == 0: #this would need to be checked after every shot to prevent reloads from happening too early
-            shots_left_mag += 1
-            shots_left_reserve += 1 #HAHAHAHAHA THIS SCALES INFINITELY AND FOR WHAT
-            print("kekw", shots_fired, shots_left_mag, shots_left_reserve) #13000 SHOTS IN THE MAG?????????
-    return shots_left_mag, shots_left_reserve
+        if tt_delay == 0:
+            if shots_fired % 3 == 0: #this would need to be checked after every shot to prevent reloads from happening too early
+                shots_left_mag += 1
+                shots_left_reserve += 1 #HAHAHAHAHA THIS SCALES INFINITELY AND FOR WHAT
+                i_hate_this = shots_fired
+                tt_delay = 1
+                print("shots fired, magazine, reserve, and if delay is on", shots_fired, shots_left_mag, shots_left_reserve, tt_delay) #13000 SHOTS IN THE MAG?????????
+        else:
+            if i_hate_this != shots_fired:
+                tt_delay = 0
+                print("shots fired and compare value", shots_fired, i_hate_this) #i fixed it and this so fucking SUCKS!!!!!!!!!
+    return shots_left_mag, shots_left_reserve, tt_delay, i_hate_this 
 
 def FTTC(shots_fired,shots_left_mag,shots_left_reserve): #Fourth Times The Charm, Triple Tap but if it was FOUR and TWO bullets
     if shots_fired % 4 == 0:

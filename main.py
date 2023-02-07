@@ -97,6 +97,8 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
     shots_fired = 0 if delay_first_shot else 1
     shot_dmg_output = damage_per_shot #this is to save the initial starting damage number, and calculate using another variable, makes it so much easier to revert buffs without killing damage
     #debug_counter = 0
+    tt_delay = 0 #god please work
+    i_hate_this = 0 #IT WORKED HAHAHAHAHAHAH
 
     if(add_modifiers == True):
         for z in range(len(modifiers)): #this isnt right but chatgpt said it would make it run and it worked
@@ -124,7 +126,7 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
     # Calculate total damage over time
     for i in range(data_points):
         if TT_On:
-            shots_left_mag, shots_left_reserve = TripleTap(shots_fired,shots_left_mag,shots_left_reserve)
+            shots_left_mag, shots_left_reserve, tt_delay, i_hate_this = TripleTap(shots_fired,shots_left_mag,shots_left_reserve,tt_delay,i_hate_this)
             #debug_counter += 1
             #print("DOING YOUR MOM" + str(debug_counter) + "TIMES")
         if shots_left_reserve == 0: # reserve check
