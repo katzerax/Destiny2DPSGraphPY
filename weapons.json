@@ -1,1 +1,1 @@
-{"weapons": [{"name": "wow", "fire_rate": 120.0, "reload_time": 1.34, "damage_per_shot": 57324.0, "magazine_capacity": 6, "ammo_reserve": 20, "delay_first_shot": true, "add_modifiers": true, "modifiers": [1, 2, 3]}]}
+{"weapons": [{"name": "surely", "fire_rate": 120.0, "reload_time": 1.43, "damage_per_shot": 56345.0, "magazine_capacity": 6, "ammo_reserve": 20, "delay_first_shot": true, "add_modifiers": true, "modifiers": [1]}]}
