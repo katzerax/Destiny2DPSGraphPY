@@ -37,15 +37,22 @@ def VeistStinger(shots_fired,shots_left_mag): #will need to get rough RNG estima
 def ClownCartridge():
     print("OOPS")
 
-def Overflow(): #lol like stack
-    print("OOPS")
+def Overflow(shots_left_mag,of_check,delay_first_shot): #lol like stack
+    if of_check == 0:
+        if delay_first_shot:
+            shots_left_mag = math.ceil(shots_left_mag * 2)
+            of_check = 1
+        else:
+            shots_left_mag = math.ceil((shots_left_mag + 1) * 2) - 1
+            of_check = 1
+    return shots_left_mag, of_check
 
 def RapidHit():
     print("OOPS")
 
 #damage perks
 def VorpalWeapon(VorpalActive,shot_dmg_output): #check before damage calculations as it is always active, passive bonus
-    if VorpalActive == 0:
+    if VorpalActive == 0: #maybe i should ask for weapon classification? (i.e. ammo type) similarly, ask if enhanced perks active????
         if VorpalWeapon == 1: #primary ammo
             shot_dmg_output = shot_dmg_output * 1.2
             VorpalActive = 1
@@ -57,16 +64,19 @@ def VorpalWeapon(VorpalActive,shot_dmg_output): #check before damage calculation
             VorpalActive = 1
     return shot_dmg_output
 
-def FocusedFury(FFActive,shots_fired,magazine_capacity,damage_per_shot,time_elapsed,shot_dmg_output): #checks for whether it is active, then for whether it should activate, then the activation requirements before setting itself active, followed by a check on how to turn it back
+def FocusedFury(FFActive,shots_fired_ff,magazine_capacity,damage_per_shot,time_elapsed,shot_dmg_output,ff_time_check): #checks for whether it is active, then for whether it should activate, then the activation requirements before setting itself active, followed by a check on how to turn it back
     if FFActive == 0:
-        if shots_fired == math.ceil(magazine_capacity/2): #activates when shots reach half the magazine
+        if shots_fired_ff == math.ceil(magazine_capacity/2): #activates when shots reach half the magazine
             shot_dmg_output = shot_dmg_output * 1.2
             FFActive = 1
+            ff_time_check = time_elapsed
     else:
-        if time_elapsed % 10 == 0: #this time check logic needs to be looked at, probably use another variable to track when the timer would be up for the buff
+        shot_dmg_output = shot_dmg_output * 1.2
+        if (time_elapsed - ff_time_check) >= 10: 
             shot_dmg_output = damage_per_shot
+            shots_fired_ff = 0
             FFActive = 0
-    return shot_dmg_output
+    return shot_dmg_output, FFActive, ff_time_check, shots_fired_ff
 
 def HighImpactReserves(shots_left_mag,magazine_capacity,shot_dmg_output): #scales damage from bonus 12.5% to a bonus 25% by the last bullet, starting at half mag
     if shots_left_mag < magazine_capacity/2:

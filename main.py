@@ -45,8 +45,8 @@ if args.input_mode == "cli":
         
         if weapon["add_perks"] == True:
             while(modifier!=-1):
-                modifier = int(input("Enter a modifier from the following list to add (-1 to stop)\n1) TripleTap\n2) FTTC\n3) VorpalWeapon\n4) FocusedFury\n5) HighImpactReserves\n6) FiringLine\n7) WellOfRadiance\n"))
-                if((modifier!=-1) and ((modifier>=1) and (modifier<=7))): #change upper bound with new perks
+                modifier = int(input("Enter a modifier from the following list to add (-1 to stop)\n1) Triple Tap\n2) Fourth Time's\n3) Veist Stinger\n4) Clown Cartidge\n5) Overflow\n6) Rapid Hit\n7) Vorpal Weapon\n8) Focused Fury\n9) High Impact Reserves\n"))
+                if((modifier!=-1) and ((modifier>=1) and (modifier<=9))): #change upper bound with new perks
                     perks.append(modifier)
             weapon["perks"] = perks
 
@@ -101,12 +101,20 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
     #debug_counter = 0
 
     #perk variables that so suck
-    
+    #1
     tt_delay = 0 #god please work
     tt_delay_check = 0 #IT WORKED HAHAHAHAHAHAH
+    #2
     fttc_delay = 0
     fttc_delay_check = 0
+    #5
+    of_check = 0
+    #8
+    ff_time_check = 0
+    FFActive = 0
+    shots_fired_ff = 0
 
+    #it was sobbing that i didnt declare ones that were not flagged as false
     TT_On = False
     FTTC_On = False
     VS_On = False
@@ -116,6 +124,7 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
     VW_On = False
     FF_On = False
     HIR_On = False
+    FL_On = False
 
     if(add_perks == True):
         for z in range(len(perks)):
@@ -138,6 +147,8 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
                 FF_On = True
             elif number == 9:
                 HIR_On = True
+            elif number == 10:
+                FL_On = True
 
 
     # Calculate total damage over time
@@ -152,15 +163,17 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
         if CC_On:
             print("remove")
         if OF_On:
-            print("remove")
+            shots_left_mag, of_check = Overflow(shots_left_mag,of_check,delay_first_shot)
         if RH_On:
             print("remove")
         if VW_On:
             print("remove")
         if FF_On:
-            print("remove")
+            shot_dmg_output, FFActive, ff_time_check, shots_fired_ff = FocusedFury(FFActive,shots_fired_ff,magazine_capacity,damage_per_shot,time_elapsed,shot_dmg_output,ff_time_check)
         if HIR_On:
             shot_dmg_output = HighImpactReserves(shots_left_mag,magazine_capacity,shot_dmg_output)
+        if FL_On:
+            shot_dmg_output = FiringLine(shot_dmg_output)
         if shots_left_reserve == 0: # reserve check
             total_damage = total_damage
         elif shots_left_mag == 0: # reload
@@ -174,14 +187,11 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
             next_fire += fire_delay
             next_fire = round(next_fire, roundingcoeff) #rounding because i love python
             shots_fired += 1
+            shots_fired_ff += 1 #for focused fury specifically :P
             shots_left_mag -= 1
             shots_left_reserve -= 1
         time_elapsed += x_increments
         time_elapsed = round(time_elapsed, roundingcoeff)
-
-#idk if it should go here but fuck it we ball
-   #     if(add_perks==True):
-   #        total_damage = applyperks(perks, total_damage, time_elapsed, shots_left_mag, shots_left_reserve, shot_dmg_output, shots_fired, magazine_capacity, damage_per_shot) #add to with whatever the functions need
         
 
         t_dmg.append(total_damage)
@@ -197,30 +207,6 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
 
   # Add legend label to list
     legend_labels.append(legend_label)
-
-
-#def applyperks(perks, total_damage, time_elapsed, shots_left_mag, shots_left_reserve, shot_dmg_output, shots_fired, magazine_capacity, damage_per_shot):
-#    i = 0
-#    modifier = 0
-#    total_damage = total_damage
-#    for i in range(perks):
-#        modifier = perks[i]
-#        if(modifier == 1):
-#            total_damage = TripleTap(shots_fired,shots_left_mag,shots_left_reserve)
-#        elif(modifier == 2):
-#            total_damage = FTTC(shots_fired,shots_left_mag,shots_left_reserve)
-#        elif(modifier == 3):
-#            total_damage = VorpalWeapon(shot_dmg_output) #vorpalactive is not a variable yet? so not passing it, same with other "Active" vars later
-#        elif(modifier == 4):
-#            total_damage = FocusedFury(shots_fired,magazine_capacity,damage_per_shot,time_elapsed)
-#        elif(modifier == 5):
-#            total_damage = HighImpactReserves(shots_left_mag,magazine_capacity,damage_per_shot)
-#        elif(modifier == 6):
-#            total_damage = FiringLine(shot_dmg_output)
-#        elif(modifier == 7):
-#            total_damage = WellofRadiance()
-#        modifier = 0
-#    return(total_damage) #example of what this function will be like. 
 
 
 for weapon in weaponData['weapons']:
