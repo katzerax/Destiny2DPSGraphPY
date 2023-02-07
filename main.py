@@ -1,4 +1,5 @@
 import sys
+import random
 from modifiers import *
 
 try:
@@ -95,19 +96,37 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
     shots_left_mag = magazine_capacity if delay_first_shot else (magazine_capacity - 1)
     shots_fired = 0 if delay_first_shot else 1
     shot_dmg_output = damage_per_shot #this is to save the initial starting damage number, and calculate using another variable, makes it so much easier to revert buffs without killing damage
-    
+    #debug_counter = 0
+
     if(add_modifiers == True):
-        for z in range(modifiers):
+        for z in range(len(modifiers)): #this isnt right but chatgpt said it would make it run and it worked
             number = modifiers[z]
             if number == 1:
-                triple_tap_active = True
+                TT_On = True
             elif number == 2:
-                FTTC_active = True
-            #etc
+                FTTC_On = True
+            elif number == 3:
+                VS_On = True
+            elif number == 4:
+                CC_On = True
+            elif number == 5:
+                OF_On = True
+            elif number == 6:
+                RH_On = True
+            elif number == 7:
+                VW_On = True
+            elif number == 8:
+                FF_On = True
+            elif number == 9:
+                HIR_On = True
 
 
     # Calculate total damage over time
     for i in range(data_points):
+        if TT_On:
+            shots_left_mag, shots_left_reserve = TripleTap(shots_fired,shots_left_mag,shots_left_reserve)
+            #debug_counter += 1
+            #print("DOING YOUR MOM" + str(debug_counter) + "TIMES")
         if shots_left_reserve == 0: # reserve check
             total_damage = total_damage
         elif shots_left_mag == 0: # reload
@@ -120,10 +139,9 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
             total_damage += shot_dmg_output
             next_fire += fire_delay
             next_fire = round(next_fire, roundingcoeff) #rounding because i love python
+            shots_fired += 1
             shots_left_mag -= 1
             shots_left_reserve -= 1
-        else: #non statement if the gun is out of ammo, but keeps the cycle running so the rest of the graph works
-            total_damage = total_damage
         time_elapsed += x_increments
         time_elapsed = round(time_elapsed, roundingcoeff)
 
