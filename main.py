@@ -34,7 +34,7 @@ if args.input_mode == "cli":
     while True:
         # Input weapon data
         perks = []
-	modifier = 0
+        modifier = 0
         weapon = {}
         weapon["name"] = input("Enter weapon name: ")
         weapon["fire_rate"] = float(input("Enter Rounds Per Minute: "))
@@ -196,8 +196,11 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
     legend_labels.append(legend_label)
 
 for weapon in weaponData['weapons']:
-	plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], weapon['perks'])
-
+    if 'perks' in weapon:
+        plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], weapon['perks'])
+    else:
+        perks = []
+        plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], perks)
 # Add a legend with all labels
 plt.legend(legend_labels)
 
