@@ -1,5 +1,5 @@
 import sys
-#from modifiers import *
+from modifiers import *
 
 try:
     import matplotlib.pyplot as plt
@@ -120,8 +120,8 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
 
 #idk if it should go here but fuck it we ball
 #roxy here - fix your fucking code !!!!
-        if(add_modifiers==True):
-           total_damage = applyModifiers(modifiers, total_damage, time_elapsed, shots_left_mag, shots_left_reserve, shot_dmg_output, shots_fired, magazine_capacity, damage_per_shot) #add to with whatever the functions need
+#        if(add_modifiers==True):
+#           total_damage = applyModifiers(modifiers, total_damage, time_elapsed, shots_left_mag, shots_left_reserve, shot_dmg_output, shots_fired, magazine_capacity, damage_per_shot) #add to with whatever the functions need
         
 
         t_dmg.append(total_damage)
@@ -139,28 +139,28 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
     legend_labels.append(legend_label)
 
 
-def applyModifiers(modifiers, total_damage, time_elapsed, shots_left_mag, shots_left_reserve, shot_dmg_output, shots_fired, magazine_capacity, damage_per_shot):
-    i = 0
-    modifier = 0
-    total_damage = total_damage
-    for i in range(modifiers):
-        modifier = modifiers[i]
-        if(modifier == 1):
-            total_damage = TripleTap(shots_fired,shots_left_mag,shots_left_reserve)
-        elif(modifier == 2):
-            total_damage = FTTC(shots_fired,shots_left_mag,shots_left_reserve)
-        elif(modifier == 3):
-            total_damage = VorpalWeapon(shot_dmg_output) #vorpalactive is not a variable yet? so not passing it, same with other "Active" vars later
-        elif(modifier == 4):
-            total_damage = FocusedFury(shots_fired,magazine_capacity,damage_per_shot,time_elapsed)
-        elif(modifier == 5):
-            total_damage = HighImpactReserves(shots_left_mag,magazine_capacity,damage_per_shot)
-        elif(modifier == 6):
-            total_damage = FiringLine(shot_dmg_output)
-        elif(modifier == 7):
-            total_damage = WellofRadiance()
-        modifier = 0
-    return(total_damage) #example of what this function will be like. 
+#def applyModifiers(modifiers, total_damage, time_elapsed, shots_left_mag, shots_left_reserve, shot_dmg_output, shots_fired, magazine_capacity, damage_per_shot):
+#    i = 0
+#    modifier = 0
+#    total_damage = total_damage
+#    for i in range(modifiers):
+#        modifier = modifiers[i]
+#        if(modifier == 1):
+#            total_damage = TripleTap(shots_fired,shots_left_mag,shots_left_reserve)
+#        elif(modifier == 2):
+#            total_damage = FTTC(shots_fired,shots_left_mag,shots_left_reserve)
+#        elif(modifier == 3):
+#            total_damage = VorpalWeapon(shot_dmg_output) #vorpalactive is not a variable yet? so not passing it, same with other "Active" vars later
+#        elif(modifier == 4):
+#            total_damage = FocusedFury(shots_fired,magazine_capacity,damage_per_shot,time_elapsed)
+#        elif(modifier == 5):
+#            total_damage = HighImpactReserves(shots_left_mag,magazine_capacity,damage_per_shot)
+#        elif(modifier == 6):
+#            total_damage = FiringLine(shot_dmg_output)
+#        elif(modifier == 7):
+#            total_damage = WellofRadiance()
+#        modifier = 0
+#    return(total_damage) #example of what this function will be like. 
 
 
 for weapon in weaponData['weapons']:
