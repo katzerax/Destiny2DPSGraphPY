@@ -1,6 +1,7 @@
 import sys
 import random
-from modifiers import *
+import math
+from perks import *
 
 try:
     import matplotlib.pyplot as plt
@@ -28,7 +29,7 @@ if args.input_mode == "cli":
     # Initialize list to store weapon dictionaries
     weapons = []
     modifier = 0
-    modifiers = []
+    perks = []
     # Loop to input weapon data
     while True:
         # Input weapon data
@@ -40,14 +41,14 @@ if args.input_mode == "cli":
         weapon["magazine_capacity"] = int(input("Enter magazine capacity: "))
         weapon["ammo_reserve"] = int(input("Enter ammo reserve: "))
         weapon["delay_first_shot"] = bool(int(input("Enter wether to delay the first shot (1 - true, 0 - false): ")))
-        weapon["add_modifiers"] = bool(int(input("Enter wether to apply modifiers (1 - true, 0 - false): ")))
+        weapon["add_perks"] = bool(int(input("Enter wether to apply perks (1 - true, 0 - false): ")))
         
-        if weapon["add_modifiers"] == True:
+        if weapon["add_perks"] == True:
             while(modifier!=-1):
                 modifier = int(input("Enter a modifier from the following list to add (-1 to stop)\n1) TripleTap\n2) FTTC\n3) VorpalWeapon\n4) FocusedFury\n5) HighImpactReserves\n6) FiringLine\n7) WellOfRadiance\n"))
-                if((modifier!=-1) and ((modifier>=1) and (modifier<=7))): #change upper bound with new modifiers
-                    modifiers.append(modifier)
-            weapon["modifiers"] = modifiers
+                if((modifier!=-1) and ((modifier>=1) and (modifier<=7))): #change upper bound with new perks
+                    perks.append(modifier)
+            weapon["perks"] = perks
 
         # Add weapon to list
         weapons.append(weapon)
@@ -84,7 +85,7 @@ for i in range(data_points):
 # Initialize list to store legend labels
 legend_labels = []
 
-def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, ammo_reserve, legend_label, delay_first_shot, add_modifiers, modifiers):
+def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, ammo_reserve, legend_label, delay_first_shot, add_perks, perks):
     # Initialize t_dmg list
     t_dmg = []
     roundingcoeff = len(str(x_increments).split(".")[1])
@@ -96,13 +97,29 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
     shots_left_mag = magazine_capacity if delay_first_shot else (magazine_capacity - 1)
     shots_fired = 0 if delay_first_shot else 1
     shot_dmg_output = damage_per_shot #this is to save the initial starting damage number, and calculate using another variable, makes it so much easier to revert buffs without killing damage
+  
     #debug_counter = 0
-    tt_delay = 0 #god please work
-    i_hate_this = 0 #IT WORKED HAHAHAHAHAHAH
 
-    if(add_modifiers == True):
-        for z in range(len(modifiers)): #this isnt right but chatgpt said it would make it run and it worked
-            number = modifiers[z]
+    #perk variables that so suck
+    
+    tt_delay = 0 #god please work
+    tt_delay_check = 0 #IT WORKED HAHAHAHAHAHAH
+    fttc_delay = 0
+    fttc_delay_check = 0
+
+    TT_On = False
+    FTTC_On = False
+    VS_On = False
+    CC_On = False
+    OF_On = False
+    RH_On = False
+    VW_On = False
+    FF_On = False
+    HIR_On = False
+
+    if(add_perks == True):
+        for z in range(len(perks)):
+            number = perks[z]
             if number == 1:
                 TT_On = True
             elif number == 2:
@@ -125,10 +142,25 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
 
     # Calculate total damage over time
     for i in range(data_points):
+        shot_dmg_output = damage_per_shot
         if TT_On:
-            shots_left_mag, shots_left_reserve, tt_delay, i_hate_this = TripleTap(shots_fired,shots_left_mag,shots_left_reserve,tt_delay,i_hate_this)
-            #debug_counter += 1
-            #print("DOING YOUR MOM" + str(debug_counter) + "TIMES")
+            shots_left_mag, shots_left_reserve, tt_delay, tt_delay_check = TripleTap(shots_fired,shots_left_mag,shots_left_reserve,tt_delay,tt_delay_check)
+        if FTTC_On:
+            shots_left_mag, shots_left_reserve, fttc_delay, fttc_delay_check = FTTC(shots_fired,shots_left_mag,shots_left_reserve,fttc_delay,fttc_delay_check)
+        if VS_On:
+            print("remove")
+        if CC_On:
+            print("remove")
+        if OF_On:
+            print("remove")
+        if RH_On:
+            print("remove")
+        if VW_On:
+            print("remove")
+        if FF_On:
+            print("remove")
+        if HIR_On:
+            shot_dmg_output = HighImpactReserves(shots_left_mag,magazine_capacity,shot_dmg_output)
         if shots_left_reserve == 0: # reserve check
             total_damage = total_damage
         elif shots_left_mag == 0: # reload
@@ -148,8 +180,8 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
         time_elapsed = round(time_elapsed, roundingcoeff)
 
 #idk if it should go here but fuck it we ball
-   #     if(add_modifiers==True):
-   #        total_damage = applyModifiers(modifiers, total_damage, time_elapsed, shots_left_mag, shots_left_reserve, shot_dmg_output, shots_fired, magazine_capacity, damage_per_shot) #add to with whatever the functions need
+   #     if(add_perks==True):
+   #        total_damage = applyperks(perks, total_damage, time_elapsed, shots_left_mag, shots_left_reserve, shot_dmg_output, shots_fired, magazine_capacity, damage_per_shot) #add to with whatever the functions need
         
 
         t_dmg.append(total_damage)
@@ -167,12 +199,12 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
     legend_labels.append(legend_label)
 
 
-#def applyModifiers(modifiers, total_damage, time_elapsed, shots_left_mag, shots_left_reserve, shot_dmg_output, shots_fired, magazine_capacity, damage_per_shot):
+#def applyperks(perks, total_damage, time_elapsed, shots_left_mag, shots_left_reserve, shot_dmg_output, shots_fired, magazine_capacity, damage_per_shot):
 #    i = 0
 #    modifier = 0
 #    total_damage = total_damage
-#    for i in range(modifiers):
-#        modifier = modifiers[i]
+#    for i in range(perks):
+#        modifier = perks[i]
 #        if(modifier == 1):
 #            total_damage = TripleTap(shots_fired,shots_left_mag,shots_left_reserve)
 #        elif(modifier == 2):
@@ -192,7 +224,7 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
 
 
 for weapon in weaponData['weapons']:
-	plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_modifiers'], weapon['modifiers'])
+	plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], weapon['perks'])
 
 # Add a legend with all labels
 plt.legend(legend_labels)
