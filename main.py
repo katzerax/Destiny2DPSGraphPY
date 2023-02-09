@@ -48,13 +48,13 @@ if args.input_mode == "cli":
         if weapon["add_perks"] == True:
             weapon["enhanced_perks"] = bool(int(input("Assume all perks are enhanced? (1 - true, 0 - false): ")))
             weapon["weapon_class"] = int(input("Weapon Ammo Type (1 - Primary, 2 - Special, 3 - Heavy): "))
-            print("Enter a perk from the following list to add (-1 to stop)\n1) Triple Tap\n2) Fourth Time's\n3) Veist Stinger\n4) Clown Cartidge\n5) Overflow\n6) Rapid Hit\n7) Vorpal Weapon\n8) Focused Fury\n9) High Impact Reserves\n")
+            print("Enter a perk from the following list to add:\n1) Triple Tap\n2) Fourth Time's\n3) Veist Stinger\n4) Clown Cartidge\n5) Overflow\n6) Rapid Hit\n7) Vorpal Weapon\n8) Focused Fury\n9) High Impact Reserves\n10) Firing Line\n11) Explosive Light\n12) Cascade Point\n13) Explosive Payload\nEnter -1 to Stop\n")
             teehee = 0
             while(perk!=-1):
                 teehee += 1
                 [print("Perk", teehee)]
                 perk = int(input("input: "))
-                if((perk!=-1) and ((perk>=1) and (perk<=9))): #change upper bound with new perks
+                if((perk!=-1) and ((perk>=1) and (perk<=13))): #change upper bound with new perks
                     perks.append(perk)
             weapon["perks"] = perks
 
@@ -105,22 +105,33 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
     shots_left_mag = magazine_capacity if delay_first_shot else (magazine_capacity - 1)
     shots_fired = 0 if delay_first_shot else 1
     shot_dmg_output = damage_per_shot #this is to save the initial starting damage number, and calculate using another variable, makes it so much easier to revert buffs without killing damage
-  
+    output_reload_time = round(reload_time, roundingcoeff) #same as above :p
+
     #debug_counter = 0
 
     #perk variables that so suck
-    #1
+    #1 - Triple Tap
     tt_delay = 0 #god please work
     tt_delay_check = 0 #IT WORKED HAHAHAHAHAHAH
-    #2
+    #2 - Fourth Time's the Charm
     fttc_delay = 0
     fttc_delay_check = 0
-    #5
+    #3 - Veist Stinger
+    veist_overflow_cross = 0
+    veist_check = 0 #arbitrary number that isnt 0 so the logic works, there is probably better way like assuming if shots is 0 or something idk
+    #4 - Clown Cartridge
+    clown_check = 0
+    reload_count = 0
+    #5 - Overflow
     of_check = 0
-    #8
+    #6 - Rapid Hit
+    rh_stacks = 0
+    #8 - Focused Fury
     ff_time_check = 0
     FFActive = 0
     shots_fired_ff = 0
+    #12 - Cascade Point
+    cascade_fr = 0
 
     #it was sobbing that i didnt declare ones that were not flagged as true
     TT_On = False
@@ -133,6 +144,9 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
     FF_On = False
     HIR_On = False
     FL_On = False
+    EL_On = False
+    CasP_On = False
+    EP_On = False
 
     #debug
     stale_value = 0
@@ -160,6 +174,12 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
                 HIR_On = True
             elif number == 10:
                 FL_On = True
+            elif number == 11:
+                EL_On = True
+            elif number == 12:
+                CasP_On = True
+            elif number == 13:
+                EP_On = True
 
 
     # Calculate total damage over time
@@ -167,44 +187,53 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
 
         #perks
         shot_dmg_output = damage_per_shot
-        if TT_On:
+        fire_delay = round(60/fire_rate, roundingcoeff)
+        output_reload_time = round(reload_time, roundingcoeff)
+        if TT_On: #1
             shots_left_mag, shots_left_reserve, tt_delay, tt_delay_check = TripleTap(shots_fired,shots_left_mag,shots_left_reserve,tt_delay,tt_delay_check)
-        if FTTC_On:
+        if FTTC_On: #2
             shots_left_mag, shots_left_reserve, fttc_delay, fttc_delay_check = FTTC(shots_fired,shots_left_mag,shots_left_reserve,fttc_delay,fttc_delay_check)
-        #if VS_On:
-
-        #if CC_On:
-
-        if OF_On:
-            shots_left_mag, of_check = Overflow(shots_left_mag,of_check,delay_first_shot)
-        #if RH_On:
-            
-        if VW_On:
+        if VS_On: #3
+            shots_left_mag, veist_check = VeistStinger(shots_fired,shots_left_mag,magazine_capacity,veist_overflow_cross,veist_check)
+        if CC_On: #4
+            clown_check, shots_left_mag = ClownCartridge(magazine_capacity, shots_left_mag, clown_check, reload_count)
+        if OF_On: #5
+            shots_left_mag, of_check, veist_overflow_cross = Overflow(shots_left_mag,of_check,delay_first_shot,veist_overflow_cross,magazine_capacity)
+        if RH_On: #6
+            if shots_left_mag == 0:
+                output_reload_time = RapidHit(output_reload_time,rh_stacks,shots_fired,roundingcoeff)
+        if VW_On: #7
             shot_dmg_output = VorpalWeapon(weapon_class,shot_dmg_output)
-        if FF_On:
-            shot_dmg_output, FFActive, ff_time_check, shots_fired_ff = FocusedFury(FFActive,shots_fired_ff,magazine_capacity,damage_per_shot,time_elapsed,shot_dmg_output,ff_time_check)
-        if HIR_On:
+        if FF_On: #8
+            shot_dmg_output, FFActive, ff_time_check, shots_fired_ff = FocusedFury(FFActive,shots_fired_ff,magazine_capacity,time_elapsed,shot_dmg_output,ff_time_check)
+        if HIR_On: #9
             if enhanced_perks == 1:
                 shot_dmg_output = HIREnhanced(shots_left_mag,magazine_capacity,shot_dmg_output)
             else:
                 shot_dmg_output = HighImpactReserves(shots_left_mag,magazine_capacity,shot_dmg_output)
-        if FL_On:
+        if FL_On: #10
             shot_dmg_output = FiringLine(shot_dmg_output)
+        #if EL_On: #11
+        if CasP_On: #12
+            fire_delay = CascadePoint(fire_delay,roundingcoeff,fire_rate,cascade_fr)
+        if EP_On: #13
+            shot_dmg_output = ExplosivePayload(shot_dmg_output)
 
         #debug on seeing how the damage changes
-        if weapon['name'] == ('all'):
-            if stale_value != shot_dmg_output:
-                stale_value = shot_dmg_output
-                print(weapon['name'], "dmg: ", shot_dmg_output, "time: ", time_elapsed)
+        #if weapon['name'] == ('all'):
+            #if stale_value != shot_dmg_output:
+                #stale_value = shot_dmg_output
+                #print(weapon['name'], "dmg: ", shot_dmg_output, "time: ", time_elapsed)
 
         #weapon firing
         if shots_left_reserve == 0: # reserve check
             total_damage = total_damage
         elif shots_left_mag == 0: # reload
-            next_fire += reload_time
+            next_fire += output_reload_time
             next_fire -= fire_delay if delay_first_shot == 0 else 0 #roxy: previously was waiting for fire delay, 
             next_fire = round(next_fire, roundingcoeff) #even when the weapon would not be a charge weapon (contributed to rockets looking bad)
             shots_fired = 0 #resetting shots fired for triple tap and fourth times the charm on reload
+            reload_count += 1 #so Clown knows to not check
             shots_left_mag = magazine_capacity
         elif time_elapsed == next_fire: # checks for weapon fire rate
             total_damage += shot_dmg_output

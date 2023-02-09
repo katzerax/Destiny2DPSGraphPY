@@ -31,13 +31,36 @@ def FTTC(shots_fired,shots_left_mag,shots_left_reserve,fttc_delay,fttc_delay_che
                 fttc_delay = 0
     return shots_left_mag, shots_left_reserve, fttc_delay, fttc_delay_check
 
-def VeistStinger(shots_fired,shots_left_mag): #will need to get rough RNG estimate + dealing with timer lockout + new nerf
-    print("OOPS")
+def VeistStinger(shots_fired, shots_left_mag,magazine_capacity, veist_overflow_cross, veist_check): #will need to get rough RNG estimate + dealing with timer lockout + new nerf
+    if shots_fired != veist_check: #more or less working as intended, just need to make sure
+        VeistProc = round(random.randrange(1,100), 5) 
+        veist_check = shots_fired #that the capacity exceed check can get figured out at some point
+        if shots_left_mag == 0: #so if there is no ammo left, it doesnt attempt to check
+            VeistProc = 1
+        if VeistProc >= 90: #10% chance right now, but may need to scale based on magazine size
+            veist_bonus = math.floor(magazine_capacity * 0.25)
+            shots_left_mag += veist_bonus
+            if veist_overflow_cross != 1: #pointless check for now, until i implement better VS + OF and CC whatevers
+                if shots_left_mag > magazine_capacity:
+                    shots_left_mag = magazine_capacity
+    return shots_left_mag, veist_check
 
-def ClownCartridge():
-    print("OOPS")
 
-def Overflow(shots_left_mag,of_check,delay_first_shot): #lol like stack
+def ClownCartridge(magazine_capacity, shots_left_mag, clown_check, reload_count):
+    if clown_check != reload_count:
+        clown_check = reload_count
+        ClownCoeff = round(random.randrange(1,100))
+        if ClownCoeff <= 25:
+            shots_left_mag = math.ceil(magazine_capacity * 1.1)
+        elif ClownCoeff <= 50:
+            shots_left_mag = math.ceil(magazine_capacity *1.2)
+        elif ClownCoeff <= 75:
+            shots_left_mag = math.ceil(magazine_capacity *1.3)
+        elif ClownCoeff >= 76:
+            shots_left_mag = math.ceil(magazine_capacity * 1.45)
+    return clown_check, shots_left_mag
+
+def Overflow(shots_left_mag,of_check,delay_first_shot,veist_overflow_cross,magazine_capacity): #lol like stack
     if of_check == 0:
         if delay_first_shot:
             shots_left_mag = math.ceil(shots_left_mag * 2)
@@ -45,10 +68,26 @@ def Overflow(shots_left_mag,of_check,delay_first_shot): #lol like stack
         else:
             shots_left_mag = math.ceil((shots_left_mag + 1) * 2) - 1
             of_check = 1
-    return shots_left_mag, of_check
+    #if of_check == 1:
+        #if shots_left_mag <= magazine_capacity:
+            #veist_overflow_cross = 1 #i hate exceptions... this is not working bc if veist procs too often anyways it does not matter
+    return shots_left_mag, of_check, veist_overflow_cross #there is a way to fix this using shots_fired, or similar variable to track when OF should end.
 
-def RapidHit():
-    print("OOPS")
+def RapidHit(output_reload_time,rh_stacks,shots_fired,roundingcoeff):
+    rh_stacks = math.floor(shots_fired)
+    if rh_stacks >= 5:
+        rh_stacks = 5
+    if rh_stacks == 1:
+        output_reload_time = round(output_reload_time / (1.1), roundingcoeff)
+    elif rh_stacks == 2:
+        output_reload_time = round(output_reload_time / (1.2), roundingcoeff)
+    elif rh_stacks == 3:
+        output_reload_time = round(output_reload_time / (1.3), roundingcoeff)
+    elif rh_stacks == 4:
+        output_reload_time = round(output_reload_time / (1.4), roundingcoeff)
+    elif rh_stacks == 5:
+        output_reload_time = round(output_reload_time / (1.5), roundingcoeff)
+    return output_reload_time
 
 #damage perks
 def VorpalWeapon(weapon_class,shot_dmg_output): #check before damage calculations as it is always active, passive bonus
@@ -60,7 +99,7 @@ def VorpalWeapon(weapon_class,shot_dmg_output): #check before damage calculation
         shot_dmg_output = shot_dmg_output * 1.1
     return shot_dmg_output
 
-def FocusedFury(FFActive,shots_fired_ff,magazine_capacity,damage_per_shot,time_elapsed,shot_dmg_output,ff_time_check): #checks for whether it is active, then for whether it should activate, then the activation requirements before setting itself active, followed by a check on how to turn it back
+def FocusedFury(FFActive,shots_fired_ff,magazine_capacity,time_elapsed,shot_dmg_output,ff_time_check): #checks for whether it is active, then for whether it should activate, then the activation requirements before setting itself active, followed by a check on how to turn it back
     if FFActive == 0:
         if shots_fired_ff == math.ceil(magazine_capacity/2): #activates when shots reach half the magazine
             shot_dmg_output = shot_dmg_output * 1.2
@@ -94,19 +133,22 @@ def FiringLine(shot_dmg_output): #flat bonus 20%, for all cases, permanently, so
     shot_dmg_output = shot_dmg_output * 1.2
     return shot_dmg_output
 
-def ExplosiveLight(shot_dmg_output):
+def ExplosiveLight(shot_dmg_output): #explosives only but whatever
     print("OOPS")
 
-def CascadePoint():
-    print("OOPS")
+def CascadePoint(fire_delay,roundingcoeff,fire_rate,cascade_fr):
+    cascade_fr = fire_rate * 1.5
+    fire_delay = round(60/cascade_fr, roundingcoeff)
+    return fire_delay
 
-def ExplosivePayload():
-    print("OOPS")
+def ExplosivePayload(shot_dmg_output): #similar to firing line hehe
+    shot_dmg_output = shot_dmg_output * 1.14
+    return shot_dmg_output
 
 def Frenzy():
     print("OOPS")
 
-def GHornBonus(): #rockets only
+def GHornBonus(): #rockets only but whatever
     print("OOPS")
 
 #player buffs - armor mods will go here
