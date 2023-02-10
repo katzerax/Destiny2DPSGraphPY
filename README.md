@@ -1,6 +1,6 @@
 # Destiny2DPSGraphPY
 
-This is a python file that will produce a graph showing the destiny 2 DPS for certain weapons. It is configurable for several things, but is presuming that you are firing until your mag is empty, reloading, and immediately firing until you are out of ammo. This dps assumes the best, that you always hit the target. Initial logic done with the help of [Roxy](https://twitter.com/rokishee), with additional support from snark.
+This is a python file that will produce a graph showing the Destiny 2 DPS for certain types of weapons. It is configurable for several things, but is presuming that you are firing until your mag is empty, reloading, and immediately firing until you are out of ammo. This dps assumes critical hits only, or rather when something is relevant to crits (Triple Tap and adjacent perks) each shot is counted as a crit. For cases like Rocket Launchers, this is irrelevant as crit based perks don't roll on them and the program assumes every shot fired is hitting for the same amount of damage. Initial logic done with the help of [Roxy (vindicatx)](https://twitter.com/rokishee), with additional support from snark.
 
 This is heavily based on the styling of [Prelapse's DPS over time graphs on YouTube](https://www.youtube.com/playlist?list=PLmMhH44rl0aVkIqWzaCr_wrYkk5EFAeIZ). The key difference is that [Prelapse manually enters every data point into a spreadsheet to graph them.](https://media.discordapp.net/attachments/1005973866075664504/1061868926239248416/image.png?width=810&height=117) In this project, this is done automatically with variables. This is fundamentally useful for automating the process, as well as allowing you to measure dps over time graphs on your own for whatever weapon you want.
 
@@ -48,8 +48,9 @@ python main.py -d n -rf yippee.json
 
 ## To-Do
 1. maybe a whole gui. maybe installing a requirements.txt for matplotlib. dunno
-2. roxy is currently working on functions to call for weapon perks that should modify the damage correctly, including accounting for time and reproc-ing perks. interactions between things such as old veist stinger and triple tap should work like in game, although for things like the new veist stinger and other upcoming changes to mods, it is more of a factor of waiting and seeing what the heck be going on.
-3. burst type weapons (fuck (this will require understanding how RoF affects the time between bursts but like also delay between burst fires????))
+2. roxy is currently working on functions for weapon perks and ensuring all interactions work as well as adding to the perk pool. roxy (me, i) will not be adding some perks like: field prep, elemental capacitor, etc. that basically can be accounted for by simply including the baseline stats beforehand (field prep being reload speed and reserves, elemental capacitor possibly being reload speed)
+3. burst type weapons (fuck (this will require understanding how RoF affects the time between bursts but like also delay between burst fires????)) i basically have 0 clue still how i am going to do this, both bullet based weapons and charge based weapons (looking at you Stormchaser, n Fire and Forget)
+4. cleaning up comments after everything?
 
 ## Example graphs
 ![Figure_1](https://user-images.githubusercontent.com/65287118/210054539-a0629674-e846-43ed-8e1f-808482d20a66.png)
