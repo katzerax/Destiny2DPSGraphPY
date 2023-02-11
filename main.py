@@ -319,13 +319,13 @@ for weapon in weaponData['weapons']:
     elif 'perks' and 'enhanced_perks' and 'buffs' and 'well_locks' in weapon:
         plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], weapon['perks'], weapon['enhanced_perks'], ammo_type, weapon['buffs'], weapon['well_locks'])
     elif 'perks' and 'enhanced_perks' and 'buffs' in weapon:
-        plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], weapon['perks'], weapon['enhanced_perks'], weapon['ammo_type'], weapon['buffs'], well_locks)
+        plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], weapon['perks'], weapon['enhanced_perks'], ammo_type, weapon['buffs'], well_locks)
     elif 'perks' and 'enhanced_perks' in weapon:
-        plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], weapon['perks'], weapon['enhanced_perks'], weapon['ammo_type'], buffs, well_locks)
+        plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], weapon['perks'], weapon['enhanced_perks'], ammo_type, buffs, well_locks)
     elif 'perks' in weapon:
-        plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], weapon['perks'], enhanced_perks, weapon['ammo_type'], buffs, well_locks)
+        plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], weapon['perks'], enhanced_perks, ammo_type, buffs, well_locks)
     else:
-        plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], perks, enhanced_perks, weapon['ammo_type'], buffs, well_locks)
+        plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], perks, enhanced_perks, ammo_type, buffs, well_locks)
 # Add a legend with all labels
 plt.legend(legend_labels)
 
