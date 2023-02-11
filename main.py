@@ -49,7 +49,7 @@ if args.input_mode == "cli":
             teehee = 0
             perk = 0
             weapon["enhanced_perks"] = bool(int(input("Assume all perks are enhanced? (1 - true, 0 - false): ")))
-            weapon["weapon_class"] = int(input("Weapon Ammo Type (1 - Primary, 2 - Special, 3 - Heavy): "))
+            weapon["ammo_type"] = int(input("Weapon Ammo Type (1 - Primary, 2 - Special, 3 - Heavy): "))
             print("Enter a perk from the following list to add:\n1) Triple Tap\n2) Fourth Time's\n3) Veist Stinger\n4) Clown Cartidge\n5) Overflow\n6) Rapid Hit\n7) Vorpal Weapon\n8) Focused Fury\n9) High Impact Reserves\n10) Firing Line\n11) Explosive Light\n12) Cascade Point\n13) Explosive Payload\nEnter -1 to Stop\n")
             while(perk!=-1):
                 teehee += 1
@@ -72,10 +72,12 @@ if args.input_mode == "cli":
                 buff = int(input("input: "))
                 if ((buff!=-1) and ((buff>=1) and (buff<=4))):
                     buffs.append(buff)
+                    if buff == 1:
+                        weapon["well_locks"] = int(input("Enter the number of Wells: "))
             weapon["buffs"] = buffs
 
-        if len(perks) == 31:
-            weapon["well_locks"] = int(input("Enter the number of Wells: "))
+        #if len(buffs) == 31:
+        #    weapon["well_locks"] = int(input("Enter the number of Wells: "))
 
         # Add weapon to list
         weapons.append(weapon)
@@ -112,7 +114,7 @@ for i in range(data_points):
 # Initialize list to store legend labels
 legend_labels = []
 
-def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, ammo_reserve, legend_label, delay_first_shot, add_perks, perks, enhanced_perks, ammo_type, well_locks):
+def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, ammo_reserve, legend_label, delay_first_shot, add_perks, perks, enhanced_perks, ammo_type, buffs, well_locks):
     # Initialize t_dmg list
     t_dmg = []
     roundingcoeff = len(str(x_increments).split(".")[1])
@@ -207,14 +209,24 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
                 EP_On = True
             elif number == 14:
                 F_On = True
-            elif number == 31: #skip numbers for the sake of categories (mods and player buffs)
+            #elif number == 31: #skip numbers for the sake of categories (mods and player buffs)
+            #    Well_On = True
+        z = 0
+        number = 0
+        for z in range(len(buffs)):
+            number = perks[z]
+            if number == 1:
                 Well_On = True
-
+            elif number == 2:
+                Ward_On = True
+            elif number == 3:
+                Shadow_On = True
+            elif number == 4:
+                Radiant_On = True
 
 
     # Calculate total damage over time
     for i in range(data_points):
-
         #perks
         shot_dmg_output = damage_per_shot
         fire_delay = round(60/fire_rate, roundingcoeff)
@@ -297,12 +309,23 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
 
 
 for weapon in weaponData['weapons']:
-    if 'perks' in weapon:
-        plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], weapon['perks'], weapon['enhanced_perks'], weapon['ammo_type'], weapon['well_locks'])
+    perks = []
+    well_locks = []
+    buffs = []
+    enhanced_perks = []
+    ammo_type = []
+    if 'perks' and 'enhanced_perks' and 'ammo_type' and 'buffs' and 'well_locks' in weapon:
+        plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], weapon['perks'], weapon['enhanced_perks'], weapon['ammo_type'], weapon['buffs'], weapon['well_locks'])
+    elif 'perks' and 'enhanced_perks' and 'buffs' and 'well_locks' in weapon:
+        plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], weapon['perks'], weapon['enhanced_perks'], ammo_type, weapon['buffs'], weapon['well_locks'])
+    elif 'perks' and 'enhanced_perks' and 'buffs' in weapon:
+        plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], weapon['perks'], weapon['enhanced_perks'], weapon['ammo_type'], weapon['buffs'], well_locks)
+    elif 'perks' and 'enhanced_perks' in weapon:
+        plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], weapon['perks'], weapon['enhanced_perks'], weapon['ammo_type'], buffs, well_locks)
+    elif 'perks' in weapon:
+        plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], weapon['perks'], enhanced_perks, weapon['ammo_type'], buffs, well_locks)
     else:
-        perks = []
-        plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], perks)
-
+        plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], perks, enhanced_perks, weapon['ammo_type'], buffs, well_locks)
 # Add a legend with all labels
 plt.legend(legend_labels)
 
