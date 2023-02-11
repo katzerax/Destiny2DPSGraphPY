@@ -42,21 +42,40 @@ if args.input_mode == "cli":
         weapon["damage_per_shot"] = float(input("Enter damage per shot: "))
         weapon["magazine_capacity"] = int(input("Enter magazine capacity: "))
         weapon["ammo_reserve"] = int(input("Enter ammo reserve: "))
-        weapon["delay_first_shot"] = bool(int(input("Enter whether to delay the first shot (1 - true, 0 - false): ")))
-        weapon["add_perks"] = bool(int(input("Enter whether to apply perks (1 - true, 0 - false): ")))
-        
+        weapon["delay_first_shot"] = bool(int(input("Is this a LFR or Fusion Rifle? (1 - true, 0 - false): ")))
+        weapon["add_perks"] = bool(int(input("Apply perks to weapon? (1 - true, 0 - false): ")))
+
         if weapon["add_perks"] == True:
+            teehee = 0
+            perk = 0
             weapon["enhanced_perks"] = bool(int(input("Assume all perks are enhanced? (1 - true, 0 - false): ")))
             weapon["weapon_class"] = int(input("Weapon Ammo Type (1 - Primary, 2 - Special, 3 - Heavy): "))
             print("Enter a perk from the following list to add:\n1) Triple Tap\n2) Fourth Time's\n3) Veist Stinger\n4) Clown Cartidge\n5) Overflow\n6) Rapid Hit\n7) Vorpal Weapon\n8) Focused Fury\n9) High Impact Reserves\n10) Firing Line\n11) Explosive Light\n12) Cascade Point\n13) Explosive Payload\nEnter -1 to Stop\n")
-            teehee = 0
             while(perk!=-1):
                 teehee += 1
-                [print("Perk", teehee)]
+                print("Perk", teehee)
                 perk = int(input("input: "))
                 if((perk!=-1) and ((perk>=1) and (perk<=13))): #change upper bound with new perks
                     perks.append(perk)
             weapon["perks"] = perks
+        
+        weapon["abilities_and_mods"] = bool(int(input("Adding buffs, mods, or abilities? (1 - true, 0 - false): ")))
+
+        if weapon["abilities_and_mods"] == True:
+            teehee = 0
+            buff = 0
+            buffs = []
+            print("\n\nSelect from the following:\n1) Well of Radiance\n2) Ward of Dawn\n3) Shadowshot\n4) Radiant\n\nEnter -1 to Stop\n")
+            while(buff!=-1):
+                teehee += 1
+                print("Buff/Modifier", teehee)
+                buff = int(input("input: "))
+                if ((buff!=-1) and ((buff>=1) and (buff<=4))):
+                    buffs.append(buff)
+            weapon["buffs"] = buffs
+
+        if len(perks) == 31:
+            weapon["well_locks"] = int(input("Enter the number of Wells: "))
 
         # Add weapon to list
         weapons.append(weapon)
@@ -93,7 +112,7 @@ for i in range(data_points):
 # Initialize list to store legend labels
 legend_labels = []
 
-def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, ammo_reserve, legend_label, delay_first_shot, add_perks, perks, enhanced_perks, weapon_class):
+def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, ammo_reserve, legend_label, delay_first_shot, add_perks, perks, enhanced_perks, ammo_type, well_locks):
     # Initialize t_dmg list
     t_dmg = []
     roundingcoeff = len(str(x_increments).split(".")[1])
@@ -133,6 +152,10 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
     #12 - Cascade Point
     cascade_fr = 0
 
+    #31 - Well of Radiance
+    well_locks -= -1
+    well_timer = 0
+
     #it was sobbing that i didnt declare ones that were not flagged as true
     TT_On = False
     FTTC_On = False
@@ -147,6 +170,8 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
     EL_On = False
     CasP_On = False
     EP_On = False
+    F_On = False
+    Well_On = False
 
     #debug
     stale_value = 0
@@ -180,6 +205,11 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
                 CasP_On = True
             elif number == 13:
                 EP_On = True
+            elif number == 14:
+                F_On = True
+            elif number == 31: #skip numbers for the sake of categories (mods and player buffs)
+                Well_On = True
+
 
 
     # Calculate total damage over time
@@ -203,7 +233,7 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
             if shots_left_mag == 0:
                 output_reload_time = RapidHit(output_reload_time,rh_stacks,shots_fired,roundingcoeff)
         if VW_On: #7
-            shot_dmg_output = VorpalWeapon(weapon_class,shot_dmg_output)
+            shot_dmg_output = VorpalWeapon(ammo_type,shot_dmg_output)
         if FF_On: #8
             shot_dmg_output, FFActive, ff_time_check, shots_fired_ff = FocusedFury(FFActive,shots_fired_ff,magazine_capacity,time_elapsed,shot_dmg_output,ff_time_check)
         if HIR_On: #9
@@ -218,6 +248,10 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
             fire_delay = CascadePoint(fire_delay,roundingcoeff,fire_rate,cascade_fr)
         if EP_On: #13
             shot_dmg_output = ExplosivePayload(shot_dmg_output)
+
+        #buffs
+        if Well_On: #30
+            shot_dmg_output, well_locks, well_timer = WellofRadiance(well_locks,well_timer,time_elapsed,shot_dmg_output)
 
         #debug on seeing how the damage changes
         #if weapon['name'] == ('all'):
@@ -264,7 +298,7 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
 
 for weapon in weaponData['weapons']:
     if 'perks' in weapon:
-        plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], weapon['perks'], weapon['enhanced_perks'], weapon['weapon_class'])
+        plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], weapon['perks'], weapon['enhanced_perks'], weapon['ammo_type'], weapon['well_locks'])
     else:
         perks = []
         plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], perks)

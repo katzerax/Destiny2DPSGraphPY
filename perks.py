@@ -60,7 +60,7 @@ def ClownCartridge(magazine_capacity, shots_left_mag, clown_check, reload_count)
             shots_left_mag = math.ceil(magazine_capacity * 1.45)
     return clown_check, shots_left_mag
 
-def Overflow(shots_left_mag,of_check,delay_first_shot,veist_overflow_cross,magazine_capacity): #lol like stack
+def Overflow(shots_left_mag,of_check,delay_first_shot,veist_overflow_cross,magazine_capacity): #instantly reloads & doubles magazine on ammo pickup (reliably is active for first magazine of dps)
     if of_check == 0:
         if delay_first_shot:
             shots_left_mag = math.ceil(shots_left_mag * 2)
@@ -73,29 +73,29 @@ def Overflow(shots_left_mag,of_check,delay_first_shot,veist_overflow_cross,magaz
             #veist_overflow_cross = 1 #i hate exceptions... this is not working bc if veist procs too often anyways it does not matter
     return shots_left_mag, of_check, veist_overflow_cross #there is a way to fix this using shots_fired, or similar variable to track when OF should end.
 
-def RapidHit(output_reload_time,rh_stacks,shots_fired,roundingcoeff):
+def RapidHit(output_reload_time,rh_stacks,shots_fired,roundingcoeff): #scales reload speed incrementally up to 5 stacks per critical strike, 
     rh_stacks = math.floor(shots_fired)
     if rh_stacks >= 5:
         rh_stacks = 5
-    if rh_stacks == 1:
+    if rh_stacks == 1: #more studying needs to be put into how reload stat affects reload speed typically
         output_reload_time = round(output_reload_time / (1.1), roundingcoeff)
     elif rh_stacks == 2:
-        output_reload_time = round(output_reload_time / (1.2), roundingcoeff)
+        output_reload_time = round(output_reload_time / (1.13), roundingcoeff)
     elif rh_stacks == 3:
-        output_reload_time = round(output_reload_time / (1.3), roundingcoeff)
+        output_reload_time = round(output_reload_time / (1.15), roundingcoeff)
     elif rh_stacks == 4:
-        output_reload_time = round(output_reload_time / (1.4), roundingcoeff)
+        output_reload_time = round(output_reload_time / (1.17), roundingcoeff) #estimating these for now, not really accurate at all especially for most weapons
     elif rh_stacks == 5:
-        output_reload_time = round(output_reload_time / (1.5), roundingcoeff)
+        output_reload_time = round(output_reload_time / (1.2), roundingcoeff) #actual values: scale * 0.925, stat +60, others see https://www.bungie.net/en/Explore/Detail/News/49126
     return output_reload_time
 
 #damage perks
-def VorpalWeapon(weapon_class,shot_dmg_output): #check before damage calculations as it is always active, passive bonus
-    if weapon_class == 1: #primary ammo
+def VorpalWeapon(ammo_type,shot_dmg_output): #extra damage against boss enemies, 20% for primaries, 15% for special, 10% for heavies
+    if ammo_type == 1: #primary ammo
         shot_dmg_output = shot_dmg_output * 1.2
-    elif weapon_class == 2: #special ammo
+    elif ammo_type == 2: #special ammo
         shot_dmg_output = shot_dmg_output * 1.15
-    elif weapon_class == 3: #heavy ammo
+    elif ammo_type == 3: #heavy ammo
         shot_dmg_output = shot_dmg_output * 1.1
     return shot_dmg_output
 
@@ -106,9 +106,9 @@ def FocusedFury(FFActive,shots_fired_ff,magazine_capacity,time_elapsed,shot_dmg_
             FFActive = 1
             ff_time_check = time_elapsed
     else:
-        shot_dmg_output = shot_dmg_output * 1.2
-        if (time_elapsed - ff_time_check) >= 10: 
-            shot_dmg_output = shot_dmg_output * (1/1.2)
+        if (time_elapsed - ff_time_check) < 10: 
+            shot_dmg_output = shot_dmg_output * 1.2
+        elif (time_elapsed - ff_time_check) >= 10: 
             shots_fired_ff = 0
             FFActive = 0
     return shot_dmg_output, FFActive, ff_time_check, shots_fired_ff
@@ -152,5 +152,18 @@ def GHornBonus(): #rockets only but whatever
     print("OOPS")
 
 #player buffs - armor mods will go here
-def WellofRadiance():
-    print("REMOVE ME LOL")
+def WellofRadiance(well_locks,well_timer,time_elapsed,shot_dmg_output): #dmg booster ring super, lasts 25 seconds
+    if well_locks >= 1:
+        shot_dmg_output *= 1.25
+        if (time_elapsed - well_timer) >= 25:
+            well_timer = time_elapsed
+            well_locks -= 1
+    if well_locks == 0:
+        if (time_elapsed - well_timer) < 25:
+            shot_dmg_output *= 1.25
+    return shot_dmg_output, well_locks, well_timer
+
+
+
+
+
