@@ -1,4 +1,5 @@
 import sys
+import os
 import random
 import math
 from perks import *
@@ -30,12 +31,34 @@ if args.input_mode == "cli":
     weapons = []
     perk = 0
     perks = []
+    # Open the JSON file
+    if os.path.exists('presets.json'):
+        with open('presets.json', 'r') as f:
+        # Load the contents of the file as a Python object
+            use_presets = -1
+            hmcount = 0
+            presets = json.load(f)
+            while use_presets!=1 and use_presets!=0:
+                use_presets = int(input("Do you want to choose from a list of popular/exotic weapons? (1 - true, 0 - false): "))
+                if use_presets == 1:
+                    for weapon in presets['weapons']:
+                        hmcount += 1
+                        #the below print statement hasnt gotten a good method for converting the perk indexes to their actual names. might do later if I care to.
+                        print(str(hmcount) + ")", weapon['name'], "fr:", weapon['fire_rate'], "rt:", weapon['reload_time'], "dmg:", weapon['damage_per_shot'], "mc:", weapon['magazine_capacity'], "amres:", weapon['ammo_reserve'], "dfs:", weapon['delay_first_shot'], "perks:", weapon['perks'], "\n")
+                    choose = int(input("Number of selected weapon: "))
+
+                    selected_weapon = presets['weapons'][choose - 1] # <- suggested by chatgpt, not 100% sure if works
+                    weapons.append(selected_weapon)
+                    #probably some code here to ask if the user wants to manually enter data now? although 
+
     # Loop to input weapon data
     while True:
         # Input weapon data
+
         perks = []
         perk = 0
         weapon = {}
+
         weapon["name"] = input("Enter weapon name: ")
         weapon["fire_rate"] = float(input("Enter Rounds Per Minute: "))
         weapon["reload_time"] = float(input("Enter reload time: "))
@@ -76,17 +99,18 @@ if args.input_mode == "cli":
                         weapon["well_locks"] = int(input("Enter the number of Wells: "))
             weapon["buffs"] = buffs
 
-        #if len(buffs) == 31:
-        #    weapon["well_locks"] = int(input("Enter the number of Wells: "))
-
         # Add weapon to list
         weapons.append(weapon)
-        
+        print("Weapon added to the list.")
+
+
         # Check if user wants to add more weapons
         add_more = input("Add more weapons? (y/n) ")
         if add_more.lower() != "y":
             break
     
+    #come back and write this dumby 
+
     # Write weapons data to JSON file
     with open(args.read_file, "w") as f:
         json.dump({"weapons": weapons}, f)
@@ -319,13 +343,13 @@ for weapon in weaponData['weapons']:
     elif 'perks' and 'enhanced_perks' and 'buffs' and 'well_locks' in weapon:
         plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], weapon['perks'], weapon['enhanced_perks'], ammo_type, weapon['buffs'], weapon['well_locks'])
     elif 'perks' and 'enhanced_perks' and 'buffs' in weapon:
-        plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], weapon['perks'], weapon['enhanced_perks'], ammo_type, weapon['buffs'], well_locks)
+        plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], weapon['perks'], weapon['enhanced_perks'], weapon['ammo_type'], weapon['buffs'], well_locks)
     elif 'perks' and 'enhanced_perks' in weapon:
-        plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], weapon['perks'], weapon['enhanced_perks'], ammo_type, buffs, well_locks)
+        plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], weapon['perks'], weapon['enhanced_perks'], weapon['ammo_type'], buffs, well_locks)
     elif 'perks' in weapon:
-        plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], weapon['perks'], enhanced_perks, ammo_type, buffs, well_locks)
+        plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], weapon['perks'], enhanced_perks, weapon['ammo_type'], buffs, well_locks)
     else:
-        plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], perks, enhanced_perks, ammo_type, buffs, well_locks)
+        plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['name'], weapon['delay_first_shot'], weapon['add_perks'], perks, enhanced_perks, weapon['ammo_type'], buffs, well_locks)
 # Add a legend with all labels
 plt.legend(legend_labels)
 
