@@ -1,0 +1,1 @@
+{"weapons": [{"name": "all", "fire_rate": 20.0, "reload_time": 2.0, "damage_per_shot": 30000.0, "magazine_capacity": 2, "ammo_reserve": 20, "delay_first_shot": true, "add_perks": true, "enhanced_perks": true, "ammo_type": 1, "perks": [1, 2, 3, 4, 5, 6, 8, 9], "abilities_and_mods": true, "well_locks": 20, "buffs": [1, 2, 3, 4]}]}
