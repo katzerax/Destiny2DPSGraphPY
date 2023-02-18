@@ -30,13 +30,14 @@ if args.input_mode == "cli":
     # Initialize list to store weapon dictionaries
     weapons = []
     perk = 0
+    hmcount = 0
     perks = []
+    manual_entry = True
     # Open the JSON file
     if os.path.exists('presets.json'):
         with open('presets.json', 'r') as f:
         # Load the contents of the file as a Python object
             use_presets = -1
-            hmcount = 0
             presets = json.load(f)
             while use_presets!=1 and use_presets!=0:
                 use_presets = int(input("Do you want to choose from a list of popular/exotic weapons? (1 - true, 0 - false): "))
@@ -45,14 +46,23 @@ if args.input_mode == "cli":
                         hmcount += 1
                         #the below print statement hasnt gotten a good method for converting the perk indexes to their actual names. might do later if I care to.
                         print(str(hmcount) + ")", weapon['name'], "fr:", weapon['fire_rate'], "rt:", weapon['reload_time'], "dmg:", weapon['damage_per_shot'], "mc:", weapon['magazine_capacity'], "amres:", weapon['ammo_reserve'], "dfs:", weapon['delay_first_shot'], "perks:", weapon['perks'], "\n")
-                    choose = int(input("Number of selected weapon: "))
-
-                    selected_weapon = presets['weapons'][choose - 1] # <- suggested by chatgpt, not 100% sure if works
-                    weapons.append(selected_weapon)
-                    #probably some code here to ask if the user wants to manually enter data now? although 
-
+                    
+                    weapon_choice = 0
+                    while weapon_choice != -1:
+                        weapon_choice = int(input("Number of selected weapon (-1 to stop): "))
+                        if weapon_choice == -1:
+                            break
+                        if((weapon_choice > hmcount) or (weapon_choice==0) or (weapon_choice<-1)):
+                            print("Please enter a number in the range 1 -", str(hmcount))
+                            weapon_choice = int(input("Number of selected weapon (-1 to stop): "))
+                        else:
+                            selected_weapon = presets['weapons'][weapon_choice - 1]
+                            weapons.append(selected_weapon)
+                            print("Choice added.")
+                    manual_entry = bool(int(input("Do you still intend to compare these weapons with manually added weapons? (1 - true, 0 - false): ")))
+    
     # Loop to input weapon data
-    while True:
+    while manual_entry == True:
         # Input weapon data
 
         perks = []
