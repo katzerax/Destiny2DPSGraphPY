@@ -276,7 +276,7 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
         if FTTC_On: #2
             shots_left_mag, shots_left_reserve, fttc_delay, fttc_delay_check = FTTC(shots_fired,shots_left_mag,shots_left_reserve,fttc_delay,fttc_delay_check)
         if VS_On: #3
-            shots_left_mag, veist_check = VeistStinger(shots_fired,shots_left_mag,magazine_capacity,veist_overflow_cross,veist_check)
+            shots_left_mag, veist_check = VeistStinger(shots_fired,shots_left_mag,magazine_capacity,veist_overflow_cross,veist_check,OF_On)
         if CC_On: #4
             clown_check, shots_left_mag = ClownCartridge(magazine_capacity, shots_left_mag, clown_check, reload_count)
         if OF_On: #5
@@ -287,7 +287,10 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
         if VW_On: #7
             shot_dmg_output = VorpalWeapon(ammo_type,shot_dmg_output)
         if FF_On: #8
-            shot_dmg_output, FFActive, ff_time_check, shots_fired_ff = FocusedFury(FFActive,shots_fired_ff,magazine_capacity,time_elapsed,shot_dmg_output,ff_time_check)
+            if enhanced_perks == 1:
+                shot_dmg_output, FFActive, ff_time_check, shots_fired_ff = FFEnhanced(FFActive,shots_fired_ff,magazine_capacity,time_elapsed,shot_dmg_output,ff_time_check)
+            else:
+                shot_dmg_output, FFActive, ff_time_check, shots_fired_ff = FocusedFury(FFActive,shots_fired_ff,magazine_capacity,time_elapsed,shot_dmg_output,ff_time_check)
         if HIR_On: #9
             if enhanced_perks == 1:
                 shot_dmg_output = HIREnhanced(shots_left_mag,magazine_capacity,shot_dmg_output)
@@ -300,8 +303,13 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
             fire_delay = CascadePoint(fire_delay,roundingcoeff,fire_rate,cascade_fr)
         if EP_On: #13
             shot_dmg_output = ExplosivePayload(shot_dmg_output)
+        if F_On: #14
+            shot_dmg_output, output_reload_time = Frenzy(shot_dmg_output,output_reload_time)
         if BNS_ON: #15
-            shot_dmg_output, shots_fired_bns, bait_proc, bait_timer = BaitnSwitch(shots_fired_bns,shot_dmg_output,bait_timer,bait_proc,time_elapsed)
+            if enhanced_perks == 1:
+                shot_dmg_output, shots_fired_bns, bait_proc, bait_timer = BNSEnhanced(shots_fired_bns,shot_dmg_output,bait_timer,bait_proc,time_elapsed)
+            else:
+                shot_dmg_output, shots_fired_bns, bait_proc, bait_timer = BaitnSwitch(shots_fired_bns,shot_dmg_output,bait_timer,bait_proc,time_elapsed)
 
         #buffs
         if Well_On: #1
