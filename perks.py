@@ -130,7 +130,7 @@ def HIREnhanced(shots_left_mag,magazine_capacity,shot_dmg_output): #first of man
     return shot_dmg_output
 
 def FiringLine(shot_dmg_output): #flat bonus 20%, for all cases, permanently, so easy
-    shot_dmg_output = shot_dmg_output * 1.2
+    shot_dmg_output *= 1.2
     return shot_dmg_output
 
 def ExplosiveLight(shot_dmg_output): #explosives only but whatever
@@ -142,11 +142,25 @@ def CascadePoint(fire_delay,roundingcoeff,fire_rate,cascade_fr):
     return fire_delay
 
 def ExplosivePayload(shot_dmg_output): #similar to firing line hehe
-    shot_dmg_output = shot_dmg_output * 1.14
+    shot_dmg_output *= 1.14
     return shot_dmg_output
 
 def Frenzy():
     print("OOPS")
+
+def BaitnSwitch(shots_fired_bns,shot_dmg_output,bait_timer,bait_proc,time_elapsed): #dealing damage with all 3 weapons gives a 35% bonus for 10 seconds, 11 for enhanced
+    if bait_proc == 0: #re-procing might be an editable value
+        if shots_fired_bns >= 1: #assuming that pre damage is done (i.e. shooting other weapons before damage phase)
+                shot_dmg_output *= 1.35 
+                bait_proc = 1
+                bait_timer = time_elapsed
+    if bait_proc == 1:
+        if (time_elapsed - bait_timer) <= 10:
+            shot_dmg_output *= 1.35
+        elif (time_elapsed - bait_timer) > 10:
+            bait_proc = 0
+            shots_fired_bns = 0
+    return shot_dmg_output, shots_fired_bns, bait_proc, bait_timer
 
 def GHornBonus(): #rockets only but whatever
     print("OOPS")

@@ -173,7 +173,7 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
     fttc_delay_check = 0
     #3 - Veist Stinger
     veist_overflow_cross = 0
-    veist_check = 0 #arbitrary number that isnt 0 so the logic works, there is probably better way like assuming if shots is 0 or something idk
+    veist_check = 0
     #4 - Clown Cartridge
     clown_check = 0
     reload_count = 0
@@ -187,9 +187,14 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
     shots_fired_ff = 0
     #12 - Cascade Point
     cascade_fr = 0
+    #15 - Bait 'n Switch
+    bait_timer = 0
+    bait_proc = 0
+    shots_fired_bns = 0
 
-    #31 - Well of Radiance
-    well_locks -= -1
+    #buff variables (crying)
+    #1 - Well of Radiance
+    well_locks = 0
     well_timer = 0
 
     #it was sobbing that i didnt declare ones that were not flagged as true
@@ -207,6 +212,7 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
     CasP_On = False
     EP_On = False
     F_On = False
+    BNS_ON = False
     Well_On = False
 
     #debug
@@ -243,8 +249,8 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
                 EP_On = True
             elif number == 14:
                 F_On = True
-            #elif number == 31: #skip numbers for the sake of categories (mods and player buffs)
-            #    Well_On = True
+            elif number == 15:
+                BNS_ON = True
         z = 0
         number = 0
         for z in range(len(buffs)):
@@ -294,9 +300,11 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
             fire_delay = CascadePoint(fire_delay,roundingcoeff,fire_rate,cascade_fr)
         if EP_On: #13
             shot_dmg_output = ExplosivePayload(shot_dmg_output)
+        if BNS_ON: #15
+            shot_dmg_output, shots_fired_bns, bait_proc, bait_timer = BaitnSwitch(shots_fired_bns,shot_dmg_output,bait_timer,bait_proc,time_elapsed)
 
         #buffs
-        if Well_On: #30
+        if Well_On: #1
             shot_dmg_output, well_locks, well_timer = WellofRadiance(well_locks,well_timer,time_elapsed,shot_dmg_output)
 
         #debug on seeing how the damage changes
@@ -321,6 +329,7 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
             next_fire = round(next_fire, roundingcoeff) #rounding because i love python
             shots_fired += 1
             shots_fired_ff += 1 #for focused fury specifically :P
+            shots_fired_bns += 1 #for bait n switch specifically!!!!!!!!!!!!!!!!!!!! so fun
             shots_left_mag -= 1
             shots_left_reserve -= 1
         time_elapsed += x_increments
