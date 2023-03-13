@@ -272,5 +272,8 @@ for weapon in weaponData['weapons']:
 # Add a legend with all labels
 plt.legend(legend_labels)
 
+# Add a graph title
+plt.title("DPS Over Time")
+
 # Show the plot
 plt.show()
