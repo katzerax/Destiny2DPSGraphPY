@@ -51,6 +51,7 @@ python main.py -d n -rf yippee.json
 2. roxy is currently working on functions for weapon perks and ensuring all interactions work as well as adding to the perk pool. roxy (me, i) will not be adding some perks like: field prep, elemental capacitor, etc. that basically can be accounted for by simply including the baseline stats beforehand (field prep being reload speed and reserves, elemental capacitor possibly being reload speed)
 3. burst type weapons (fuck (this will require understanding how RoF affects the time between bursts but like also delay between burst fires????)) i basically have 0 clue still how i am going to do this, both bullet based weapons and charge based weapons (looking at you Stormchaser, n Fire and Forget)
 4. cleaning up comments after everything?
+5. acknowledge reddit website post https://www.reddit.com/r/DestinyTheGame/comments/11d2f0g/i_created_a_new_dps_testing_tool/
 
 ## Example graphs
 ![Figure_1](https://user-images.githubusercontent.com/65287118/210054539-a0629674-e846-43ed-8e1f-808482d20a66.png)
