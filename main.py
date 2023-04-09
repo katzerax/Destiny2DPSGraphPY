@@ -83,12 +83,12 @@ if args.input_mode == "cli":
             perk = 0
             weapon["enhanced_perks"] = bool(int(input("Assume all perks are enhanced? (1 - true, 0 - false): ")))
             weapon["ammo_type"] = int(input("Weapon Ammo Type (1 - Primary, 2 - Special, 3 - Heavy): "))
-            print("Enter a perk from the following list to add:\n1) Triple Tap\n2) Fourth Time's\n3) Veist Stinger\n4) Clown Cartidge\n5) Overflow\n6) Rapid Hit\n7) Vorpal Weapon\n8) Focused Fury\n9) High Impact Reserves\n10) Firing Line\n11) Explosive Light\n12) Cascade Point\n13) Explosive Payload\nEnter -1 to Stop\n")
+            print("Enter a perk from the following list to add:\n1) Triple Tap\n2) Fourth Time's\n3) Veist Stinger\n4) Clown Cartidge\n5) Overflow\n6) Rapid Hit\n7) Vorpal Weapon\n8) Focused Fury\n9) High Impact Reserves\n10) Firing Line\n11) Explosive Light\n12) Cascade Point\n13) Explosive Payload\n15) Bait 'n Switch\nEnter -1 to Stop\n")
             while(perk!=-1):
                 teehee += 1
                 print("Perk", teehee)
                 perk = int(input("input: "))
-                if((perk!=-1) and ((perk>=1) and (perk<=13))): #change upper bound with new perks
+                if((perk!=-1) and ((perk>=1) and (perk<=15))): #change upper bound with new perks
                     perks.append(perk)
             weapon["perks"] = perks
         
@@ -190,6 +190,7 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
     #15 - Bait 'n Switch
     bait_timer = 0
     bait_proc = 0
+    bait_lockout = 0
     shots_fired_bns = 0
 
     #buff variables (crying)
@@ -307,7 +308,7 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
             shot_dmg_output, output_reload_time = Frenzy(shot_dmg_output,output_reload_time)
         if BNS_ON: #15
             if enhanced_perks == 1:
-                shot_dmg_output, shots_fired_bns, bait_proc, bait_timer = BNSEnhanced(shots_fired_bns,shot_dmg_output,bait_timer,bait_proc,time_elapsed)
+                shot_dmg_output, shots_fired_bns, bait_proc, bait_timer, bait_lockout = BNSEnhanced(shots_fired_bns,shot_dmg_output,bait_timer,bait_proc,time_elapsed,bait_lockout)
             else:
                 shot_dmg_output, shots_fired_bns, bait_proc, bait_timer = BaitnSwitch(shots_fired_bns,shot_dmg_output,bait_timer,bait_proc,time_elapsed)
 
@@ -316,10 +317,10 @@ def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, a
             shot_dmg_output, well_locks, well_timer = WellofRadiance(well_locks,well_timer,time_elapsed,shot_dmg_output)
 
         #debug on seeing how the damage changes
-        #if weapon['name'] == ('all'):
-            #if stale_value != shot_dmg_output:
-                #stale_value = shot_dmg_output
-                #print(weapon['name'], "dmg: ", shot_dmg_output, "time: ", time_elapsed)
+        if weapon['name'] == ('bns'):
+            if stale_value != shot_dmg_output:
+                stale_value = shot_dmg_output
+                print(weapon['name'], "dmg: ", shot_dmg_output, "time: ", time_elapsed, "%: ", (shot_dmg_output/damage_per_shot))
 
         #weapon firing
         if shots_left_reserve == 0: # reserve check

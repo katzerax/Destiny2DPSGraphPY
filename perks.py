@@ -168,7 +168,7 @@ def ExplosivePayload(shot_dmg_output): #similar to firing line hehe
 
 def Frenzy(shot_dmg_output,output_reload_time): #15% dmg and bonus 50 reload + handling after being in combat for 12 seconds
     shot_dmg_output *= 1.15 #assuming it just already is active since it already isnt really a dps perk :p
-    output_reload_time /= 1.4
+    output_reload_time /= 1.4 #should account for delay of activation i think
     return shot_dmg_output, output_reload_time
 
 def BaitnSwitch(shots_fired_bns,shot_dmg_output,bait_timer,bait_proc,time_elapsed): #dealing damage with all 3 weapons gives a 35% bonus for 10 seconds, 11 for enhanced
@@ -185,19 +185,24 @@ def BaitnSwitch(shots_fired_bns,shot_dmg_output,bait_timer,bait_proc,time_elapse
             shots_fired_bns = 0
     return shot_dmg_output, shots_fired_bns, bait_proc, bait_timer
 
-def BNSEnhanced(shots_fired_bns,shot_dmg_output,bait_timer,bait_proc,time_elapsed): #dealing damage with all 3 weapons gives a 35% bonus for 10 seconds, 11 for enhanced
+def BNSEnhanced(shots_fired_bns,shot_dmg_output,bait_timer,bait_proc,time_elapsed,bait_lockout): #dealing damage with all 3 weapons gives a 35% bonus for 10 seconds, 11 for enhanced
+    if bait_proc == 1:
+        if (time_elapsed - bait_timer) <= 11:
+            shot_dmg_output *= 1.35
+        elif (time_elapsed - bait_timer) > 11:
+            bait_proc = 2
+            shots_fired_bns = 0
+            bait_lockout = time_elapsed
     if bait_proc == 0: #re-procing might be an editable value
         if shots_fired_bns >= 1: #assuming that pre damage is done (i.e. shooting other weapons before damage phase)
                 shot_dmg_output *= 1.35 
                 bait_proc = 1
                 bait_timer = time_elapsed
-    if bait_proc == 1:
-        if (time_elapsed - bait_timer) <= 11:
-            shot_dmg_output *= 1.35
-        elif (time_elapsed - bait_timer) > 11:
-            bait_proc = 0
-            shots_fired_bns = 0
-    return shot_dmg_output, shots_fired_bns, bait_proc, bait_timer
+    if bait_proc == 2:
+        if (time_elapsed - bait_lockout) > 4.5: #this needs to be reviewed for a better system but
+            bait_proc = 0 #the 4.5 second lockout can be substituted for a handling combo adjustment
+
+    return shot_dmg_output, shots_fired_bns, bait_proc, bait_timer, bait_lockout
 
 def GHornBonus(): #rockets only but whatever
     print("OOPS")
