@@ -77,19 +77,19 @@ def import_csv_and_plot():
 
 # Function to calculate and plot the DPS over time
 def calculate_and_plot():
-    data_points = 45000 
+    data_points = 45000
     x_scale = 45
     y_scale = 300000
 
-    ax.set_xlim(0,x_scale)
-    ax.set_ylim(0,y_scale)
+    ax.set_xlim(0, x_scale)
+    ax.set_ylim(0, y_scale)
 
     x_increments = x_scale / data_points
     x = []
     for i in range(data_points):
         x.append(round(i * x_increments, 5))
 
-    def plot_dps_graph(fire_rate, reload_time, damage_per_shot, magazine_capacity, ammo_reserve, delay_first_shot):
+    def plot_dps_graph(ax, fire_rate, reload_time, damage_per_shot, magazine_capacity, ammo_reserve, delay_first_shot):
         t_dmg = []
         roundingcoeff = len(str(x_increments).split(".")[1])
         fire_delay = round(60/fire_rate, roundingcoeff)
@@ -132,11 +132,20 @@ def calculate_and_plot():
             if z != 0:
                 dps.append(t_dmg[z] / x[z])
         
-        plt.plot(x, dps)
+        ax.plot(x, dps)
 
-    plot_dps_graph(weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['delay_first_shot'])
-    
-    plt.show()
+    # Clear the existing plot on the axes
+    ax.clear()
+
+    # Call the plot_dps_graph function with the ax argument
+    plot_dps_graph(ax, weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['delay_first_shot'])
+
+    # Set the labels again after clearing the axes
+    ax.set_xlabel("Time (Seconds)")
+    ax.set_ylabel("Damage Per Second")
+
+    # Update the canvas to redraw the graph
+    canvas.draw()
     
 
 # Create the main application window
