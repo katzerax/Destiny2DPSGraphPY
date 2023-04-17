@@ -38,8 +38,12 @@ for i in range(data_points):
     #return x, x_increments, data_points, ax
 
 # Plotting
-def plot_dps(ax, x, dps):
+def plot_dps(ax, x, dps, x_scale, y_scale):
     ax.clear()
+    ax.set_xlim(0, x_scale)
+    ax.set_ylim(0, y_scale)
+    ax.set_xlabel("Time (Seconds)")
+    ax.set_ylabel("Damage Per Second")
     ax.plot(x, dps)
     #ax.set_xlabel("Time (Seconds)")
     #ax.set_ylabel("Damage Per Second")
@@ -55,7 +59,6 @@ def add_weapon():
     magazine_capacity = int(magazine_capacity_entry.get())
     ammo_reserve = int(ammo_reserve_entry.get())
     delay_first_shot = int(delay_first_shot_var.get())
-    #delay_first_shot = int(delay_first_shot)
     perk1 = perk1_var.get()
     perk2 = perk2_var.get()
     buff1 = buff1_var.get()
@@ -69,7 +72,7 @@ def add_weapon():
 
     #x, x_increments, data_points, ax = graphing_definitions()
     dps = calculate_dps(textweapon.fire_rate, textweapon.reload_time, textweapon.damage_per_shot, textweapon.magazine_capacity, textweapon.ammo_reserve, textweapon.delay_first_shot, x, x_increments, data_points)
-    plot_dps(ax, x, dps)
+    plot_dps(ax, x, dps, x_scale, y_scale)
 
 def debug_print():
     print("lol")
