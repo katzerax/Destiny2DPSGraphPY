@@ -5,42 +5,71 @@ import csv
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from calculations import *
 
 class weapon:
-    def __init__(self,fire_rate,reload_time,damage_per_shot,magazine_capacity,ammo_reserve,delay_first_shot):
+    def __init__(self,name,fire_rate,reload_time,damage_per_shot,magazine_capacity,ammo_reserve,delay_first_shot):
+        self.name = name
         self.fire_rate = fire_rate
         self.reload_time = reload_time
         self.damage_per_shot = damage_per_shot
         self.magazine_capacity = magazine_capacity
         self.ammo_reserve = ammo_reserve
         self.delay_first_shot = delay_first_shot
+    # Maybe we could do a def dps over time in the weapon class or sumn idk self.dps
+
+# Graph Definitions
+#def graphing_definitions():
+    #ax.clear()
+data_points = 45000
+x_scale = 45
+y_scale = 300000
+
+fig, ax = plt.subplots()
+ax.set_xlim(0, x_scale)
+ax.set_ylim(0, y_scale)
+ax.set_xlabel("Time (Seconds)")
+ax.set_ylabel("Damage Per Second")
+
+x_increments = x_scale / data_points
+x = []
+for i in range(data_points):
+    x.append(round(i * x_increments, 5))
+    #return x, x_increments, data_points, ax
+
+# Plotting
+def plot_dps(ax, x, dps):
+    ax.clear()
+    ax.plot(x, dps)
+    #ax.set_xlabel("Time (Seconds)")
+    #ax.set_ylabel("Damage Per Second")
+    canvas.draw()
+
 
 # Callback functions for buttons
 def add_weapon():
     weapon_name = weapon_name_entry.get()
-
     fire_rate = float(fire_rate_entry.get())
-
     reload_time = float(reload_time_entry.get())
-
     damage_per_shot = float(damage_per_shot_entry.get())
-
     magazine_capacity = int(magazine_capacity_entry.get())
-
     ammo_reserve = int(ammo_reserve_entry.get())
-
-    delay_first_shot = delay_first_shot_var.get()
-    delay_first_shot = int(delay_first_shot)
-
+    delay_first_shot = int(delay_first_shot_var.get())
+    #delay_first_shot = int(delay_first_shot)
     perk1 = perk1_var.get()
     perk2 = perk2_var.get()
-
     buff1 = buff1_var.get()
     buff2 = buff2_var.get()
     buff3 = buff3_var.get()
+    
+    textweapon = weapon(weapon_name, fire_rate, reload_time, damage_per_shot, magazine_capacity, ammo_reserve, delay_first_shot)
 
     #since the class is called weapon, i didnt want to name it weapon and it was being weird about setting the object to weapon name? idk
-    lol = weapon(fire_rate,reload_time,damage_per_shot,magazine_capacity,ammo_reserve,delay_first_shot)
+    #lol = weapon(fire_rate,reload_time,damage_per_shot,magazine_capacity,ammo_reserve,delay_first_shot)
+
+    #x, x_increments, data_points, ax = graphing_definitions()
+    dps = calculate_dps(textweapon.fire_rate, textweapon.reload_time, textweapon.damage_per_shot, textweapon.magazine_capacity, textweapon.ammo_reserve, textweapon.delay_first_shot, x, x_increments, data_points)
+    plot_dps(ax, x, dps)
 
 def debug_print():
     print("lol")
@@ -78,75 +107,7 @@ def import_csv_and_plot():
 
 # Function to calculate and plot the DPS over time
 def calculate_and_plot():
-    data_points = 45000
-    x_scale = 45
-    y_scale = 300000
-
-    ax.set_xlim(0, x_scale)
-    ax.set_ylim(0, y_scale)
-
-    x_increments = x_scale / data_points
-    x = []
-    for i in range(data_points):
-        x.append(round(i * x_increments, 5))
-
-    def plot_dps_graph(ax, fire_rate, reload_time, damage_per_shot, magazine_capacity, ammo_reserve, delay_first_shot):
-        t_dmg = []
-        roundingcoeff = len(str(x_increments).split(".")[1])
-        fire_delay = round(60/fire_rate, roundingcoeff)
-        next_fire = fire_delay
-        total_damage = 0 if delay_first_shot else damage_per_shot
-        time_elapsed = 0
-        shots_left_reserve = ammo_reserve if delay_first_shot else (ammo_reserve - 1)
-        shots_left_mag = magazine_capacity if delay_first_shot else (magazine_capacity - 1)
-        shots_fired = 0 if delay_first_shot else 1
-        shot_dmg_output = damage_per_shot
-        output_reload_time = round(reload_time, roundingcoeff)
-
-        for i in range(data_points):
-            shot_dmg_output = damage_per_shot
-            fire_delay = round(60/fire_rate, roundingcoeff)
-            output_reload_time = round(reload_time, roundingcoeff)
-
-            if shots_left_reserve == 0: # reserve check
-                total_damage = total_damage
-            elif shots_left_mag == 0: # reload
-                next_fire += output_reload_time
-                next_fire -= fire_delay if delay_first_shot == 0 else 0
-                next_fire = round(next_fire, roundingcoeff)
-                shots_fired = 0
-                shots_left_mag = magazine_capacity
-            elif time_elapsed == next_fire:
-                total_damage += shot_dmg_output
-                next_fire += fire_delay
-                next_fire = round(next_fire, roundingcoeff)
-                shots_fired += 1
-                shots_left_mag -= 1
-                shots_left_reserve -= 1
-            time_elapsed += x_increments
-            time_elapsed = round(time_elapsed, roundingcoeff)
-
-            t_dmg.append(total_damage)
-            
-        dps = [0]
-        for z in range(data_points):
-            if z != 0:
-                dps.append(t_dmg[z] / x[z])
-        
-        ax.plot(x, dps)
-
-    # Clear the existing plot on the axes
-    ax.clear()
-
-    # Call the plot_dps_graph function with the ax argument
-    plot_dps_graph(ax, lol.fire_rate, lol.reload_time, lol.damage_per_shot, lol.magazine_capacity, lol.ammo_reserve, lol.delay_first_shot)
-
-    # Set the labels again after clearing the axes
-    ax.set_xlabel("Time (Seconds)")
-    ax.set_ylabel("Damage Per Second")
-
-    # Update the canvas to redraw the graph
-    canvas.draw()
+    pass
     
 
 # Create the main application window
@@ -159,9 +120,8 @@ app.grid_columnconfigure(1, weight=1)
 app.grid_rowconfigure(0, weight=1)
 
 # Create the Matplotlib figure and axis
-fig, ax = plt.subplots(figsize=(6, 4))
-ax.set_xlabel("Time (Seconds)")
-ax.set_ylabel("Damage Per Second")
+#fig, ax = plt.subplots(figsize=(6, 4))
+
 
 # Create a canvas to display the Matplotlib figure in the Tkinter GUI
 canvas = FigureCanvasTkAgg(fig, master=app)
