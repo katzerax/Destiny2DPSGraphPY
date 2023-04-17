@@ -6,33 +6,31 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-weapon = {}
+class weapon:
+    def __init__(self,fire_rate,reload_time,damage_per_shot,magazine_capacity,ammo_reserve,delay_first_shot):
+        self.fire_rate = fire_rate
+        self.reload_time = reload_time
+        self.damage_per_shot = damage_per_shot
+        self.magazine_capacity = magazine_capacity
+        self.ammo_reserve = ammo_reserve
+        self.delay_first_shot = delay_first_shot
 
 # Callback functions for buttons
 def add_weapon():
-    #weapon_name = weapon_name_entry.get()
-    #weapon.append(weapon_name)
+    weapon_name = weapon_name_entry.get()
 
     fire_rate = float(fire_rate_entry.get())
-    weapon["fire_rate"] = fire_rate
 
     reload_time = float(reload_time_entry.get())
-    weapon["reload_time"] = reload_time
 
     damage_per_shot = float(damage_per_shot_entry.get())
-    weapon["damage_per_shot"] = damage_per_shot
 
     magazine_capacity = int(magazine_capacity_entry.get())
-    weapon["magazine_capacity"] = magazine_capacity
 
     ammo_reserve = int(ammo_reserve_entry.get())
-    weapon["ammo_reserve"] = ammo_reserve
-
 
     delay_first_shot = delay_first_shot_var.get()
     delay_first_shot = int(delay_first_shot)
-    weapon["delay_first_shot"] = delay_first_shot
-
 
     perk1 = perk1_var.get()
     perk2 = perk2_var.get()
@@ -40,6 +38,9 @@ def add_weapon():
     buff1 = buff1_var.get()
     buff2 = buff2_var.get()
     buff3 = buff3_var.get()
+
+    #since the class is called weapon, i didnt want to name it weapon and it was being weird about setting the object to weapon name? idk
+    lol = weapon(fire_rate,reload_time,damage_per_shot,magazine_capacity,ammo_reserve,delay_first_shot)
 
 def debug_print():
     print("lol")
@@ -138,7 +139,7 @@ def calculate_and_plot():
     ax.clear()
 
     # Call the plot_dps_graph function with the ax argument
-    plot_dps_graph(ax, weapon['fire_rate'], weapon['reload_time'], weapon['damage_per_shot'], weapon['magazine_capacity'], weapon['ammo_reserve'], weapon['delay_first_shot'])
+    plot_dps_graph(ax, lol.fire_rate, lol.reload_time, lol.damage_per_shot, lol.magazine_capacity, lol.ammo_reserve, lol.delay_first_shot)
 
     # Set the labels again after clearing the axes
     ax.set_xlabel("Time (Seconds)")
