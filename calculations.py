@@ -1,4 +1,4 @@
-def calculate_dps(fire_rate, reload_time, damage_per_shot, magazine_capacity, ammo_reserve, delay_first_shot, x, x_increments, data_points):
+def calculate_dps(fire_rate, reload_time, damage_per_shot, magazine_capacity, ammo_reserve, delay_first_shot, x, x_increments, data_points, perk1, perk2):
     t_dmg = []
     roundingcoeff = len(str(x_increments).split(".")[1])
     fire_delay = round(60/fire_rate, roundingcoeff)
@@ -15,6 +15,30 @@ def calculate_dps(fire_rate, reload_time, damage_per_shot, magazine_capacity, am
         shot_dmg_output = damage_per_shot
         fire_delay = round(60/fire_rate, roundingcoeff)
         output_reload_time = round(reload_time, roundingcoeff)
+
+        if perk1: #triple tap for example purposes just to see
+            if shots_fired != 0:
+                if tt_delay == 0:
+                    if shots_fired % 3 == 0:
+                        shots_left_mag += 1
+                        shots_left_reserve += 1
+                        tt_delay_check = shots_fired
+                        tt_delay = 1
+                else:
+                    if tt_delay_check != shots_fired:
+                        tt_delay = 0
+
+        if perk2: #fourth times the charm
+            if shots_fired != 0:
+                if fttc_delay ==0:
+                    if shots_fired % 4 == 0:
+                        shots_left_mag += 2
+                        shots_left_reserve += 2
+                        fttc_delay_check = shots_fired
+                        fttc_delay = 1
+                else:
+                    if fttc_delay_check != shots_fired:
+                        fttc_delay = 0
 
         if shots_left_reserve == 0: # reserve check
             total_damage = total_damage

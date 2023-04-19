@@ -8,15 +8,32 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from calculations import *
 
 class weapon:
-    def __init__(self,name,fire_rate,reload_time,damage_per_shot,magazine_capacity,ammo_reserve,delay_first_shot):
-        self.name = name
+    def __init__(self, weapon_name, fire_rate, reload_time, damage_per_shot, magazine_capacity, ammo_reserve, delay_first_shot):
+        self.weapon_name = weapon_name
         self.fire_rate = fire_rate
         self.reload_time = reload_time
         self.damage_per_shot = damage_per_shot
         self.magazine_capacity = magazine_capacity
         self.ammo_reserve = ammo_reserve
         self.delay_first_shot = delay_first_shot
+
     # Maybe we could do a def dps over time in the weapon class or sumn idk self.dps
+    #i have an idea of how this would work, although it wouldnt help with reducing the clunkiness of how many variables there will end up being still :/
+
+    #def dps(self, calculate_dps objects/variables)
+        #t_dmg = []
+        #etc...
+    #and then call textweapon.dps() instead of calculate_dps() i think? idk, still the whole thing would be here
+    #and still no clue where + how perks work i suppose
+    #is there a way of referring to each specific weapon as its own object, instead of it all being 'textweapon'?
+
+class perk:
+    def __init__(self, perk1, perk2):
+        self.perk1 = perk1
+        self.perk2 = perk2
+
+
+
 
 # Graph Definitions
 #def graphing_definitions():
@@ -24,6 +41,8 @@ class weapon:
 data_points = 45000
 x_scale = 45
 y_scale = 300000
+
+legend_labels = [] #initialize labels list....
 
 fig, ax = plt.subplots()
 ax.set_xlim(0, x_scale)
@@ -38,15 +57,15 @@ for i in range(data_points):
     #return x, x_increments, data_points, ax
 
 # Plotting
-def plot_dps(ax, x, dps, x_scale, y_scale):
-    ax.clear()
+def plot_dps(ax, x, dps, x_scale, y_scale, name):
+    #ax.clear()
     ax.set_xlim(0, x_scale)
     ax.set_ylim(0, y_scale)
     ax.set_xlabel("Time (Seconds)")
     ax.set_ylabel("Damage Per Second")
     ax.plot(x, dps)
-    #ax.set_xlabel("Time (Seconds)")
-    #ax.set_ylabel("Damage Per Second")
+    legend_labels.append(name)
+    plt.legend(legend_labels) #why does shoving this in a list and calling it good work, but just putting the object in doesnt :P
     canvas.draw()
 
 
@@ -58,27 +77,40 @@ def add_weapon():
     damage_per_shot = float(damage_per_shot_entry.get())
     magazine_capacity = int(magazine_capacity_entry.get())
     ammo_reserve = int(ammo_reserve_entry.get())
-    delay_first_shot = int(delay_first_shot_var.get())
-    perk1 = perk1_var.get()
-    perk2 = perk2_var.get()
+    delay_first_shot = delay_first_shot_var.get()
+    perk1 = int(perk1_var.get())
+    perk2 = int(perk2_var.get())
     buff1 = buff1_var.get()
     buff2 = buff2_var.get()
     buff3 = buff3_var.get()
     
+    #print("delay1:", delay_first_shot)
+
     textweapon = weapon(weapon_name, fire_rate, reload_time, damage_per_shot, magazine_capacity, ammo_reserve, delay_first_shot)
+    howHeStandOnTwoPerc = perk(perk1, perk2)
 
-    #since the class is called weapon, i didnt want to name it weapon and it was being weird about setting the object to weapon name? idk
-    #lol = weapon(fire_rate,reload_time,damage_per_shot,magazine_capacity,ammo_reserve,delay_first_shot)
-
-    #x, x_increments, data_points, ax = graphing_definitions()
-    dps = calculate_dps(textweapon.fire_rate, textweapon.reload_time, textweapon.damage_per_shot, textweapon.magazine_capacity, textweapon.ammo_reserve, textweapon.delay_first_shot, x, x_increments, data_points)
-    plot_dps(ax, x, dps, x_scale, y_scale)
+    #print("delay2:", textweapon.delay_first_shot)
+    #print("perk1", howHeStandOnTwoPerc.perk1)
+ 
+    dps = calculate_dps(textweapon.fire_rate, textweapon.reload_time, textweapon.damage_per_shot, textweapon.magazine_capacity, textweapon.ammo_reserve, textweapon.delay_first_shot, x, x_increments, data_points, howHeStandOnTwoPerc.perk1, howHeStandOnTwoPerc.perk2)
+    plot_dps(ax, x, dps, x_scale, y_scale, textweapon.weapon_name)
 
 def debug_print():
     print("lol")
 
 def plot_graph():
     pass
+
+def clear_graph():
+    i_hate_this(ax, x_scale, y_scale)
+
+def i_hate_this(ax, x_scale, y_scale): #i stared at the code for like 23 minutes before realizing exactly what you meant about the button and functions shit
+    ax.clear()
+    ax.set_xlim(0, x_scale)
+    ax.set_ylim(0, y_scale)
+    ax.set_xlabel("Time (Seconds)")
+    ax.set_ylabel("Damage Per Second")
+    canvas.draw()
 
 def import_weapon():
     pass
@@ -224,6 +256,10 @@ add_weapon_btn.grid(row=row_num, columnspan=2)
 
 row_num += 1
 plot_graph_btn = tk.Button(frame, text="Calculate & Plot Graph", command=calculate_and_plot)
+plot_graph_btn.grid(row=row_num, columnspan=2)
+
+row_num += 1
+plot_graph_btn = tk.Button(frame, text="Clear Graph", command=clear_graph)
 plot_graph_btn.grid(row=row_num, columnspan=2)
 
 row_num += 1
