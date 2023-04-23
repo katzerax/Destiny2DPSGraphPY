@@ -4,17 +4,21 @@ import random
 
 
 PERKS = {
-    1: "Perk 1 Description",
-    2: "Perk 2 Description",
+    1: "Triple Tap: Landing 3 precision hits refunds 1 ammo back to the magazine for free.",
+    2: "Fourth Times the Charm: Landing 4 precision hits refunds 2 ammo back to the magazine for free.",
     3: "Perk 3 Description",
     4: "Perk 4 Description",
+}
+
+BUFFS = {
+    1: "Well of Radiance: Super that gives healing and damage bonus in an area."
 }
 
 class Weapon:
     
     weapon_list = []
 
-    def __init__(self, name, fire_rate, reload_time, damage_per_shot, mag_cap, ammo_total, perk_indices=None):
+    def __init__(self, name, fire_rate, reload_time, damage_per_shot, mag_cap, ammo_total, delay_first_shot, perk_indices=None, buff_indices=None):
         self.name = name
         self.fire_rate = fire_rate
         self.reload_time = reload_time
@@ -22,20 +26,22 @@ class Weapon:
         self.mag_cap = mag_cap
         self.ammo_total = ammo_total
 
-        self.delay_first_shot = False
+        self.delay_first_shot = delay_first_shot
 
         if perk_indices is None:
             self.perk_indices = []
         else:
             self.perk_indices = perk_indices
 
-    def __repr__(self):
-        return f"Weapon({self.name})"
+        if buff_indices is None:
+            self.buff_indices = []
+        else:
+            self.buff_indices = buff_indices
 
     # adds a weapon to a list
-    def add_weapon(self, name, fire_rate, reload_time, damage_per_shot, mag_cap, ammo_total, perk_indices):
-            value = Weapon(name, fire_rate, reload_time, damage_per_shot, mag_cap, ammo_total, perk_indices)
-            value = self.add_to_list(value)
+    def add_weapon(self, name, fire_rate, reload_time, damage_per_shot, mag_cap, ammo_total, delay_first_shot, perk_indices, buff_indices):
+        value = Weapon(name, fire_rate, reload_time, damage_per_shot, mag_cap, ammo_total, delay_first_shot, perk_indices, buff_indices)
+        value = self.add_to_list(value)
 
     @classmethod
     def add_to_list(cls, value): # adds the weapon to the list itself within the class
@@ -59,7 +65,7 @@ class Weapon:
     def get_perks(self):
         return self.perk_indices
 
-    def set_delay_fs(self, boolean):
+    def set_dfs(self, boolean):
         self.delay_first_shot = boolean
 
     def get_any_perk_description(self, perk_index):
@@ -83,6 +89,9 @@ class Weapon:
 
     def get_ammo_total(self):
         return self.ammo_total
+    
+    def get_dfs(self):
+        return self.delay_first_shot
     
 
 class Damage:
@@ -111,9 +120,11 @@ class Damage:
             total_damage = 0
             ammo_fired = 0
 
-            fire_timer = 0
+            delay_first_shot = Weapon.weapon_list[z].get_dfs()
+
             fire_stale = Weapon.weapon_list[z].get_fire_rate()
             fire_delay = round(60/fire_stale, cls.round_coeff)
+            fire_timer = fire_delay if delay_first_shot else 0
             reload_time = Weapon.weapon_list[z].get_reload_time()
 
             mag_cap = Weapon.weapon_list[z].get_mag_cap()
@@ -125,7 +136,6 @@ class Damage:
             dmg_output = damage_per_shot
 
             applied_perks = Weapon.weapon_list[z].get_perks()
-            delay_first_shot = 0
 
             TT_On = False
             FTTC_On = False
@@ -137,9 +147,9 @@ class Damage:
                 number = applied_perks[i]
                 if number == 1:
                     TT_On = True
-                if number == 2:
+                elif number == 2:
                     FTTC_On = True
-                if number == 3:
+                elif number == 3:
                     VS_On = True
 
             for i in range(cls.ticks):
@@ -150,13 +160,12 @@ class Damage:
                     ammo_magazine, ammo_total, ammo_fired = Damage.FourthTimesTheCharm(ammo_magazine, ammo_total, ammo_fired)
                 if VS_On: #3
                     ammo_magazine = Damage.VeistStinger(ammo_fired, ammo_magazine, mag_cap)
-                    #something about this line of code just fucked up everything and i dont know why LMFAO it is too late to give a shit
 
                 if ammo_total == 0:
                     total_damage = total_damage
                 elif ammo_magazine == 0:
                     fire_timer += reload_time
-                    fire_timer -= fire_delay if delay_first_shot == 0 else 0
+                    fire_timer -= fire_delay if delay_first_shot == True else 0
                     fire_timer = round(fire_timer, cls.round_coeff)
                     ammo_fired = 0
                     ammo_magazine = mag_cap
@@ -173,8 +182,9 @@ class Damage:
 
                 t_dmg.append(total_damage)
                 if stale_val != t_dmg[i]:
-                    print("name:", Weapon.weapon_list[z].get_name(), "| damage at", (i/100) ,"seconds:", t_dmg[i])
-                    stale_val = t_dmg[i]
+                    if i != 0:
+                        print("name:", Weapon.weapon_list[z].get_name(), "| damage at", (i/100) ,"seconds:", t_dmg[i], "| dps:[",round(t_dmg[i]/(i/100), 1),"]")
+                        stale_val = t_dmg[i]
 
             
             dps = [0]
@@ -242,21 +252,42 @@ class Damage:
             if veist_proc >= 90:
                 veist_bonus = math.floor(mag_cap * 0.25)
                 ammo_magazine += veist_bonus
-            
-            return ammo_magazine
 
-the = Weapon("The", 120, 1.43, 50000, 6, 20, [1,3])
-the.add_weapon(the.name, the.fire_rate, the.reload_time, the.damage_per_shot, the.mag_cap, the.ammo_total, the.perk_indices)
+        return ammo_magazine
+    
 
-piss = Weapon("Piss", 120, 1.43, 50000, 6, 20, [2,4])
-piss.add_weapon(piss.name, piss.fire_rate, piss.reload_time, piss.damage_per_shot, piss.mag_cap, piss.ammo_total, piss.perk_indices)
+    #bait n switch - 15
+    bns_proc = 0
+    bns_timer = 0
+
+    @classmethod
+    def BaitNSwitch(cls, ammo_fired, dmg_output, time_elapsed):
+
+        if cls.bns_proc == 0:
+            if ammo_fired >= 1:
+                dmg_output *= 1.35
+                cls.bns_proc = 1
+                cls.bns_timer = time_elapsed
+        elif cls.bns_proc == 1:
+            if (time_elapsed - cls.bns_timer) <= 10:
+                dmg_output *= 1.35
+            elif (time_elapsed - cls.bns_timer) > 10:
+                cls.bns_proc = 0
+
+                #this needs some looking at regarding it resetting and all that, etc etc instead of reproccing immediately
+                #there is some other brainstorming to happen here tbh
 
 
-the.set_delay_fs(True)
 
+the = Weapon("The", 120, 1.43, 50000, 5, 21, False, [1,3], [2])
+the.add_weapon(the.name, the.fire_rate, the.reload_time, the.damage_per_shot, the.mag_cap, the.ammo_total, the.delay_first_shot, the.perk_indices, the.buff_indices)
+
+piss = Weapon("Piss", 120, 1.43, 50000, 6, 20, True, [2,4], [1])
+piss.add_weapon(piss.name, piss.fire_rate, piss.reload_time, piss.damage_per_shot, piss.mag_cap, piss.ammo_total, piss.delay_first_shot, piss.perk_indices, the.buff_indices)
+
+
+#calculate damage function
 Damage.DamageCalculate()
 
-#relating to weapon 'the'
-print(the.delay_first_shot)
-print(the.get_perks())
+#keeping this for reference of how to call weapon instances i guess but idk
 Damage(the).print_weapon_instance()
