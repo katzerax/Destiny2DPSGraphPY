@@ -141,6 +141,9 @@ class Damage:
             FTTC_On = False
             VS_On = False
 
+            FL_On = False
+            BNS_On = False
+
             stale_val = 0
 
             for i in range(len(applied_perks)):
@@ -151,8 +154,34 @@ class Damage:
                     FTTC_On = True
                 elif number == 3:
                     VS_On = True
+                elif number == 4:
+                    pass
+                elif number == 5:
+                    pass
+                elif number == 6:
+                    pass
+                elif number == 7:
+                    pass
+                elif number == 8:
+                    pass
+                elif number == 9:
+                    pass
+                elif number == 10:
+                    FL_On = True
+                elif number == 11:
+                    pass
+                elif number == 12:
+                    pass
+                elif number == 13:
+                    pass
+                elif number == 14:
+                    pass
+                elif number == 15:
+                    BNS_On = True
 
             for i in range(cls.ticks):
+
+                dmg_output = damage_per_shot
                 
                 if TT_On: #1
                     ammo_magazine, ammo_total, ammo_fired = Damage.TripleTap(ammo_magazine, ammo_total, ammo_fired)
@@ -160,6 +189,10 @@ class Damage:
                     ammo_magazine, ammo_total, ammo_fired = Damage.FourthTimesTheCharm(ammo_magazine, ammo_total, ammo_fired)
                 if VS_On: #3
                     ammo_magazine = Damage.VeistStinger(ammo_fired, ammo_magazine, mag_cap)
+                if FL_On: #10
+                    dmg_output = Damage.FiringLine(dmg_output)
+                if BNS_On: #15
+                    dmg_output = Damage.BaitNSwitch(ammo_fired, dmg_output, time_elapsed)
 
                 if ammo_total == 0:
                     total_damage = total_damage
@@ -183,7 +216,7 @@ class Damage:
                 t_dmg.append(total_damage)
                 if stale_val != t_dmg[i]:
                     if i != 0:
-                        print("name:", Weapon.weapon_list[z].get_name(), "| damage at", (i/100) ,"seconds:", t_dmg[i], "| dps:[",round(t_dmg[i]/(i/100), 1),"]")
+                        print("name:", Weapon.weapon_list[z].get_name(), "| damage at", (i/100) ,"seconds:", t_dmg[i], "| dps:[",round(t_dmg[i]/(i/100), 1),"]","| per shot:<", dmg_output, ">")
                         stale_val = t_dmg[i]
 
             
@@ -255,16 +288,24 @@ class Damage:
 
         return ammo_magazine
     
+    #firing line - 10
+
+    @classmethod
+    def FiringLine(cls, dmg_output):
+        dmg_output *= 1.2
+        return dmg_output
+
 
     #bait n switch - 15
     bns_proc = 0
     bns_timer = 0
+    ammo_fired_bns = 0
 
     @classmethod
     def BaitNSwitch(cls, ammo_fired, dmg_output, time_elapsed):
 
         if cls.bns_proc == 0:
-            if ammo_fired >= 1:
+            if (ammo_fired - cls.ammo_fired_bns) >= 1:
                 dmg_output *= 1.35
                 cls.bns_proc = 1
                 cls.bns_timer = time_elapsed
@@ -273,16 +314,19 @@ class Damage:
                 dmg_output *= 1.35
             elif (time_elapsed - cls.bns_timer) > 10:
                 cls.bns_proc = 0
+                cls.ammo_fired_bns = ammo_fired
+        
+        return dmg_output
 
-                #this needs some looking at regarding it resetting and all that, etc etc instead of reproccing immediately
-                #there is some other brainstorming to happen here tbh
+                #could add a bns_proc = 2 segment for handling lockouts if i ever figure out how that might work
 
 
-
-the = Weapon("The", 120, 1.43, 50000, 5, 21, False, [1,3], [2])
+#triple tap + firing line + veist (taipan)
+the = Weapon("The", 120, 1.43, 50000, 5, 21, False, [1,3,10], [2])
 the.add_weapon(the.name, the.fire_rate, the.reload_time, the.damage_per_shot, the.mag_cap, the.ammo_total, the.delay_first_shot, the.perk_indices, the.buff_indices)
 
-piss = Weapon("Piss", 120, 1.43, 50000, 6, 20, True, [2,4], [1])
+#fttc + bns (cataclysmic)
+piss = Weapon("Piss", 120, 1.43, 50000, 6, 20, True, [2,15], [1])
 piss.add_weapon(piss.name, piss.fire_rate, piss.reload_time, piss.damage_per_shot, piss.mag_cap, piss.ammo_total, piss.delay_first_shot, piss.perk_indices, the.buff_indices)
 
 
@@ -290,4 +334,4 @@ piss.add_weapon(piss.name, piss.fire_rate, piss.reload_time, piss.damage_per_sho
 Damage.DamageCalculate()
 
 #keeping this for reference of how to call weapon instances i guess but idk
-Damage(the).print_weapon_instance()
+#Damage(the).print_weapon_instance()
