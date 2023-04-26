@@ -135,6 +135,8 @@ class Damage:
             damage_per_shot = Weapon.weapon_list[z].get_damage_per_shot()
             dmg_output = damage_per_shot
 
+            number_to_flag = {1: "TT_On", 2: "FTTC_On", 3: "VS_On", 10: "FL_On", 15: "BNS_On"}
+
             applied_perks = Weapon.weapon_list[z].get_perks()
 
             flags = {"TT_On": False, "FTTC_On": False, "VS_On": False, "FL_On": False, "BNS_On": False} 
@@ -142,8 +144,8 @@ class Damage:
             stale_val = 0
 
             for number in applied_perks:
-                if number in PERKS:
-                    flags[PERKS[number]] = True
+                if number in number_to_flag:
+                    flags[number_to_flag[number]] = True
 
             for i in range(cls.ticks):
 
