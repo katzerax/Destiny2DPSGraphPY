@@ -137,61 +137,27 @@ class Damage:
 
             applied_perks = Weapon.weapon_list[z].get_perks()
 
-            TT_On = False
-            FTTC_On = False
-            VS_On = False
-
-            FL_On = False
-            BNS_On = False
+            flags = {"TT_On": False, "FTTC_On": False, "VS_On": False, "FL_On": False, "BNS_On": False} 
 
             stale_val = 0
 
-            for i in range(len(applied_perks)):
-                number = applied_perks[i]
-                if number == 1:
-                    TT_On = True
-                elif number == 2:
-                    FTTC_On = True
-                elif number == 3:
-                    VS_On = True
-                elif number == 4:
-                    pass
-                elif number == 5:
-                    pass
-                elif number == 6:
-                    pass
-                elif number == 7:
-                    pass
-                elif number == 8:
-                    pass
-                elif number == 9:
-                    pass
-                elif number == 10:
-                    FL_On = True
-                elif number == 11:
-                    pass
-                elif number == 12:
-                    pass
-                elif number == 13:
-                    pass
-                elif number == 14:
-                    pass
-                elif number == 15:
-                    BNS_On = True
+            for number in applied_perks:
+                if number in PERKS:
+                    flags[PERKS[number]] = True
 
             for i in range(cls.ticks):
 
                 dmg_output = damage_per_shot
-                
-                if TT_On: #1
+
+                if flags["TT_On"]: #1
                     ammo_magazine, ammo_total, ammo_fired = Damage.TripleTap(ammo_magazine, ammo_total, ammo_fired)
-                if FTTC_On: #2
+                if flags["FTTC_On"]: #2
                     ammo_magazine, ammo_total, ammo_fired = Damage.FourthTimesTheCharm(ammo_magazine, ammo_total, ammo_fired)
-                if VS_On: #3
+                if flags["VS_On"]: #3
                     ammo_magazine = Damage.VeistStinger(ammo_fired, ammo_magazine, mag_cap)
-                if FL_On: #10
+                if flags["FL_On"]: #10
                     dmg_output = Damage.FiringLine(dmg_output)
-                if BNS_On: #15
+                if flags["BNS_On"]: #15
                     dmg_output = Damage.BaitNSwitch(ammo_fired, dmg_output, time_elapsed)
 
                 if ammo_total == 0:
