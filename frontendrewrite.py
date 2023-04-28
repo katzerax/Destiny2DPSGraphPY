@@ -2,13 +2,29 @@ import tkinter as tk
 import random
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
+from settingstest import *
 
 class GUI(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
         self.master = master
         self.pack()
+        self.load_settings()  # Call the load_settings method
         self.create_widgets()
+
+    def load_settings(self):
+        self.settings = Settings()  # Create an instance of the Settings class
+
+        # Access and apply settings to the program
+        if self.settings.interface_mode.lower() == 'dark':
+            self.configure(bg='#1E1E1E')
+            self.master.configure(bg='#1E1E1E')
+            self.check_button_style = {'bg': '#1E1E1E', 'fg': '#CCCCCC', 'selectcolor': '#1E1E1E'}
+            self.button_style = {'bg': '#1E1E1E', 'fg': '#CCCCCC'}
+        else:
+            self.check_button_style = {}
+            self.button_style = {}
+
 
     def create_widgets(self):
         # Create a Matplotlib figure and canvas
@@ -19,10 +35,11 @@ class GUI(tk.Frame):
 
         # Create a tkinter check button
         self.var = tk.BooleanVar()
-        self.check_button = tk.Checkbutton(self, text="Check Box", variable=self.var, command=self.update_graph)
+        self.check_button = tk.Checkbutton(self, text="Check Box", variable=self.var, command=self.update_graph, **self.check_button_style)
 
         # Create a tkinter button to randomize the graph
-        self.randomize_button = tk.Button(self, text="Randomize Graph", command=self.randomize_graph)
+        self.randomize_button = tk.Button(self, text="Randomize Graph", command=self.randomize_graph, **self.button_style)
+
 
         # Configure row and column weights for expansion
         self.grid_rowconfigure(0, weight=1)
