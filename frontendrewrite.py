@@ -25,12 +25,12 @@ class GUI(tk.Frame):
             self.check_button_style = {}
             self.button_style = {}
 
-        if self.settings.cmd_prints.lower() == 'true':
+        if self.settings.cmd_prints == 'True':
             pass
         else:
             pass
 
-        if self.settings.multi_weapon.lower() == 'true':
+        if self.settings.multi_weapon == 'True':
             pass
         else:
             pass
@@ -75,14 +75,8 @@ class GUI(tk.Frame):
         self.canvas.draw()
 
     def update_graph(self):
-        # Update the graph based on the state of the check box
-        if self.var.get():
-            self.ax.set_xlabel("X Label")
-            self.ax.set_ylabel("Y Label")
-        else:
-            self.ax.set_xlabel("")
-            self.ax.set_ylabel("")
-        self.canvas.draw()
+        # Print the state of the check box (True or False)
+        print(self.var.get())
 
     def randomize_graph(self):
         # Randomize the graph data and redraw the canvas
