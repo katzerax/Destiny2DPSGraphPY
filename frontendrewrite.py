@@ -25,6 +25,20 @@ class GUI(tk.Frame):
             self.check_button_style = {}
             self.button_style = {}
 
+        if self.settings.cmd_prints.lower() == 'true':
+            pass
+        else:
+            pass
+
+        if self.settings.multi_weapon.lower() == 'true':
+            pass
+        else:
+            pass
+
+        if self.settings.calc_when_damage_dealt.lower() == 'whenattacking':
+            pass
+        else:
+            pass
 
     def create_widgets(self):
         # Create a Matplotlib figure and canvas
