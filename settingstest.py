@@ -33,21 +33,3 @@ class Settings:
         with open('settings.ini', 'w') as configfile:
             self.config.write(configfile)
 
-settings = Settings()
-
-print(f"Interface Mode: {settings.interface_mode}")
-print(f"CMD Prints: {settings.cmd_prints}")
-print(f"Multiweapon: {settings.multi_weapon}")
-print(f"When Damage Dealt: {settings.calc_when_damage_dealt}")
-
-settings.set_interface_mode('Dark')
-settings.set_cmd_prints(True)
-settings.set_multi_weapon(False)
-settings.set_calc_when_damage_dealt('WhenAttacking')
-
-print(f"Interface Mode: {settings.interface_mode}")
-print(f"CMD Prints: {settings.cmd_prints}")
-print(f"Multiweapon: {settings.multi_weapon}")
-print(f"When Damage Dealt: {settings.calc_when_damage_dealt}")
-
-settings.save_settings()
