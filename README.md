@@ -52,6 +52,7 @@ python main.py -d n -rf yippee.json
 3. burst type weapons (fuck (this will require understanding how RoF affects the time between bursts but like also delay between burst fires????)) i basically have 0 clue still how i am going to do this, both bullet based weapons and charge based weapons (looking at you Stormchaser, n Fire and Forget)
 4. cleaning up comments after everything?
 5. acknowledge reddit website post https://www.reddit.com/r/DestinyTheGame/comments/11d2f0g/i_created_a_new_dps_testing_tool/
+6. Special thanks to Jade for code logic fix suggestions
 
 ## Example graphs
 ![Figure_1](https://user-images.githubusercontent.com/65287118/210054539-a0629674-e846-43ed-8e1f-808482d20a66.png)
