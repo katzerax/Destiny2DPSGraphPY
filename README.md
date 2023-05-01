@@ -42,6 +42,7 @@ As of release 6.0, the code has been completely rewritten and overhauled to now 
 2. finishing up GUI and backend
 3. create more graphs to use on the readme
 4. update the readme
+5. create instructions for how to obtain every stat to use for the program
 
 ## Example graphs
 ![Figure_1](https://user-images.githubusercontent.com/65287118/210054539-a0629674-e846-43ed-8e1f-808482d20a66.png)
