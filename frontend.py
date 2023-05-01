@@ -86,7 +86,7 @@ class GUI(tk.Frame):
             self.frame_style = {'bg': '#FFFFFF', 'highlightcolor': '#FFFFFF', 'highlightbackground': '#FFFFFF', 'highlightthickness': 2}
             self.combo_style = {'width': 17, 'state': 'readonly'}
             self.wep_frame = "#FFFFFF"
-            self.listbox_bg = "#FFFFFF"
+            self.listbox_bg = "#808080"
 
         if self.settings.cmd_prints == 'True':
             pass
@@ -268,6 +268,13 @@ class GUI(tk.Frame):
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.graph_frame)
         self.ax.set_facecolor(self.matplotlibbg)
         self.fig.set_facecolor(self.matplotlibbg)
+
+        # Set x and y axis and labels
+        self.ax.set_title("DPS Over Time")
+        self.ax.set_xlabel("Time (seconds)")
+        self.ax.set_ylabel("DPS", labelpad=-340, rotation='horizontal')
+        self.ax.set_xlim(0, 45)
+        self.ax.set_ylim(0, 300000)
 
         self.canvas.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
