@@ -194,9 +194,9 @@ class Damage:
                     dmg_output = damage_per_shot
 
                     if flags["TT_On"]: #1
-                        ammo_magazine, ammo_total, ammo_fired = Damage.TripleTap(ammo_magazine, ammo_total, ammo_fired)
+                        ammo_magazine, ammo_total = Damage.TripleTap(ammo_magazine, ammo_total, ammo_fired)
                     if flags["FTTC_On"]: #2
-                        ammo_magazine, ammo_total, ammo_fired = Damage.FourthTimesTheCharm(ammo_magazine, ammo_total, ammo_fired)
+                        ammo_magazine, ammo_total = Damage.FourthTimesTheCharm(ammo_magazine, ammo_total, ammo_fired)
                     if flags["VS_On"]: #3
                         ammo_magazine = Damage.VeistStinger(ammo_fired, ammo_magazine, mag_cap)
                     if flags["FL_On"]: #10
@@ -310,8 +310,10 @@ class Damage:
             total_damage = 0
             stale_val = 0
 
+            Damage.BNSClear()
+
             #weapon 1
-            if len(cls.swap_groups[z]) >= 1 == True:
+            if len(cls.swap_groups[z]) >= 1:
                 ammo_fired1 = 0
                 burst_shot1 = 0
 
@@ -350,7 +352,7 @@ class Damage:
 
 
             #weapon 2
-            if len(cls.swap_groups[z]) >= 2 == True:
+            if len(cls.swap_groups[z]) >= 2:
                 ammo_fired2 = 0
                 burst_shot2 = 0
 
@@ -389,7 +391,7 @@ class Damage:
 
 
             #weapon 3
-            if len(cls.swap_groups[z]) >= 3 == True:
+            if len(cls.swap_groups[z]) >= 3:
                 ammo_fired3 = 0
                 burst_shot3 = 0
 
@@ -422,20 +424,80 @@ class Damage:
                 number_to_flag3 = {1: "TT_On", 2: "FTTC_On", 3: "VS_On", 10: "FL_On", 15: "BNS_On"}
                 flags3 = {"TT_On": False, "FTTC_On": False, "VS_On": False, "FL_On": False, "BNS_On": False}
 
-                for number in applied_perks1:
+                for number in applied_perks3:
                     if number in number_to_flag3:
                         flags3[number_to_flag3[number]] = True
 
 
             for i in range(cls.ticks):
                 
-                #dmg_output1 = damage_per_shot1
-                #dmg_output2 = damage_per_shot2
+                dmg_output1 = damage_per_shot1
+                dmg_output2 = damage_per_shot2
                 #dmg_output3 = damage_per_shot3
 
                 #perks for weapon 1
-                if flags1["TT_On"]:
-                    ammo_magazine1, ammo_total1, ammo_fired1 = Damage.TripleTap(ammo_magazine1, ammo_total1, ammo_fired1)
+                if len(cls.swap_groups[z]) >= 1:
+                    if flags1["TT_On"]:
+                        ammo_magazine1, ammo_total1 = Damage.TripleTap(ammo_magazine1, ammo_total1, ammo_fired1)
+                    if flags1["FTTC_On"]:
+                        ammo_magazine1, ammo_total1 = Damage.FourthTimesTheCharm(ammo_magazine1, ammo_total1, ammo_fired1)
+                    if flags1["VS_On"]:
+                        ammo_magazine1 = Damage.VeistStinger(ammo_fired1, ammo_magazine1, mag_cap1)
+                    if flags1["FL_On"]:
+                        dmg_output1 = Damage.FiringLine(dmg_output1)
+                    if flags1["BNS_On"]:
+                        dmg_output1 = Damage.BaitNSwitch(ammo_fired1, dmg_output1, time_elapsed)
+
+                if len(cls.swap_groups[z]) >= 2:
+                    if flags2["TT_On"]:
+                        ammo_magazine2, ammo_total2 = Damage.TripleTap(ammo_magazine2, ammo_total2, ammo_fired2)
+                    if flags2["FTTC_On"]:
+                        ammo_magazine2, ammo_total2 = Damage.FourthTimesTheCharm(ammo_magazine2, ammo_total2, ammo_fired2)
+                    if flags2["VS_On"]:
+                        ammo_magazine2 = Damage.VeistStinger(ammo_fired2, ammo_magazine2, mag_cap2)
+                    if flags2["FL_On"]:
+                        dmg_output2 = Damage.FiringLine(dmg_output2)
+                    if flags2["BNS_On"]:
+                        dmg_output2 = Damage.BaitNSwitch(ammo_fired2, dmg_output2, time_elapsed)
+
+                if len(cls.swap_groups[z]) >= 3:
+                    if flags3["TT_On"]:
+                        ammo_magazine3, ammo_total3 = Damage.TripleTap(ammo_magazine3, ammo_total3, ammo_fired3)
+                    if flags3["FTTC_On"]:
+                        ammo_magazine3, ammo_total3 = Damage.FourthTimesTheCharm(ammo_magazine3, ammo_total3, ammo_fired3)
+                    if flags3["VS_On"]:
+                        ammo_magazine3 = Damage.VeistStinger(ammo_fired3, ammo_magazine3, mag_cap3)
+                    if flags3["FL_On"]:
+                        dmg_output3 = Damage.FiringLine(dmg_output3)
+                    if flags3["BNS_On"]:
+                        dmg_output3 = Damage.BaitNSwitch(ammo_fired3, dmg_output3, time_elapsed)
+
+
+                if burst_weapon1 == False:
+                    if ammo_total1 == 0:
+                        total_damage = total_damage
+                    elif ammo_magazine1 == 0:
+                        fire_timer1 += reload_time1
+                        fire_timer1 -= fire_delay1 if delay_first_shot1 == True else 0
+                        fire_timer1 = round(fire_timer1, cls.round_coeff)
+                        ammo_fired1 = 0
+                        ammo_magazine1 = mag_cap1
+                    elif time_elapsed == fire_timer1:
+                        total_damage += dmg_output1
+                        fire_timer1 += fire_delay1
+                        fire_timer1 = round(fire_timer1, cls.round_coeff)
+                        ammo_fired1 += 1
+                        ammo_magazine1 -= 1
+                        ammo_total1 -= 1
+
+                    time_elapsed += cls.x_increments
+                    time_elapsed = round(time_elapsed, 5)
+                    t_dmg.append(total_damage)
+                    if stale_val != t_dmg[i]:
+                        if i != 0:
+                            print("weapons:", cls.swap_groups[z][0].get_name(), cls.swap_groups[z][1].get_name(), "| damage at", (i/100) ,"seconds:", t_dmg[i], "| dps:[",round(t_dmg[i]/(i/100), 1),"]","| per shot:<", dmg_output1, ">")
+                            #print("fired:", ammo_fired1)
+                            stale_val = t_dmg[i]
 
 
 
@@ -457,7 +519,7 @@ class Damage:
                 if cls.tt_ammocheck != ammo_fired:
                     cls.tt_addcheck = 0
 
-        return ammo_magazine, ammo_total, ammo_fired
+        return ammo_magazine, ammo_total
     
     #fourth times the charm - 2
     fttc_addcheck = 0
@@ -475,9 +537,9 @@ class Damage:
                     cls.fttc_ammocheck = ammo_fired
             else:
                 if cls.fttc_ammocheck != ammo_fired:
-                    cls.tt_addcheck = 0
+                    cls.fttc_addcheck = 0
 
-        return ammo_magazine, ammo_total, ammo_fired
+        return ammo_magazine, ammo_total
 
     #veist stinger - 3
     veist_check = 0
@@ -510,6 +572,12 @@ class Damage:
     ammo_fired_bns = 0
 
     @classmethod
+    def BNSClear(cls):
+        cls.bns_proc = 0
+        cls.bns_timer = 0
+        cls.ammo_fired_bns = 0
+
+    @classmethod
     def BaitNSwitch(cls, ammo_fired, dmg_output, time_elapsed):
 
         if cls.bns_proc == 0:
@@ -531,31 +599,24 @@ class Damage:
 
 
 #triple tap + firing line + veist (taipan)
-the = Weapon("The", 120, 1.43, 50000, 5, 21, True, False, 0, 0, 1.5, [1,3,10], [2])
+the = Weapon("taipan", 120, 1.43, 50000, 5, 21, True, False, 0, 0, 1.5, [1,3,10], [2])
 #the.add_weapon(the.name, the.fire_rate, the.reload_time, the.damage_per_shot, the.mag_cap, the.ammo_total, the.delay_first_shot, the.burst_weapon, the.burst_bullets, the.swap_group, the.swap_time, the.perk_indices, the.buff_indices)
 
 #fttc + bns (cataclysmic)
-piss = Weapon("Piss", 120, 1.43, 50000, 6, 20, True, False, 0, 0, 1.5, [2,15], [1])
+piss = Weapon("cataclysmic", 120, 1.43, 50000, 6, 20, True, False, 0, 0, 1.5, [2,15], [1])
 #piss.add_weapon(piss.name, piss.fire_rate, piss.reload_time, piss.damage_per_shot, piss.mag_cap, piss.ammo_total, piss.delay_first_shot, piss.burst_weapon, piss.burst_bullets, piss.swap_group, piss.swap_time, piss.perk_indices, the.buff_indices)
 
 #stormchaser ? (i am cheating since burst lfrs use 1 bullet for 3 rather than 3 for 3 so this is wacky :/)
-storm = Weapon("storm", 120, 1.43, 20000, 15, 63, True, True, 3, 0, 1.5, [10], [1])
+stormchaser = Weapon("stormchaser", 120, 1.43, 20000, 15, 63, True, True, 3, 0, 1.5, [10], [1])
 #storm.add_weapon(storm.name, storm.fire_rate, storm.reload_time, storm.damage_per_shot, storm.mag_cap, storm.ammo_total, storm.delay_first_shot, storm.burst_weapon, storm.burst_bullets, storm.swap_group, storm.swap_time, storm.perk_indices, storm.buff_indices)
 
 #debug
 gun1_group1 = Weapon("1.1", 120, 1.43, 50000, 6, 20, True, False, 0, 1, 1.84, [2,15], [1])
-#gun1_group1.add_weapon(gun1_group1.name, gun1_group1.fire_rate, gun1_group1.reload_time, gun1_group1.damage_per_shot, gun1_group1.mag_cap, gun1_group1.ammo_total, gun1_group1.delay_first_shot, gun1_group1.swap_group, gun1_group1.swap_time, gun1_group1.perk_indices, gun1_group1.buff_indices)
 gun2_group1 = Weapon("1.2", 120, 1.43, 50000, 6, 20, True, False, 0, 1, 1.84, [2,15], [1])
-#gun2_group1.add_weapon(gun2_group1.name, gun2_group1.fire_rate, gun2_group1.reload_time, gun2_group1.damage_per_shot, gun2_group1.mag_cap, gun2_group1.ammo_total, gun2_group1.delay_first_shot, gun2_group1.swap_group, gun2_group1.swap_time, gun2_group1.perk_indices, gun2_group1.buff_indices)
 gun1_group2 = Weapon("2.1", 120, 1.43, 50000, 6, 20, True, False, 0, 2, 1.84, [2,15], [1])
-#gun1_group2.add_weapon(gun1_group2.name, gun1_group2.fire_rate, gun1_group2.reload_time, gun1_group2.damage_per_shot, gun1_group2.mag_cap, gun1_group2.ammo_total, gun1_group2.delay_first_shot, gun1_group2.swap_group, gun1_group2.swap_time, gun1_group2.perk_indices, gun1_group2.buff_indices)
 gun2_group2 = Weapon("2.2", 120, 1.43, 50000, 6, 20, True, False, 0, 2, 1.84, [2,15], [1])
-#gun2_group2.add_weapon(gun2_group2.name, gun2_group2.fire_rate, gun2_group2.reload_time, gun2_group2.damage_per_shot, gun2_group2.mag_cap, gun2_group2.ammo_total, gun2_group2.delay_first_shot, gun2_group2.swap_group, gun2_group2.swap_time, gun2_group2.perk_indices, gun2_group2.buff_indices)
 gun1_group3 = Weapon("3.1", 120, 1.43, 50000, 6, 20, True, False, 0, 3, 1.84, [2,15], [1])
-#gun1_group3.add_weapon(gun1_group3.name, gun1_group3.fire_rate, gun1_group3.reload_time, gun1_group3.damage_per_shot, gun1_group3.mag_cap, gun1_group3.ammo_total, gun1_group3.delay_first_shot, gun1_group3.swap_group, gun1_group3.swap_time, gun1_group3.perk_indices, gun1_group3.buff_indices)
 gun2_group3 = Weapon("3.2", 120, 1.43, 50000, 6, 20, True, False, 0, 3, 1.84, [2,15], [1])
-#gun2_group3.add_weapon(gun2_group3.name, gun2_group3.fire_rate, gun2_group3.reload_time, gun2_group3.damage_per_shot, gun2_group3.mag_cap, gun2_group3.ammo_total, gun2_group3.delay_first_shot, gun2_group3.swap_group, gun2_group3.swap_time, gun2_group3.perk_indices, gun2_group3.buff_indices)
-
 
 #calculate damage function
 Damage.DamageCalculate()
