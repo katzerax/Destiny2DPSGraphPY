@@ -2,16 +2,18 @@ import stat
 import math
 import random
 
-
+# Myssto: Converted text to tuples to play nicer with gui
+# dont think it breaks anything because you just use them as magic numbers
 PERKS = {
-    1: "Triple Tap: Landing 3 precision hits refunds 1 ammo back to the magazine for free.",
-    2: "Fourth Times the Charm: Landing 4 precision hits refunds 2 ammo back to the magazine for free.",
-    3: "Perk 3 Description",
-    4: "Perk 4 Description",
+    0: ("Null", "No selection"),
+    1: ("Triple Tap", "Landing 3 precision hits refunds 1 ammo back to the magazine for free."),
+    2: ("Fourth Times the Charm", "Landing 4 precision hits refunds 2 ammo back to the magazine for free."),
+    3: ("Perk 3", "Description"),
+    4: ("Perk 4", "Description"),
 }
 
 BUFFS = {
-    1: "Well of Radiance: Super that gives healing and damage bonus in an area."
+    1: ("Well of Radiance", "Super that gives healing and damage bonus in an area.")
 }
 
 class Weapon:
@@ -699,31 +701,32 @@ class Damage:
                 #could add a bns_proc = 2 segment for handling lockouts if i ever figure out how that might work
 
 
+# # Myssto: Sorry your test cases were crowding my console log :)
 
-#triple tap + firing line + veist (taipan)
-the = Weapon("taipan", 120, 1.43, 50000, 5, 21, True, False, 0, 0, 1.5, [1,3,10], [2])
-#the.add_weapon(the.name, the.fire_rate, the.reload_time, the.damage_per_shot, the.mag_cap, the.ammo_total, the.delay_first_shot, the.burst_weapon, the.burst_bullets, the.swap_group, the.swap_time, the.perk_indices, the.buff_indices)
+# #triple tap + firing line + veist (taipan)
+# the = Weapon("taipan", 120, 1.43, 50000, 5, 21, True, False, 0, 0, 1.5, [1,3,10], [2])
+# #the.add_weapon(the.name, the.fire_rate, the.reload_time, the.damage_per_shot, the.mag_cap, the.ammo_total, the.delay_first_shot, the.burst_weapon, the.burst_bullets, the.swap_group, the.swap_time, the.perk_indices, the.buff_indices)
 
-#fttc + bns (cataclysmic)
-piss = Weapon("cataclysmic", 120, 1.43, 50000, 6, 20, True, False, 0, 0, 1.5, [2,15], [1])
-#piss.add_weapon(piss.name, piss.fire_rate, piss.reload_time, piss.damage_per_shot, piss.mag_cap, piss.ammo_total, piss.delay_first_shot, piss.burst_weapon, piss.burst_bullets, piss.swap_group, piss.swap_time, piss.perk_indices, the.buff_indices)
+# #fttc + bns (cataclysmic)
+# piss = Weapon("cataclysmic", 120, 1.43, 50000, 6, 20, True, False, 0, 0, 1.5, [2,15], [1])
+# #piss.add_weapon(piss.name, piss.fire_rate, piss.reload_time, piss.damage_per_shot, piss.mag_cap, piss.ammo_total, piss.delay_first_shot, piss.burst_weapon, piss.burst_bullets, piss.swap_group, piss.swap_time, piss.perk_indices, the.buff_indices)
 
-#stormchaser ? (i am cheating since burst lfrs use 1 bullet for 3 rather than 3 for 3 so this is wacky :/)
-stormchaser = Weapon("stormchaser", 120, 1.43, 20000, 15, 63, True, True, 3, 0, 1.5, [10], [1])
-#storm.add_weapon(storm.name, storm.fire_rate, storm.reload_time, storm.damage_per_shot, storm.mag_cap, storm.ammo_total, storm.delay_first_shot, storm.burst_weapon, storm.burst_bullets, storm.swap_group, storm.swap_time, storm.perk_indices, storm.buff_indices)
+# #stormchaser ? (i am cheating since burst lfrs use 1 bullet for 3 rather than 3 for 3 so this is wacky :/)
+# stormchaser = Weapon("stormchaser", 120, 1.43, 20000, 15, 63, True, True, 3, 0, 1.5, [10], [1])
+# #storm.add_weapon(storm.name, storm.fire_rate, storm.reload_time, storm.damage_per_shot, storm.mag_cap, storm.ammo_total, storm.delay_first_shot, storm.burst_weapon, storm.burst_bullets, storm.swap_group, storm.swap_time, storm.perk_indices, storm.buff_indices)
 
-#debug
-gun1_group1 = Weapon("1.1", 120, 1.43, 50000, 6, 20, True, False, 0, 1, 1.84, [2,15], [1])
-gun2_group1 = Weapon("1.2", 120, 1.43, 50000, 6, 20, True, False, 0, 1, 1.84, [2,15], [1])
-gun1_group2 = Weapon("2.1", 120, 1.43, 50000, 6, 20, True, False, 0, 2, 1.84, [2,15], [1])
-gun2_group2 = Weapon("2.2", 120, 1.43, 50000, 6, 20, True, False, 0, 2, 1.84, [2,15], [1])
-gun1_group3 = Weapon("3.1", 120, 1.43, 50000, 6, 20, True, False, 0, 3, 1.84, [2,15], [1])
-gun2_group3 = Weapon("3.2", 120, 1.43, 50000, 6, 20, True, False, 0, 3, 1.84, [2,15], [1])
+# #debug
+# gun1_group1 = Weapon("1.1", 120, 1.43, 50000, 6, 20, True, False, 0, 1, 1.84, [2,15], [1])
+# gun2_group1 = Weapon("1.2", 120, 1.43, 50000, 6, 20, True, False, 0, 1, 1.84, [2,15], [1])
+# gun1_group2 = Weapon("2.1", 120, 1.43, 50000, 6, 20, True, False, 0, 2, 1.84, [2,15], [1])
+# gun2_group2 = Weapon("2.2", 120, 1.43, 50000, 6, 20, True, False, 0, 2, 1.84, [2,15], [1])
+# gun1_group3 = Weapon("3.1", 120, 1.43, 50000, 6, 20, True, False, 0, 3, 1.84, [2,15], [1])
+# gun2_group3 = Weapon("3.2", 120, 1.43, 50000, 6, 20, True, False, 0, 3, 1.84, [2,15], [1])
 
-#calculate damage function
-Damage.DamageCalculate()
+# #calculate damage function
+# Damage.DamageCalculate()
 
-Damage.DamageCalculateMulti()
+# Damage.DamageCalculateMulti()
 
-#keeping this for reference of how to call weapon instances i guess but idk
-#Damage(the).print_weapon_instance()
+# #keeping this for reference of how to call weapon instances i guess but idk
+# #Damage(the).print_weapon_instance()
