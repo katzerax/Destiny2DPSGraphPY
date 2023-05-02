@@ -1,5 +1,6 @@
 import tkinter as tk
 import tkinter.ttk as ttk
+import sys
 import os
 import configparser
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -54,6 +55,14 @@ class Settings:
         with open('settings.ini', 'w') as configfile:
             self.config.write(configfile)
 
+    def restart_program(self, root):
+        # Close the tkinter window
+        root.destroy()
+
+        # Re-run the script
+        os.execl(sys.executable, sys.executable, *sys.argv)
+
+
 class GUI(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
@@ -67,7 +76,6 @@ class GUI(tk.Frame):
     def load_settings(self):
         # Instance settings
         self.settings = Settings()
-
         # Access and apply settings
         if self.settings.interface_mode.lower() == 'dark':
             self.configure(bg='#1E1E1E')
@@ -145,8 +153,8 @@ class GUI(tk.Frame):
                 target = self.graph_frame
             case 1:
                 target = self.weapons_frame
-            # case 3:
-            #     target = self.options_frame
+            case 2:
+                target = self.options_frame
             # case 4:
             #     target = self.log_frame
 
@@ -157,7 +165,7 @@ class GUI(tk.Frame):
         menus = [
             self.graph_frame,
             self.weapons_frame,
-            # self.options_frame,
+            self.options_frame,
             # self.log_frame,
         ]
         menus.remove(target)
@@ -437,12 +445,66 @@ class GUI(tk.Frame):
             self.burst_bullets_label.grid(row=13, column=0, padx=5, pady=5, sticky=tk.W)
             self.burst_bullets_entry.grid(row=13, column=1, padx=5, pady=5, sticky=tk.W)
 
+    def apply_settings(self):
+        self.settings.set_interface_mode(self.setting1_combo.get())
+        self.settings.set_cmd_prints(self.setting2_combo.get())
+        self.settings.set_multi_weapon(self.setting3_combo.get())
+        self.settings.set_calc_when_damage_dealt(self.setting4_combo.get())
+        self.settings.save_settings()
+        self.settings.restart_program(root)
+
     # Placeholder for multi-wep
     def weapons_menu_ext(self):
         pass
 
     def options_menu(self):
-        pass
+        # Root frame
+        self.options_frame = tk.Frame(self, **self.frame_style)
+        self.options_frame.pack(side=tk.LEFT, fill=tk.Y)
+
+        # Setting 1
+        setting1_options = ['Light', 'Dark']
+        self.setting1_label = tk.Label(self.options_frame, text="UI Mode", **self.button_style)
+        self.setting1_label.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
+        self.setting1_combo = ttk.Combobox(self.options_frame, values=setting1_options, **self.combo_style)
+        self.setting1_combo.grid(row=0, column=1, padx=5, pady=5, sticky=tk.W)
+        self.setting1_combo.set(self.settings.interface_mode)
+        self.setting1_combo.bind("<<ComboboxSelected>>", lambda e: self.options_frame.focus())
+
+        # Setting 2
+        setting2_options = ['True', 'False']
+        self.setting2_label = tk.Label(self.options_frame, text="CMD Prints", **self.button_style)
+        self.setting2_label.grid(row=1, column=0, padx=5, pady=5, sticky=tk.W)
+        self.setting2_combo = ttk.Combobox(self.options_frame, values=setting2_options, **self.combo_style)
+        self.setting2_combo.grid(row=1, column=1, padx=5, pady=5, sticky=tk.W)
+        self.setting2_combo.set(str(self.settings.cmd_prints))
+        self.setting2_combo.bind("<<ComboboxSelected>>", lambda e: self.options_frame.focus())
+
+        # Setting 3
+        setting3_options = ['True', 'False']
+        self.setting3_label = tk.Label(self.options_frame, text="Multiweapon", **self.button_style)
+        self.setting3_label.grid(row=2, column=0, padx=5, pady=5, sticky=tk.W)
+        self.setting3_combo = ttk.Combobox(self.options_frame, values=setting3_options, **self.combo_style)
+        self.setting3_combo.grid(row=2, column=1, padx=5, pady=5, sticky=tk.W)
+        self.setting3_combo.set(str(self.settings.multi_weapon))
+        self.setting3_combo.bind("<<ComboboxSelected>>", lambda e: self.options_frame.focus())
+
+        # Setting 4
+        setting4_options = ['What', 'Is', 'This']
+        self.setting4_label = tk.Label(self.options_frame, text="When Damage Dealt", **self.button_style)
+        self.setting4_label.grid(row=3, column=0, padx=5, pady=5, sticky=tk.W)
+        self.setting4_combo = ttk.Combobox(self.options_frame, values=setting4_options, **self.combo_style)
+        self.setting4_combo.grid(row=3, column=1, padx=5, pady=5, sticky=tk.W)
+        self.setting4_combo.set(self.settings.calc_when_damage_dealt)
+        self.setting4_combo.bind("<<ComboboxSelected>>", lambda e: self.options_frame.focus())
+
+        # Apply Settings button
+        self.apply_settings_button = tk.Button(self.options_frame, text="Apply Settings", command=self.apply_settings, **self.button_style)
+        self.apply_settings_button.grid(row=4, column=0, padx=8, pady=5, sticky=tk.W)
+        
+        # Hide this menu on start
+        self.options_frame.pack_forget()
+    
 
     def log_menu(self):
         pass
