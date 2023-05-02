@@ -448,7 +448,7 @@ class Damage:
 
             for i in range(cls.ticks):
                 
-                if len(cls.swap_groups[z]) >= 1:
+                if len(cls.swap_groups[z]) >= 1 and weapon1_ready == True:
                     dmg_output1 = damage_per_shot1
                     if flags1["TT_On"]:
                         ammo_magazine1, ammo_total1 = Damage.TripleTap(ammo_magazine1, ammo_total1, ammo_fired1)
@@ -461,7 +461,7 @@ class Damage:
                     if flags1["BNS_On"]:
                         dmg_output1 = Damage.BaitNSwitch(ammo_fired1, dmg_output1, time_elapsed)
 
-                if len(cls.swap_groups[z]) >= 2:
+                if len(cls.swap_groups[z]) >= 2 and weapon2_ready == True:
                     dmg_output2 = damage_per_shot2
                     if flags2["TT_On"]:
                         ammo_magazine2, ammo_total2 = Damage.TripleTap(ammo_magazine2, ammo_total2, ammo_fired2)
@@ -499,18 +499,29 @@ class Damage:
                             total_damage = total_damage
                             weapon1_ready = False
                         elif ammo_magazine1 == 0:
-                            fire_timer1 += reload_time1
-                            fire_timer1 -= fire_delay1 if delay_first_shot1 == True else 0
-                            fire_timer1 = round(fire_timer1, cls.round_coeff)
-                            ammo_fired1 = 0
-                            ammo_magazine1 = mag_cap1
 
                             #this isnt accounting for reload added time later in the dps check.
-                            weapon1_ready = False
-                            weapon2_ready = True
-                            fire_timer2 = time_elapsed if fire_ready2 else fire_timer2
-                            fire_timer2 += swap_time2
-                            fire_timer2 += fire_delay2 if delay_first_shot2 else 0
+                            if (ammo_total2 >= mag_cap2 or ammo_total1 < mag_cap1) and (fire_delay1 + reload_time1) >= swap_time2:
+                                weapon1_ready = False
+                                weapon2_ready = True
+                                fire_timer2 = time_elapsed if fire_ready2 else fire_timer2
+                                fire_timer2 += swap_time2
+                                fire_timer2 += fire_delay2 if delay_first_shot2 else 0
+                            
+                            elif ammo_total2 < mag_cap2:
+                                weapon1_ready = True
+
+                            if ammo_magazine2 == 0 and weapon2_ready == True:
+                                fire_delay2 += reload_time2
+                                ammo_magazine2 = mag_cap2
+                                ammo_fired2 = 0
+
+                            elif ammo_magazine2 == 0 and weapon2_ready == False:
+                                fire_timer1 += reload_time1
+                                fire_timer1 -= fire_delay1 if delay_first_shot1 == True else 0
+                                fire_timer1 = round(fire_timer1, cls.round_coeff)
+                                ammo_fired1 = 0
+                                ammo_magazine1 = mag_cap1
 
                         elif time_elapsed >= fire_timer1:
                             total_damage += dmg_output1
@@ -526,17 +537,30 @@ class Damage:
                             total_damage = total_damage
                             weapon2_ready = False
                         elif ammo_magazine2 == 0:
-                            fire_timer2 += reload_time2
-                            fire_timer2 -= fire_delay2 if delay_first_shot2 == True else 0
-                            fire_timer2 = round(fire_timer2, cls.round_coeff)
-                            ammo_fired2 = 0
-                            ammo_magazine2 = mag_cap2
 
-                            weapon2_ready = False
-                            weapon1_ready = True
-                            fire_timer1 = time_elapsed if fire_ready1 else fire_timer1
-                            fire_timer1 += swap_time1
-                            fire_timer1 += fire_delay1 if delay_first_shot1 else 0
+                            if (ammo_total1 >= mag_cap1 or ammo_total2 < mag_cap2) and (fire_delay2 + reload_time2) >= swap_time1:
+                                weapon2_ready = False
+                                weapon1_ready = True
+                                fire_timer1 = time_elapsed if fire_ready1 else fire_timer1
+                                fire_timer1 += swap_time1
+                                fire_timer1 += fire_delay1 if delay_first_shot1 else 0
+                            
+                            elif ammo_total2 < mag_cap2:
+                                weapon2_ready = True
+
+                            if ammo_magazine1 == 0 and weapon1_ready == True:
+                                fire_delay1 += reload_time1
+                                ammo_magazine1 = mag_cap1
+                                ammo_fired1 = 0
+
+
+                            elif ammo_magazine1 == 0 and weapon1_ready == False:
+                                fire_timer2 += reload_time2
+                                fire_timer2 -= fire_delay2 if delay_first_shot2 == True else 0
+                                fire_timer2 = round(fire_timer2, cls.round_coeff)
+                                ammo_fired2 = 0
+                                ammo_magazine2 = mag_cap2
+
 
                         elif time_elapsed >= fire_timer2:
                             total_damage += dmg_output2
@@ -552,7 +576,7 @@ class Damage:
                 if stale_val != t_dmg[i]:
                     if i != 0:
                         print("weapons:", cls.swap_groups[z][0].get_name(), cls.swap_groups[z][1].get_name(), "| damage at", (i/100) ,"seconds:", t_dmg[i], "| dps:[",round(t_dmg[i]/(i/100), 1),"]","| per shot:<", dmg_output1, ">")
-                        #print("fired:", ammo_fired1)
+                        print("total:", ammo_total1, ammo_total2)
                         stale_val = t_dmg[i]
 
                 
@@ -633,6 +657,7 @@ class Damage:
                 if ammo_fired % 4 == 0:
                     ammo_magazine += 2
                     ammo_total += 2
+                    #print("oops! ammo! adck:", cls.fttc_addcheck, "amck:", cls.fttc_ammocheck, "mag, tot, fir", ammo_magazine,ammo_total,ammo_fired)
                     cls.fttc_addcheck = 1
                     cls.fttc_ammocheck = ammo_fired
             else:
@@ -701,32 +726,32 @@ class Damage:
                 #could add a bns_proc = 2 segment for handling lockouts if i ever figure out how that might work
 
 
-# # Myssto: Sorry your test cases were crowding my console log :)
+# Myssto: Sorry your test cases were crowding my console log :)
 
-# #triple tap + firing line + veist (taipan)
-# the = Weapon("taipan", 120, 1.43, 50000, 5, 21, True, False, 0, 0, 1.5, [1,3,10], [2])
-# #the.add_weapon(the.name, the.fire_rate, the.reload_time, the.damage_per_shot, the.mag_cap, the.ammo_total, the.delay_first_shot, the.burst_weapon, the.burst_bullets, the.swap_group, the.swap_time, the.perk_indices, the.buff_indices)
+#triple tap + firing line + veist (taipan)
+the = Weapon("taipan", 120, 1.43, 50000, 5, 21, True, False, 0, 0, 1.5, [1,3,10], [2])
+#the.add_weapon(the.name, the.fire_rate, the.reload_time, the.damage_per_shot, the.mag_cap, the.ammo_total, the.delay_first_shot, the.burst_weapon, the.burst_bullets, the.swap_group, the.swap_time, the.perk_indices, the.buff_indices)
 
-# #fttc + bns (cataclysmic)
-# piss = Weapon("cataclysmic", 120, 1.43, 50000, 6, 20, True, False, 0, 0, 1.5, [2,15], [1])
-# #piss.add_weapon(piss.name, piss.fire_rate, piss.reload_time, piss.damage_per_shot, piss.mag_cap, piss.ammo_total, piss.delay_first_shot, piss.burst_weapon, piss.burst_bullets, piss.swap_group, piss.swap_time, piss.perk_indices, the.buff_indices)
+#fttc + bns (cataclysmic)
+piss = Weapon("cataclysmic", 120, 1.43, 50000, 6, 20, True, False, 0, 0, 1.5, [2,15], [1])
+#piss.add_weapon(piss.name, piss.fire_rate, piss.reload_time, piss.damage_per_shot, piss.mag_cap, piss.ammo_total, piss.delay_first_shot, piss.burst_weapon, piss.burst_bullets, piss.swap_group, piss.swap_time, piss.perk_indices, the.buff_indices)
 
-# #stormchaser ? (i am cheating since burst lfrs use 1 bullet for 3 rather than 3 for 3 so this is wacky :/)
-# stormchaser = Weapon("stormchaser", 120, 1.43, 20000, 15, 63, True, True, 3, 0, 1.5, [10], [1])
-# #storm.add_weapon(storm.name, storm.fire_rate, storm.reload_time, storm.damage_per_shot, storm.mag_cap, storm.ammo_total, storm.delay_first_shot, storm.burst_weapon, storm.burst_bullets, storm.swap_group, storm.swap_time, storm.perk_indices, storm.buff_indices)
+#stormchaser ? (i am cheating since burst lfrs use 1 bullet for 3 rather than 3 for 3 so this is wacky :/)
+stormchaser = Weapon("stormchaser", 120, 1.43, 20000, 15, 63, True, True, 3, 0, 1.5, [10], [1])
+#storm.add_weapon(storm.name, storm.fire_rate, storm.reload_time, storm.damage_per_shot, storm.mag_cap, storm.ammo_total, storm.delay_first_shot, storm.burst_weapon, storm.burst_bullets, storm.swap_group, storm.swap_time, storm.perk_indices, storm.buff_indices)
 
-# #debug
-# gun1_group1 = Weapon("1.1", 120, 1.43, 50000, 6, 20, True, False, 0, 1, 1.84, [2,15], [1])
-# gun2_group1 = Weapon("1.2", 120, 1.43, 50000, 6, 20, True, False, 0, 1, 1.84, [2,15], [1])
-# gun1_group2 = Weapon("2.1", 120, 1.43, 50000, 6, 20, True, False, 0, 2, 1.84, [2,15], [1])
-# gun2_group2 = Weapon("2.2", 120, 1.43, 50000, 6, 20, True, False, 0, 2, 1.84, [2,15], [1])
-# gun1_group3 = Weapon("3.1", 120, 1.43, 50000, 6, 20, True, False, 0, 3, 1.84, [2,15], [1])
-# gun2_group3 = Weapon("3.2", 120, 1.43, 50000, 6, 20, True, False, 0, 3, 1.84, [2,15], [1])
+#debug
+gun1_group1 = Weapon("1.1", 120, 1.43, 50000, 6, 20, True, False, 0, 1, 1.84, [2,15], [1])
+gun2_group1 = Weapon("1.2", 120, 1.43, 50000, 6, 20, True, False, 0, 1, 1.84, [2,15], [1])
+gun1_group2 = Weapon("2.1", 120, 1.43, 50000, 6, 20, True, False, 0, 2, 1.84, [2,15], [1])
+gun2_group2 = Weapon("2.2", 120, 1.43, 50000, 6, 20, True, False, 0, 2, 1.84, [2,15], [1])
+gun1_group3 = Weapon("3.1", 120, 1.43, 50000, 6, 20, True, False, 0, 3, 1.84, [2,15], [1])
+gun2_group3 = Weapon("3.2", 120, 1.43, 50000, 6, 20, True, False, 0, 3, 1.84, [2,15], [1])
 
-# #calculate damage function
-# Damage.DamageCalculate()
+#calculate damage function
+Damage.DamageCalculate()
 
-# Damage.DamageCalculateMulti()
+Damage.DamageCalculateMulti()
 
-# #keeping this for reference of how to call weapon instances i guess but idk
-# #Damage(the).print_weapon_instance()
+#keeping this for reference of how to call weapon instances i guess but idk
+#Damage(the).print_weapon_instance()
