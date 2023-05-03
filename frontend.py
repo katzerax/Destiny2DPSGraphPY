@@ -9,7 +9,7 @@ import weaponclassrewrite as backend
 
 
 ###############################
-##  Myssto frontend concept  ##
+##  Myssto frontend concept  ## hi myssto :3 -k
 ###############################
 
 # TODO
@@ -445,6 +445,10 @@ class GUI(tk.Frame):
             self.burst_bullets_label.grid(row=13, column=0, padx=5, pady=5, sticky=tk.W)
             self.burst_bullets_entry.grid(row=13, column=1, padx=5, pady=5, sticky=tk.W)
 
+    # Placeholder for multi-wep
+    def weapons_menu_ext(self):
+        pass
+
     def apply_settings(self):
         self.settings.set_interface_mode(self.setting1_combo.get())
         self.settings.set_cmd_prints(self.setting2_combo.get())
@@ -452,10 +456,6 @@ class GUI(tk.Frame):
         self.settings.set_calc_when_damage_dealt(self.setting4_combo.get())
         self.settings.save_settings()
         self.settings.restart_program(root)
-
-    # Placeholder for multi-wep
-    def weapons_menu_ext(self):
-        pass
 
     def options_menu(self):
         # Root frame
@@ -504,7 +504,6 @@ class GUI(tk.Frame):
         
         # Hide this menu on start
         self.options_frame.pack_forget()
-    
 
     def log_menu(self):
         pass
