@@ -9,7 +9,7 @@ import weaponclassrewrite as backend
 
 
 ###############################
-##  Myssto frontend concept  ##
+##  Myssto frontend concept  ## hi myssto :3 -k
 ###############################
 
 # TODO
@@ -504,7 +504,6 @@ class GUI(tk.Frame):
         
         # Hide this menu on start
         self.options_frame.pack_forget()
-    
 
     def log_menu(self):
         pass
