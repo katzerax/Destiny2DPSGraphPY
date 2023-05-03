@@ -330,6 +330,7 @@ class Damage:
                 weapon1_ready = True
                 ammo_fired1 = 0
                 burst_shot1 = 0
+                empty_check1 = 0
 
                 delay_first_shot1 = cls.swap_groups[z][0].get_dfs()
                 burst_weapon1 = cls.swap_groups[z][0].get_burst_variable()
@@ -371,6 +372,7 @@ class Damage:
                 weapon2_ready = False
                 ammo_fired2 = 0
                 burst_shot2 = 0
+                empty_check2 = 0
 
                 delay_first_shot2 = cls.swap_groups[z][1].get_dfs()
                 burst_weapon2 = cls.swap_groups[z][1].get_burst_variable()
@@ -411,6 +413,7 @@ class Damage:
                 fire_ready3 = False
                 ammo_fired3 = 0
                 burst_shot3 = 0
+                empty_check3 = 0
 
                 delay_first_shot3 = cls.swap_groups[z][2].get_dfs()
                 burst_weapon3 = cls.swap_groups[z][2].get_burst_variable()
@@ -490,29 +493,42 @@ class Damage:
 
                 if time_elapsed >= fire_timer1:
                     fire_ready1 = True
+                    if ammo_total2 == 0:
+                        weapon1_ready = True
+                        if empty_check1 == 0:
+                            fire_timer1 = time_elapsed
+                            fire_timer1 += fire_delay1
+                            empty_check1 = 1
+
                 if time_elapsed >= fire_timer2:
                     fire_ready2 = True
+                    if ammo_total1 == 0:
+                        weapon2_ready = True
+                        if empty_check2 == 0:
+                            fire_timer2 = time_elapsed
+                            fire_timer2 += fire_delay2
+                            empty_check2 = 1
 
                 if weapon1_ready == True:
                     if burst_weapon1 == False:
                         if ammo_total1 == 0:
                             total_damage = total_damage
+                            ammo_magazine1 = 0
                             weapon1_ready = False
                         elif ammo_magazine1 == 0:
 
-                            #this isnt accounting for reload added time later in the dps check.
-                            if (ammo_total2 >= mag_cap2 or ammo_total1 < mag_cap1) and (fire_delay1 + reload_time1) >= swap_time2:
-                                weapon1_ready = False
-                                weapon2_ready = True
-                                fire_timer2 = time_elapsed if fire_ready2 else fire_timer2
-                                fire_timer2 += swap_time2
-                                fire_timer2 += fire_delay2 if delay_first_shot2 else 0
+                            if ((ammo_total2 >= mag_cap2 or ammo_total1 < mag_cap1) and (fire_delay1 + reload_time1) >= swap_time2) and (ammo_total2 != 0):
+                                    weapon1_ready = False
+                                    weapon2_ready = True
+                                    fire_timer2 = time_elapsed if fire_ready2 else fire_timer2
+                                    fire_timer2 += swap_time2
+                                    fire_timer2 += fire_delay2 if delay_first_shot2 else 0
                             
                             elif ammo_total2 < mag_cap2:
                                 weapon1_ready = True
 
                             if ammo_magazine2 == 0 and weapon2_ready == True:
-                                fire_delay2 += reload_time2
+                                fire_timer2 += reload_time2
                                 ammo_magazine2 = mag_cap2
                                 ammo_fired2 = 0
 
@@ -525,6 +541,7 @@ class Damage:
 
                         elif time_elapsed >= fire_timer1:
                             total_damage += dmg_output1
+                            fire_timer1 = time_elapsed
                             fire_timer1 += fire_delay1
                             fire_timer1 = round(fire_timer1, cls.round_coeff)
                             ammo_fired1 += 1
@@ -535,24 +552,24 @@ class Damage:
                     if burst_weapon2 == False:
                         if ammo_total2 == 0:
                             total_damage = total_damage
+                            ammo_magazine2 = 0
                             weapon2_ready = False
                         elif ammo_magazine2 == 0:
 
-                            if (ammo_total1 >= mag_cap1 or ammo_total2 < mag_cap2) and (fire_delay2 + reload_time2) >= swap_time1:
-                                weapon2_ready = False
-                                weapon1_ready = True
-                                fire_timer1 = time_elapsed if fire_ready1 else fire_timer1
-                                fire_timer1 += swap_time1
-                                fire_timer1 += fire_delay1 if delay_first_shot1 else 0
+                            if ((ammo_total1 >= mag_cap1 or ammo_total2 < mag_cap2) and (fire_delay2 + reload_time2) >= swap_time1) and (ammo_total1 != 0):
+                                    weapon2_ready = False
+                                    weapon1_ready = True
+                                    fire_timer1 = time_elapsed if fire_ready1 else fire_timer1
+                                    fire_timer1 += swap_time1
+                                    fire_timer1 += fire_delay1 if delay_first_shot1 else 0
                             
-                            elif ammo_total2 < mag_cap2:
+                            elif ammo_total1 < mag_cap1:
                                 weapon2_ready = True
 
                             if ammo_magazine1 == 0 and weapon1_ready == True:
-                                fire_delay1 += reload_time1
+                                fire_timer1 += reload_time1
                                 ammo_magazine1 = mag_cap1
                                 ammo_fired1 = 0
-
 
                             elif ammo_magazine1 == 0 and weapon1_ready == False:
                                 fire_timer2 += reload_time2
@@ -561,15 +578,15 @@ class Damage:
                                 ammo_fired2 = 0
                                 ammo_magazine2 = mag_cap2
 
-
                         elif time_elapsed >= fire_timer2:
                             total_damage += dmg_output2
+                            fire_timer2 = time_elapsed
                             fire_timer2 += fire_delay2
                             fire_timer2 = round(fire_timer2, cls.round_coeff)
                             ammo_fired2 += 1
                             ammo_magazine2 -= 1
                             ammo_total2 -= 1
-                    
+   
                 time_elapsed += cls.x_increments
                 time_elapsed = round(time_elapsed, 5)
                 t_dmg.append(total_damage)
