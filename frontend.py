@@ -377,19 +377,19 @@ class GUI(tk.Frame):
             case 0:
                 # NOTE Having a popup for a success is kinda aids ill work on something else
                 messagebox.showinfo('Success', 'Weapon created successfully')
-                print('Weapon created successfully')
+                print('Weapon creation exited with error code 0: success')
             case 1:
                 messagebox.showerror('Name Error', 'Make sure the name for your weapon contains at least one letter')
-                print('Make sure the name for your weapon contains at least one letter')
+                print('Weapon creation exited with error code 1: Name Error')
             case 2:
                 messagebox.showerror('Float Error', 'Make sure Fire Rate and Reload Time are valid numbers')
-                print('Make sure Fire Rate and Reload Time are valid numbers')
+                print('Weapon creation exited with error code 2: Floating Point Error')
             case 3:
                 messagebox.showerror('Integer Error', 'Make sure Damage per Shot, Mag Size, and Ammo Total are valid numbers')
-                print('Make sure Damage per Shot, Mag Size, and Ammo Total are valid numbers')
+                print('Weapon creation exited with error code 3: Integer Error')
             case _:
                 messagebox.showerror('Creation Error', 'There was an error creating your weapon')
-                print('There was an error creating your weapon')
+                print('Weapon creation exited with error code 4+: Unknown Error')
         
     def create_weapon(self):
         # Name validation
@@ -434,17 +434,11 @@ class GUI(tk.Frame):
                     return 3
             except ValueError:
                 return 3
-            
+    
         perk1 = self.weapons_menu_widgets['perk1'][1].get()
         perk2 = self.weapons_menu_widgets['perk1'][1].get()
-
-        perk_indices = []
-        for (index, perkname) in backend.PERKS_LIST.items():
-            if list(perkname)[0] in [perk1, perk2]:
-                perk_indices.append(index)
-
-        # TODO figure out a working list comprehension for this its annoying me
-        perk_indices = [index for index, perkname in backend.PERKS_LIST.items() if perkname[0] in [perk1, perk2]]
+        # THANKS K
+        perk_indices = [index for index, perkname in backend.PERKS_LIST.items() if list(perkname)[0] in [perk1, perk2]]
 
         enhance1 = self.weapons_menu_vars['enhance1'].get()
         enhance2 = self.weapons_menu_vars['enhance2'].get()
@@ -526,7 +520,6 @@ class GUI(tk.Frame):
 
         # Hide the log frame on start
         self.log_frame.pack_forget()
-
 class TextRedirector:
     def __init__(self, text_widget):
         self.text_widget = text_widget
@@ -539,8 +532,6 @@ class TextRedirector:
 
     def flush(self):
         pass
-
-
 
 root = tk.Tk()
 app = GUI(master=root)
