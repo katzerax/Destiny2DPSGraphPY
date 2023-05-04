@@ -67,6 +67,7 @@ class GUI(tk.Frame):
         self.pack()
         self.load_settings()
         self.initGUI()
+        sys.stdout = TextRedirector(self.log_text)
 
     def load_settings(self):
         # Instance settings
@@ -83,6 +84,7 @@ class GUI(tk.Frame):
             self.matplotlib_bg = "#1E1E1E"
             self.wep_frame_bg = "#1E1E1E"
             self.listbox_bg = "#808080"
+            self.white_text = "#CCCCCC"
         else:
             self.check_button_style = {}
             self.button_style = {}
@@ -91,6 +93,7 @@ class GUI(tk.Frame):
             self.combo_style = {'width': 17, 'state': 'readonly'}
             self.wep_frame_bg = "#FFFFFF"
             self.listbox_bg = "#808080"
+            self.white_text = "#000000"
 
         if self.settings.cmd_prints == 'True':
             pass
@@ -145,8 +148,8 @@ class GUI(tk.Frame):
                 target = self.weapons_frame
             case 2:
                 target = self.options_frame
-            # case 4:
-            #     target = self.log_frame
+            case 3:
+                target = self.log_frame
 
         # Return if the clicked option is already being displayed
         if target.winfo_ismapped():
@@ -158,7 +161,7 @@ class GUI(tk.Frame):
             self.graph_frame,
             self.weapons_frame,
             self.options_frame,
-            # self.log_frame,
+            self.log_frame,
         ]
         menus.remove(target)
         for menu in menus:
@@ -364,14 +367,19 @@ class GUI(tk.Frame):
             case 0:
                 # NOTE Having a popup for a success is kinda aids ill work on something else
                 messagebox.showinfo('Success', 'Weapon created successfully')
+                print('Weapon created successfully')
             case 1:
                 messagebox.showerror('Name Error', 'Make sure the name for your weapon contains at least one letter')
+                print('Make sure the name for your weapon contains at least one letter')
             case 2:
                 messagebox.showerror('Float Error', 'Make sure Fire Rate and Reload Time are valid numbers')
+                print('Make sure Fire Rate and Reload Time are valid numbers')
             case 3:
                 messagebox.showerror('Integer Error', 'Make sure Damage per Shot, Mag Size, and Ammo Total are valid numbers')
+                print('Make sure Damage per Shot, Mag Size, and Ammo Total are valid numbers')
             case _:
                 messagebox.showerror('Creation Error', 'There was an error creating your weapon')
+                print('There was an error creating your weapon')
         
     def create_weapon(self):
         # Name validation
@@ -491,7 +499,43 @@ class GUI(tk.Frame):
     # Honestly don't know if I want to go through the trouble of doing this
     # It would clutter the code a lot (at least the only way I know how to do it) -mys
     def log_menu(self):
+        self.log_frame = tk.Frame(self, **self.frame_style)
+        self.log_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+
+        # Define color variables
+        background_color = self.matplotlib_bg
+        text_color = self.white_text
+
+        # Create a Text widget for displaying the console output
+        self.log_text = tk.Text(self.log_frame, wrap=tk.WORD, state=tk.DISABLED, bg=background_color, fg=text_color)
+        self.log_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        # Create a scrollbar for the Text widget
+        self.log_scrollbar = tk.Scrollbar(self.log_frame, command=self.log_text.yview)
+        self.log_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        # Configure the Text widget to use the scrollbar
+        self.log_text.config(yscrollcommand=self.log_scrollbar.set)
+
+        # Hide the log frame on start
+        self.log_frame.pack_forget()
+
+
+
+class TextRedirector:
+    def __init__(self, text_widget):
+        self.text_widget = text_widget
+
+    def write(self, string):
+        self.text_widget.config(state=tk.NORMAL)
+        self.text_widget.insert(tk.END, string)
+        self.text_widget.see(tk.END)
+        self.text_widget.config(state=tk.DISABLED)
+
+    def flush(self):
         pass
+
+
 
 root = tk.Tk()
 app = GUI(master=root)
