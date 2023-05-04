@@ -1,5 +1,6 @@
 import tkinter as tk
 import tkinter.ttk as ttk
+from tkinter.filedialog import asksaveasfile
 import sys
 import os
 import configparser
@@ -260,6 +261,10 @@ class GUI(tk.Frame):
         self.graph_generate_button = tk.Button(self.graph_wep_frame, text="Generate Graph", command=self.generate_graph, **self.button_style)
         self.graph_generate_button.grid(row=15, column=0, padx=8, pady=5, sticky=tk.W)
 
+        # Save graph button
+        self.graph_save_button = tk.Button(self.graph_wep_frame, text="Save Graph", command=self.save_graph, **self.button_style)
+        self.graph_save_button.grid(row=15, column=1, padx=8, pady=5, sticky=tk.W)
+
         # Create a Matplotlib figure and canvas
         self.fig = Figure(figsize=(5, 4), dpi=100)
         self.ax = self.fig.add_subplot(111)
@@ -267,7 +272,7 @@ class GUI(tk.Frame):
         self.ax.set_facecolor(self.matplotlibbg)
         self.fig.set_facecolor(self.matplotlibbg)
 
-        # Set axis and labels
+        # Set default axis and labels
         self.ax.set_title("DPS Over Time")
         self.ax.set_xlabel("Time (seconds)")
         self.ax.set_ylabel("DPS", labelpad=-340, rotation='horizontal')
@@ -278,6 +283,12 @@ class GUI(tk.Frame):
 
     def generate_graph(self):
         pass
+
+    def save_graph(self):
+        file_path = asksaveasfile(defaultextension='.png', filetypes=[('All Files', '*.*')], initialdir='./', initialfile='dps_graph.png')
+        if file_path is None:
+            return
+        self.fig.savefig(file_path.name)
 
     # This feels really hacky ill probably figure out something smarter later
     # and by this I mean literally everything with the 10 combo boxes
