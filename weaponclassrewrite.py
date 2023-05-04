@@ -2,26 +2,13 @@ import stat
 import math
 import random
 
-# Myssto:
-#
-# Migrated a couple things:
-# I changed the way you list and retrieve weapons
-# Before you were storing each instance of Weapon in each instance of Weapon (if that makes sense)
-# This kinda defeats the purpose of OOP in the first place :P
-# - classmethods list_weapon and add_to_list
-# + global function create_weapon
-# + global dictionary weapons_list
-# Now you have a global list of Weapons where each instance is only added a single time
-# I changed your test cases at the bottom to show correct usage :)
-# PLUS IT MAKES WORKING WITH THE FRONTEND SO MUCH EASIER!!!
-# AND IT SETS UP THE SKELETON FOR LOADING WEAPON CONFIGS!!!
-
 PERKS_LIST = {
     0: ("Null", "No selection"),
-    1: ("Triple Tap", "Landing 3 precision hits refunds 1 ammo back to the magazine for free."),
-    2: ("Fourth Times the Charm", "Landing 4 precision hits refunds 2 ammo back to the magazine for free."),
-    3: ("Perk 3", "Description"),
-    4: ("Perk 4", "Description"),
+    1: ("Triple Tap", "Landing 3 precision hits refunds 1 ammo back to the magazine."),
+    2: ("Fourth Times the Charm", "Landing 4 precision hits refunds 2 ammo back to the magazine."),
+    6: ("Vorpal Weapon", "Flat damage increase of 10% to heavies, 15% to specials, and 20% to primaries."),
+    10: ("Firing Line", "Gain 20%% increased precision damage when within 15 meters of 2 or more allies."),
+    15: ("Bait and Switch", "10 seconds of 35%% increased damage upon dealing damage with all 3 weapons within 3 seconds."),
 }
 
 BUFFS_LIST = {
@@ -34,8 +21,12 @@ weapons_list = {
 }
 
 def create_weapon(weapon_settings: dict):
-    new_weapon = Weapon(**weapon_settings)
+    try:
+        new_weapon = Weapon(**weapon_settings)
+    except BaseException:
+        return False
     weapons_list[str(weapon_settings['name'])] = new_weapon
+    return True
 
 class Weapon:
     def __init__(self, name:str, fire_rate:float, reload_time:float, damage_per_shot:int, mag_cap:int, ammo_total:int, delay_first_shot:bool=False, burst_weapon:bool=False, burst_bullets:int=0, swap_group:int=0, swap_time:float=0, perk_indices:list=[], buff_indices:list=[]):
@@ -287,9 +278,6 @@ class Damage:
                 #print("name:", weapons_list[z].get_name(), "| dps at 10 seconds:", dps[999])
                 #print("name:", weapons_list[z].get_name(), "| dps at 13 seconds:", dps[1299])
                 #print("name:", weapons_list[z].get_name(), "| dps at 20 seconds:", dps[1999])
-
-    #im going to cry myself to sleep trying to figure out what the hell this is going to do for me!!!
-    #this can likely be integrated into the main function that just checks for whether swap_group = 0 or not
 
     #triple tap - 1
     tt_addcheck = 0
