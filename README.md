@@ -31,7 +31,7 @@ As of release 6.0, the code has been completely rewritten and overhauled to now 
 - [K](https://github.com/katzerax) (repo owner and initial programmer, code contributor)
 - [vcat](https://github.com/vixicat) (initial math and calculation logic, code contributor)
 - [snark](https://github.com/rare-snark) (early iteration code contributor)
-- [myssto](https://github.com/Placni) (later iteration code contributor)
+- [myssto](https://github.com/myssto) (later iteration code contributor)
 - [jade](https://twitter.com/iamjade4_) (code logic fix suggestions)
 
 ## Acknowledgements
