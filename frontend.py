@@ -9,13 +9,11 @@ import weaponclassrewrite as backend
 
 # TODO
 # 1. Default ini
-# 2. Nav bar // DONE
-# 3. Weapons menu // Talk to rox about multi-wep
-# 4. Graph menu // Add wep selection
-# 5. Settings menu
-# 6. Log menu // normal vs verbose?
-# 7. Make graph menu functional
-# 8. Add graph config to settings or graph menu?
+# 2. Weapons menu // Talk to rox about multi-wep
+# 3. Log menu // normal vs verbose?
+# 4. Make graph menu functional
+# 5. Add graph config to settings or graph menu?
+# 6. Look into on-hover tooltips
 
 class Settings:
     def __init__(self):
@@ -35,9 +33,6 @@ class Settings:
     def set_cmd_prints(self, value):
         self.cmd_prints = value
 
-    def set_multi_weapon(self, value):
-        self.multi_weapon = value
-
     def set_calc_when_damage_dealt(self, value):
         self.calc_when_damage_dealt = value
 
@@ -55,8 +50,9 @@ class Settings:
         root.destroy()
 
         # Re-run the script
+            # execl as an executable is really volatile
+            # maybe we look into another way to reload app? -mys
         os.execl(sys.executable, sys.executable, *sys.argv)
-
 
 class GUI(tk.Frame):
     def __init__(self, master=None):
@@ -96,11 +92,6 @@ class GUI(tk.Frame):
         else:
             pass
 
-        if self.settings.multi_weapon == 'True':
-            pass
-        else:
-            pass
-
         if self.settings.calc_when_damage_dealt.lower() == 'whenattacking':
             pass
         else:
@@ -118,7 +109,6 @@ class GUI(tk.Frame):
         self.nav_frame = tk.Frame(self, **self.frame_style)
         self.nav_frame.pack(side=tk.LEFT, fill=tk.Y)
 
-        # Nice styling brother man
         listbox_style = {
             'height': 5,
             'highlightthickness': 0,
@@ -378,7 +368,8 @@ class GUI(tk.Frame):
 
         # Perk select
         perk_choices = [value[0] for value in backend.PERKS.values()]
-        perk_tooltips = [value[1] for value in backend.PERKS.values()]
+        # Possibly implement tooltips on hover?
+        # perk_tooltips = [value[1] for value in backend.PERKS.values()]
 
         self.perk1_label = tk.Label(self.weapons_frame, text="Perk 1", **self.button_style)
         self.perk1_label.grid(row=9, column=0, padx=5, pady=5, sticky=tk.W)
@@ -441,20 +432,12 @@ class GUI(tk.Frame):
     def weapons_menu_ext(self):
         pass
 
-    def apply_settings(self):
-        self.settings.set_interface_mode(self.setting1_combo.get())
-        self.settings.set_cmd_prints(self.setting2_combo.get())
-        self.settings.set_multi_weapon(self.setting3_combo.get())
-        self.settings.set_calc_when_damage_dealt(self.setting4_combo.get())
-        self.settings.save_settings()
-        self.settings.restart_program(root)
-
     def options_menu(self):
         # Root frame
         self.options_frame = tk.Frame(self, **self.frame_style)
         self.options_frame.pack(side=tk.LEFT, fill=tk.Y)
 
-        # Setting 1
+        # Setting 1 (ui theme)
         setting1_options = ['Light', 'Dark']
         self.setting1_label = tk.Label(self.options_frame, text="UI Mode", **self.button_style)
         self.setting1_label.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
@@ -463,7 +446,7 @@ class GUI(tk.Frame):
         self.setting1_combo.set(self.settings.interface_mode)
         self.setting1_combo.bind("<<ComboboxSelected>>", lambda e: self.options_frame.focus())
 
-        # Setting 2
+        # Setting 2 (cmd prints)
         setting2_options = ['True', 'False']
         self.setting2_label = tk.Label(self.options_frame, text="CMD Prints", **self.button_style)
         self.setting2_label.grid(row=1, column=0, padx=5, pady=5, sticky=tk.W)
@@ -472,16 +455,7 @@ class GUI(tk.Frame):
         self.setting2_combo.set(str(self.settings.cmd_prints))
         self.setting2_combo.bind("<<ComboboxSelected>>", lambda e: self.options_frame.focus())
 
-        # Setting 3
-        setting3_options = ['True', 'False']
-        self.setting3_label = tk.Label(self.options_frame, text="Multiweapon", **self.button_style)
-        self.setting3_label.grid(row=2, column=0, padx=5, pady=5, sticky=tk.W)
-        self.setting3_combo = ttk.Combobox(self.options_frame, values=setting3_options, **self.combo_style)
-        self.setting3_combo.grid(row=2, column=1, padx=5, pady=5, sticky=tk.W)
-        self.setting3_combo.set(str(self.settings.multi_weapon))
-        self.setting3_combo.bind("<<ComboboxSelected>>", lambda e: self.options_frame.focus())
-
-        # Setting 4
+        # Setting 3 (whendamagedealt)
         setting4_options = ['What', 'Is', 'This']
         self.setting4_label = tk.Label(self.options_frame, text="When Damage Dealt", **self.button_style)
         self.setting4_label.grid(row=3, column=0, padx=5, pady=5, sticky=tk.W)
@@ -496,6 +470,13 @@ class GUI(tk.Frame):
         
         # Hide this menu on start
         self.options_frame.pack_forget()
+
+    def apply_settings(self):
+        self.settings.set_interface_mode(self.setting1_combo.get())
+        self.settings.set_cmd_prints(self.setting2_combo.get())
+        self.settings.set_calc_when_damage_dealt(self.setting4_combo.get())
+        self.settings.save_settings()
+        self.settings.restart_program(root)
 
     def log_menu(self):
         pass
