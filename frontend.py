@@ -15,6 +15,8 @@ import weaponclassrewrite as backend
 # 5. Add graph config to settings or graph menu?
 # 6. Look into on-hover tooltips
 
+# GITIGNORE SOME BITCHES
+
 class Settings:
     def __init__(self):
         self.config = configparser.ConfigParser()
