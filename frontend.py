@@ -10,8 +10,8 @@ import weaponclassrewrite as backend
 # TODO
 # 1. Default ini
 # 2. Weapons menu // Talk to rox about multi-wep
-# 3. Log menu // normal vs verbose?
-# 4. Make graph menu functional
+# 3. Log menu // normal vs verbose? (see log_menu comments)
+# 4. Make graph menu functional // 50% done
 # 5. Add graph config to settings or graph menu?
 # 6. Look into on-hover tooltips
 
@@ -22,13 +22,13 @@ class Settings:
         # Add check for existing settings // create default if not
         with open(ini_path, 'r', encoding='utf-8') as f:
             self.config.read_file(f)
-        self.interface_mode = self.config.get('Interface', 'Mode')
+        self.interface_theme = self.config.get('Interface', 'Theme')
         self.cmd_prints = self.config.getboolean('Interface', 'CMDPrints')
         self.multi_weapon = self.config.getboolean('Interface', 'Multiweapon')
         self.calc_when_damage_dealt = self.config.get('Calculations', 'WhenDamageDealt')
 
-    def set_interface_mode(self, mode):
-        self.interface_mode = mode
+    def set_interface_theme(self, theme):
+        self.interface_theme = theme
 
     def set_cmd_prints(self, value):
         self.cmd_prints = value
@@ -37,7 +37,7 @@ class Settings:
         self.calc_when_damage_dealt = value
 
     def save_settings(self):
-        self.config.set('Interface', 'Mode', self.interface_mode)
+        self.config.set('Interface', 'Theme', self.interface_theme)
         self.config.set('Interface', 'CMDPrints', str(self.cmd_prints))
         self.config.set('Interface', 'Multiweapon', str(self.multi_weapon))
         self.config.set('Calculations', 'WhenDamageDealt', self.calc_when_damage_dealt)
@@ -45,12 +45,15 @@ class Settings:
         with open('settings.ini', 'w') as configfile:
             self.config.write(configfile)
 
+    def reset_settings(self):
+        pass
+
     def restart_program(self, root):
         # Close the tkinter window
         root.destroy()
 
         # Re-run the script
-            # execl as an executable is really volatile
+            # NOTE execl as an executable is really volatile
             # maybe we look into another way to reload app? -mys
         os.execl(sys.executable, sys.executable, *sys.argv)
 
@@ -68,7 +71,7 @@ class GUI(tk.Frame):
         # Instance settings
         self.settings = Settings()
         # Access and apply settings
-        if self.settings.interface_mode.lower() == 'dark':
+        if self.settings.interface_theme.lower() == 'dark':
             self.configure(bg='#1E1E1E')
             self.master.configure(bg='#1E1E1E', highlightthickness=2, highlightcolor='#000000')
             self.combo_style = {'width': 17, 'state': 'readonly'}
@@ -122,6 +125,7 @@ class GUI(tk.Frame):
             'width': 10,
             'exportselection': False
         }
+        # Create navbar and load options
         self.nav_listbox = tk.Listbox(self.nav_frame, **self.button_style, **listbox_style)
         self.nav_listbox.pack()
         self.nav_listbox.insert(1, 'Graph')
@@ -129,10 +133,13 @@ class GUI(tk.Frame):
         self.nav_listbox.insert(3, 'Options')
         self.nav_listbox.insert(4, 'Log')
 
+        # Set default selection to 'Graph'
         self.nav_listbox.select_set(0)
+        # Handle clicks on the navbar
         self.nav_listbox.bind('<<ListboxSelect>>', self.toggle_menus)
 
     def toggle_menus(self, evt):
+        # Grab which option was clicked
         index = int(evt.widget.curselection()[0])
         match index:
             case 0:
@@ -144,10 +151,12 @@ class GUI(tk.Frame):
             # case 4:
             #     target = self.log_frame
 
+        # Return if the clicked option is already being displayed
         if target.winfo_ismapped():
             return
 
         # Hardcoded? list of selectable menus
+        # Hide all menus but the one selected, then show the selected menu
         menus = [
             self.graph_frame,
             self.weapons_frame,
@@ -185,18 +194,21 @@ class GUI(tk.Frame):
         self.graph_wep1_combo.grid(row=1, column=1, padx=5, pady=5, sticky=tk.W)
         self.graph_wep1_combo.bind("<<ComboboxSelected>>",lambda e: self.graph_frame.focus())
 
+        # Wep2
         self.graph_wep2_label = tk.Label(self.graph_wep_frame, text='Weapon 2', **self.button_style)
         self.graph_wep2_label.grid(row=2, column=0, padx=5, pady=5, sticky=tk.W)
         self.graph_wep2_combo = ttk.Combobox(self.graph_wep_frame, **self.combo_style)
         self.graph_wep2_combo.grid(row=2, column=1, padx=5, pady=5, sticky=tk.W)
         self.graph_wep2_combo.bind("<<ComboboxSelected>>",lambda e: self.graph_frame.focus())
 
+        # Wep3
         self.graph_wep3_label = tk.Label(self.graph_wep_frame, text='Weapon 3', **self.button_style)
         self.graph_wep3_label.grid(row=3, column=0, padx=5, pady=5, sticky=tk.W)
         self.graph_wep3_combo = ttk.Combobox(self.graph_wep_frame, **self.combo_style)
         self.graph_wep3_combo.grid(row=3, column=1, padx=5, pady=5, sticky=tk.W)
         self.graph_wep3_combo.bind("<<ComboboxSelected>>",lambda e: self.graph_frame.focus())
 
+        # Wep4
         self.graph_wep4_label = tk.Label(self.graph_wep_frame, text='Weapon 4', **self.button_style)
         self.graph_wep4_label.grid(row=4, column=0, padx=5, pady=5, sticky=tk.W)
         self.graph_wep4_combo = ttk.Combobox(self.graph_wep_frame, **self.combo_style)
@@ -205,6 +217,7 @@ class GUI(tk.Frame):
         self.graph_wep4_label.grid_forget()
         self.graph_wep4_combo.grid_forget()
 
+        # Wep5
         self.graph_wep5_label = tk.Label(self.graph_wep_frame, text='Weapon 5', **self.button_style)
         self.graph_wep5_label.grid(row=5, column=0, padx=5, pady=5, sticky=tk.W)
         self.graph_wep5_combo = ttk.Combobox(self.graph_wep_frame, **self.combo_style)
@@ -212,6 +225,7 @@ class GUI(tk.Frame):
         self.graph_wep5_label.grid_forget()
         self.graph_wep5_combo.grid_forget()
 
+        # Wep6
         self.graph_wep6_label = tk.Label(self.graph_wep_frame, text='Weapon 6', **self.button_style)
         self.graph_wep6_label.grid(row=6, column=0, padx=5, pady=5, sticky=tk.W)
         self.graph_wep6_combo = ttk.Combobox(self.graph_wep_frame, **self.combo_style)
@@ -219,6 +233,7 @@ class GUI(tk.Frame):
         self.graph_wep6_label.grid_forget()
         self.graph_wep6_combo.grid_forget()
 
+        # Wep7
         self.graph_wep7_label = tk.Label(self.graph_wep_frame, text='Weapon 7', **self.button_style)
         self.graph_wep7_label.grid(row=7, column=0, padx=5, pady=5, sticky=tk.W)
         self.graph_wep7_combo = ttk.Combobox(self.graph_wep_frame, **self.combo_style)
@@ -226,6 +241,7 @@ class GUI(tk.Frame):
         self.graph_wep7_label.grid_forget()
         self.graph_wep7_combo.grid_forget()
 
+        # Wep8
         self.graph_wep8_label = tk.Label(self.graph_wep_frame, text='Weapon 8', **self.button_style)
         self.graph_wep8_label.grid(row=8, column=0, padx=5, pady=5, sticky=tk.W)
         self.graph_wep8_combo = ttk.Combobox(self.graph_wep_frame, **self.combo_style)
@@ -233,6 +249,7 @@ class GUI(tk.Frame):
         self.graph_wep8_label.grid_forget()
         self.graph_wep8_combo.grid_forget()
 
+        # Wep9
         self.graph_wep9_label = tk.Label(self.graph_wep_frame, text='Weapon 9', **self.button_style)
         self.graph_wep9_label.grid(row=9, column=0, padx=5, pady=5, sticky=tk.W)
         self.graph_wep9_combo = ttk.Combobox(self.graph_wep_frame, **self.combo_style)
@@ -240,6 +257,7 @@ class GUI(tk.Frame):
         self.graph_wep9_label.grid_forget()
         self.graph_wep9_combo.grid_forget()
 
+        # Wep10
         self.graph_wep10_label = tk.Label(self.graph_wep_frame, text='Weapon 10', **self.button_style)
         self.graph_wep10_label.grid(row=10, column=0, padx=5, pady=5, sticky=tk.W)
         self.graph_wep10_combo = ttk.Combobox(self.graph_wep_frame, **self.combo_style)
@@ -247,6 +265,7 @@ class GUI(tk.Frame):
         self.graph_wep10_label.grid_forget()
         self.graph_wep10_combo.grid_forget()
 
+        # Generate graph button
         self.graph_generate_button = tk.Button(self.graph_wep_frame, text="Generate Graph", command=self.generate_graph, **self.button_style)
         self.graph_generate_button.grid(row=15, column=0, padx=8, pady=5, sticky=tk.W)
 
@@ -257,7 +276,7 @@ class GUI(tk.Frame):
         self.ax.set_facecolor(self.matplotlibbg)
         self.fig.set_facecolor(self.matplotlibbg)
 
-        # Set x and y axis and labels
+        # Set axis and labels
         self.ax.set_title("DPS Over Time")
         self.ax.set_xlabel("Time (seconds)")
         self.ax.set_ylabel("DPS", labelpad=-340, rotation='horizontal')
@@ -272,7 +291,9 @@ class GUI(tk.Frame):
     # This feels really hacky ill probably figure out something smarter later
     # and by this I mean literally everything with the 10 combo boxes
     def toggle_weapon_combos(self, evt):
+        # Get ammount of weps requested
         ammount = int(self.graph_wep_select_combo.get()) - 1
+        # Create parallel lists of each combo and label
         combos = [
             self.graph_wep1_combo, self.graph_wep2_combo,
             self.graph_wep3_combo, self.graph_wep4_combo,
@@ -287,12 +308,14 @@ class GUI(tk.Frame):
             self.graph_wep7_label, self.graph_wep8_label,
             self.graph_wep9_label, self.graph_wep10_label,
         ]
+        # If only one wep, hide all starting at index 1
         if ammount == 0:
             for combo in combos[1:]:
                 combo.grid_forget()
             for label in labels[1:]:
                 label.grid_forget()
         else:
+            # Redraw combos based on ammount
             for idx, x in enumerate(combos):
                 if idx <= ammount:
                     labels[idx].grid(row=(idx+1), column=0, padx=5, pady=5, sticky=tk.W)
@@ -301,6 +324,7 @@ class GUI(tk.Frame):
                 else:
                     labels[idx].grid_forget()
                     x.grid_forget()
+        # Focus the frame, not the combo
         self.graph_frame.focus()
 
     def weapons_menu(self):
@@ -309,7 +333,7 @@ class GUI(tk.Frame):
         self.weapons_frame.pack(side=tk.LEFT, fill=tk.Y)
 
         # Single or multi weapon
-        #   Figure out why comboboxes change frame highlight when focused
+        # TODO Figure out why comboboxes change frame highlight when focused
         type_options = ['Single Weapon', 'Weapon Swap']
         self.type_label = tk.Label(self.weapons_frame, text="Type", **self.button_style)
         self.type_label.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
@@ -368,7 +392,7 @@ class GUI(tk.Frame):
 
         # Perk select
         perk_choices = [value[0] for value in backend.PERKS.values()]
-        # Possibly implement tooltips on hover?
+        # TODO Possibly implement tooltips on hover?
         # perk_tooltips = [value[1] for value in backend.PERKS.values()]
 
         self.perk1_label = tk.Label(self.weapons_frame, text="Perk 1", **self.button_style)
@@ -443,7 +467,7 @@ class GUI(tk.Frame):
         self.setting1_label.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
         self.setting1_combo = ttk.Combobox(self.options_frame, values=setting1_options, **self.combo_style)
         self.setting1_combo.grid(row=0, column=1, padx=5, pady=5, sticky=tk.W)
-        self.setting1_combo.set(self.settings.interface_mode)
+        self.setting1_combo.set(self.settings.interface_theme)
         self.setting1_combo.bind("<<ComboboxSelected>>", lambda e: self.options_frame.focus())
 
         # Setting 2 (cmd prints)
@@ -457,6 +481,7 @@ class GUI(tk.Frame):
 
         # Setting 3 (whendamagedealt)
         setting4_options = ['What', 'Is', 'This']
+        # ^ ANY TRUERS
         self.setting4_label = tk.Label(self.options_frame, text="When Damage Dealt", **self.button_style)
         self.setting4_label.grid(row=3, column=0, padx=5, pady=5, sticky=tk.W)
         self.setting4_combo = ttk.Combobox(self.options_frame, values=setting4_options, **self.combo_style)
@@ -472,36 +497,32 @@ class GUI(tk.Frame):
         self.options_frame.pack_forget()
 
     def apply_settings(self):
-        self.settings.set_interface_mode(self.setting1_combo.get())
+        self.settings.set_interface_theme(self.setting1_combo.get())
         self.settings.set_cmd_prints(self.setting2_combo.get())
         self.settings.set_calc_when_damage_dealt(self.setting4_combo.get())
         self.settings.save_settings()
         self.settings.restart_program(root)
 
+    # Placeholder for log menu
+    # Honestly don't know if I want to go through the trouble of doing this
+    # It would clutter the code a lot (at least the only way I know how to do it) -mys
     def log_menu(self):
         pass
 
-    # def create_weapon(self):
-    #     # Retrieve values from input boxes and checkboxes
-    #     name = self.name_entry.get()
-    #     fire_rate = float(self.fire_rate_entry.get())
-    #     reload_time = float(self.reload_time_entry.get())
-    #     damage_per_shot = float(self.damage_per_shot_entry.get())
-    #     mag_cap = int(self.mag_cap_entry.get())
-    #     ammo_total = int(self.ammo_total_entry.get())
-    #     delay_first_shot = self.delay_first_shot_var.get()
-    #     burst_weapon = self.burst_weapon_var.get()
-    #     burst_bullets = int(self.burst_bullets_entry.get()) if burst_weapon else 1
-    #     swap_group = int(self.swap_group_entry.get())
-    #     swap_time = float(self.swap_time_entry.get())
-
-    #     # Create the Weapon object using the retrieved values
-    #     weapon = backend.Weapon(name, fire_rate, reload_time, damage_per_shot, mag_cap, ammo_total, delay_first_shot, burst_weapon, burst_bullets, swap_group, swap_time)
-
-    #     # Print the weapon details for debugging purposes
-    #     print("Created weapon: ", weapon.__dict__)
-
-
+    def create_weapon(self):
+        pass
+        # Retrieve values from input boxes and checkboxes
+        # name = self.name_entry.get()
+        # fire_rate = float(self.fire_rate_entry.get())
+        # reload_time = float(self.reload_time_entry.get())
+        # damage_per_shot = float(self.damage_per_shot_entry.get())
+        # mag_cap = int(self.mag_cap_entry.get())
+        # ammo_total = int(self.ammo_total_entry.get())
+        # delay_first_shot = self.delay_first_shot_var.get()
+        # burst_weapon = self.burst_weapon_var.get()
+        # burst_bullets = int(self.burst_bullets_entry.get()) if burst_weapon else 1
+        # swap_group = int(self.swap_group_entry.get())
+        # swap_time = float(self.swap_time_entry.get())
 
     #def plot_data(self):
         # Generate some random data and plot it

@@ -2,9 +2,21 @@ import stat
 import math
 import random
 
-# Myssto: Converted text to tuples to play nicer with gui
-# dont think it breaks anything because you just use them as magic numbers
-PERKS = {
+# Myssto:
+#
+# Migrated a couple things:
+# I changed the way you list and retrieve weapons
+# Before you were storing each instance of Weapon in each instance of Weapon (if that makes sense)
+# This kinda defeats the purpose of OOP in the first place :P
+# - classmethods list_weapon and add_to_list
+# + global function create_weapon
+# + global dictionary weapons_list
+# Now you have a global list of Weapons where each instance is only added a single time
+# I changed your test cases at the bottom to show correct usage :)
+# PLUS IT MAKES WORKING WITH THE FRONTEND SO MUCH EASIER!!!
+# AND IT SETS UP THE SKELETON FOR LOADING WEAPON CONFIGS!!!
+
+PERKS_LIST = {
     0: ("Null", "No selection"),
     1: ("Triple Tap", "Landing 3 precision hits refunds 1 ammo back to the magazine for free."),
     2: ("Fourth Times the Charm", "Landing 4 precision hits refunds 2 ammo back to the magazine for free."),
@@ -12,15 +24,22 @@ PERKS = {
     4: ("Perk 4", "Description"),
 }
 
-BUFFS = {
+BUFFS_LIST = {
+    0: ("Null", "No selection"),
     1: ("Well of Radiance", "Super that gives healing and damage bonus in an area.")
 }
 
-class Weapon:
-    
-    weapon_list = []
+weapons_list = {
 
-    def __init__(self, name, fire_rate, reload_time, damage_per_shot, mag_cap, ammo_total, delay_first_shot, burst_weapon, burst_bullets, swap_group, swap_time, perk_indices=None, buff_indices=None):
+}
+
+def create_weapon(weapon_settings: dict):
+    new_weapon = Weapon(**weapon_settings)
+    weapons_list[str(weapon_settings['name'])] = new_weapon
+
+class Weapon:
+    def __init__(self, name:str, fire_rate:float, reload_time:float, damage_per_shot:int, mag_cap:int, ammo_total:int, delay_first_shot:bool=False, burst_weapon:bool=False, burst_bullets:int=0, swap_group:int=0, swap_time:float=0, perk_indices:list=[], buff_indices:list=[]):
+        # Set positional args
         self.name = name
         self.fire_rate = fire_rate
         self.reload_time = reload_time
@@ -28,47 +47,38 @@ class Weapon:
         self.mag_cap = mag_cap
         self.ammo_total = ammo_total
 
-        self.delay_first_shot = delay_first_shot
-        self.burst_weapon = burst_weapon
+        # Set variadic args
+            # These are validated inherintly by typing and defaulting in the constructor :)
+        self.perk_indices = perk_indices
+        self.buff_indices = buff_indices
 
-        self.swap_group = swap_group
-        self.swap_time = swap_time
-
-        if burst_weapon == True:
-            self.burst_bullets = burst_bullets
+        # This input validation for burst and swap may be redundant
+        # because we will need to validate in the frontend anyway
+        if not burst_weapon or not burst_bullets:
+            self.burst_weapon = False
+            self.burst_bullets = 0
         else:
-            self.burst_bullets = 1
+            if burst_bullets <= 0:
+                self.burst_weapon = 0
+                self.burst_bullets = 0
+            else:
+                self.burst_weapon = burst_weapon
+                self.burst_bullets = burst_bullets
 
-
-        if perk_indices is None:
-            self.perk_indices = []
+        if swap_time <= 0:
+            self.swap_group = 0
+            self.swap_time = 0
         else:
-            self.perk_indices = perk_indices
+            self.swap_group = swap_group
+            self.swap_time = swap_time
 
-        if buff_indices is None:
-            self.buff_indices = []
+        if delay_first_shot is None:
+            self.delay_first_shot = 0
         else:
-            self.buff_indices = buff_indices
-
-        #figured this saves time as it just automatically adds a self to the list rather than make a new object every time or something yknow
-        value = self
-        value = self.add_to_list(value)
-
-    # adds a weapon to a list
-    #def add_weapon(self, name, fire_rate, reload_time, damage_per_shot, mag_cap, ammo_total, delay_first_shot, burst_weapon, burst_bullets, swap_group, swap_time, perk_indices, buff_indices):
-        #value = Weapon(name, fire_rate, reload_time, damage_per_shot, mag_cap, ammo_total, delay_first_shot, burst_weapon, burst_bullets, swap_group, swap_time, perk_indices, buff_indices)
-        #value = self.add_to_list(value)
-
-    @classmethod
-    def add_to_list(cls, value): # adds the weapon to the list itself within the class
-        cls.weapon_list.append(value)
-
-    @classmethod
-    def get_list(cls): # for finding the listed objects
-        return cls.weapon_list
+            self.delay_first_shot = delay_first_shot
 
     def add_perk(self, perk_index):
-        if perk_index not in self.perk_indices and perk_index in PERKS:
+        if perk_index not in self.perk_indices and perk_index in PERKS_LIST:
             self.perk_indices.append(perk_index)
 
     def remove_perk(self, perk_index):
@@ -85,9 +95,9 @@ class Weapon:
         self.delay_first_shot = boolean
 
     def get_any_perk_description(self, perk_index):
-        return PERKS.get(perk_index)
+        return PERKS_LIST.get(perk_index)
     
-    #getting the individual attributes
+    # Getting the individual attributes
     def get_name(self):
         return self.name
 
@@ -121,7 +131,6 @@ class Weapon:
     def get_swap_time(self):
         return self.swap_time
     
-
 class Damage:
     def __init__(self, weapon_instance):
         self.weapon_instance = weapon_instance
@@ -129,20 +138,18 @@ class Damage:
     def print_weapon_instance(self):
         print(self.weapon_instance.get_perks())
 
-
-    #graph stuff
+    # Graph config
     ticks = 45000
     x_increments = 0.01
     x = []
     for i in range(ticks):
         x.append(round(i * x_increments, 5))
-    
     round_coeff = len(str(x_increments).split(".")[1])
 
     @classmethod
     def DamageCalculate(cls):
-        for z in range(len(Weapon.get_list())):
-            if Weapon.weapon_list[z].get_swap_group() == 0:
+        for weapon in weapons_list.values():
+            if not weapon.get_swap_group():
 
                 #general variables
                 t_dmg = []
@@ -158,37 +165,37 @@ class Damage:
                 ammo_fired = 0
                 burst_shot = 0
 
-                delay_first_shot = Weapon.weapon_list[z].get_dfs()
-                burst_weapon = Weapon.weapon_list[z].get_burst_variable()
+                delay_first_shot = weapon.get_dfs()
+                burst_weapon = weapon.get_burst_variable()
 
-                fire_stale = Weapon.weapon_list[z].get_fire_rate()
+                fire_stale = weapon.get_fire_rate()
 
-                if burst_weapon == False:
+                if not burst_weapon:
                     fire_delay = round(60/fire_stale, cls.round_coeff)
 
                 #this rate of fire calculation may need some looking at :P, but basically it takes a rate of fire and then
                 #just cuts it in half, half to shoot in a burst, the other to pause between shots..
                 #for delay first shot, might just have it be equal to the normal fire delay? who knows.
                 #5 minutes later roxy here: i made DFS burst weapons have to complete a full charge sequence despite '120 RPM' not actually meaning 120 rpm... it just means 500ms charge time (since 500ms = 2 shots/second = 120rpm? idfk)
-                elif burst_weapon == True:
-                    burst_bullets = Weapon.weapon_list[z].get_burst_bullets()
+                elif burst_weapon:
+                    burst_bullets = weapon.get_burst_bullets()
                     fire_delay = round((60/fire_stale)/2, cls.round_coeff)
                     burst_delay = round(((60/fire_stale)/2)/burst_bullets, cls.round_coeff)
 
                 dfs_delay = round(60/fire_stale, cls.round_coeff)
 
                 fire_timer = dfs_delay if delay_first_shot else 0
-                reload_time = Weapon.weapon_list[z].get_reload_time()
+                reload_time = weapon.get_reload_time()
 
-                mag_cap = Weapon.weapon_list[z].get_mag_cap()
+                mag_cap = weapon.get_mag_cap()
                 ammo_magazine = mag_cap
 
-                ammo_total = Weapon.weapon_list[z].get_ammo_total()
+                ammo_total = weapon.get_ammo_total()
 
-                damage_per_shot = Weapon.weapon_list[z].get_damage_per_shot()
+                damage_per_shot = weapon.get_damage_per_shot()
                 dmg_output = damage_per_shot
 
-                applied_perks = Weapon.weapon_list[z].get_perks()
+                applied_perks = weapon.get_perks()
                 number_to_flag = {1: "TT_On", 2: "FTTC_On", 3: "VS_On", 10: "FL_On", 15: "BNS_On"}
                 flags = {"TT_On": False, "FTTC_On": False, "VS_On": False, "FL_On": False, "BNS_On": False} 
 
@@ -213,8 +220,7 @@ class Damage:
                     if flags["BNS_On"]: #15
                         dmg_output = Damage.BaitNSwitch(ammo_fired, dmg_output, time_elapsed)
 
-
-                    if burst_weapon == False:
+                    if not burst_weapon:
                         if ammo_total == 0:
                             total_damage = total_damage
                         elif ammo_magazine == 0:
@@ -237,16 +243,15 @@ class Damage:
                         t_dmg.append(total_damage)
                         if stale_val != t_dmg[i]:
                             if i != 0:
-                                print("name:", Weapon.weapon_list[z].get_name(), "| damage at", (i/100) ,"seconds:", t_dmg[i], "| dps:[",round(t_dmg[i]/(i/100), 1),"]","| per shot:<", dmg_output, ">")
+                                print("name:", weapon.get_name(), "| damage at", (i/100) ,"seconds:", t_dmg[i], "| dps:[",round(t_dmg[i]/(i/100), 1),"]","| per shot:<", dmg_output, ">")
                                 stale_val = t_dmg[i]
 
-
-                    elif burst_weapon == True:
+                    elif burst_weapon:
                         if ammo_total == 0:
                             total_damage = total_damage
                         elif ammo_magazine == 0:
                             fire_timer += reload_time
-                            fire_timer -= fire_delay if delay_first_shot == True else 0
+                            fire_timer -= fire_delay if delay_first_shot else 0
                             fire_timer = round(fire_timer, cls.round_coeff)
                             ammo_fired = 0
                             ammo_magazine = mag_cap
@@ -271,7 +276,7 @@ class Damage:
                         t_dmg.append(total_damage)
                         if stale_val != t_dmg[i]:
                             if i != 0:
-                                print("name:", Weapon.weapon_list[z].get_name(), "| damage at", (i/100) ,"seconds:", t_dmg[i], "| dps:[",round(t_dmg[i]/(i/100), 1),"]","| per shot:<", dmg_output, ">")
+                                print("name:", weapon.get_name(), "| damage at", (i/100) ,"seconds:", t_dmg[i], "| dps:[",round(t_dmg[i]/(i/100), 1),"]","| per shot:<", dmg_output, ">")
                                 stale_val = t_dmg[i]
 
 
@@ -282,9 +287,9 @@ class Damage:
                         dps.append(t_dmg[i] / cls.x[i])
                 
                 
-                #print("name:", Weapon.weapon_list[z].get_name(), "| dps at 10 seconds:", dps[999])
-                #print("name:", Weapon.weapon_list[z].get_name(), "| dps at 13 seconds:", dps[1299])
-                #print("name:", Weapon.weapon_list[z].get_name(), "| dps at 20 seconds:", dps[1999])
+                #print("name:", weapons_list[z].get_name(), "| dps at 10 seconds:", dps[999])
+                #print("name:", weapons_list[z].get_name(), "| dps at 13 seconds:", dps[1299])
+                #print("name:", weapons_list[z].get_name(), "| dps at 20 seconds:", dps[1999])
 
 
     #im going to cry myself to sleep trying to figure out what the hell this is going to do for me!!!
@@ -297,19 +302,18 @@ class Damage:
 
     @classmethod
     def DamageCalculateMulti(cls):
-        for z in range(len(Weapon.get_list())):
-            if Weapon.weapon_list[z].get_swap_group() > 0:
+        for weapon in weapons_list.values():
+            if weapon.get_swap_group():
 
                 #could be expanded ig but i just wanna see if this even works
+                if weapons_list[z].get_swap_group() == 1:
+                    cls.swap_group1.append(weapons_list[z])
 
-                if Weapon.weapon_list[z].get_swap_group() == 1:
-                    cls.swap_group1.append(Weapon.weapon_list[z])
+                if weapons_list[z].get_swap_group() == 2:
+                    cls.swap_group2.append(weapons_list[z])
 
-                if Weapon.weapon_list[z].get_swap_group() == 2:
-                    cls.swap_group2.append(Weapon.weapon_list[z])
-
-                if Weapon.weapon_list[z].get_swap_group() == 3:
-                    cls.swap_group3.append(Weapon.weapon_list[z])
+                if weapons_list[z].get_swap_group() == 3:
+                    cls.swap_group3.append(weapons_list[z])
 
         for z in range(len(cls.swap_groups)):
 
@@ -742,28 +746,63 @@ class Damage:
 
                 #could add a bns_proc = 2 segment for handling lockouts if i ever figure out how that might work
 
-
-# Myssto: Sorry your test cases were crowding my console log :)
-
-#triple tap + firing line + veist (taipan)
-the = Weapon("taipan", 120, 1.43, 50000, 5, 21, True, False, 0, 0, 1.5, [1,3,10], [2])
+# triple tap + firing line + veist (taipan)
+# With the new system we can avoid having to pass in 0s and false for weapon attributes
+# that are non-implicit like being a burst weapon or in a swap combo and only provide
+# the information that we need to plus any extras. Below is what a dictionary of valid
+# weapon settings would look like, and this can be mirrored into a json file so that we
+# can easily load pre-made lists of weapons :)
+taipan = {
+    'name': 'taipan',
+    'fire_rate': 120,
+    'reload_time': 1.43,
+    'damage_per_shot': 50000,
+    'mag_cap': 5,
+    'ammo_total': 21,
+    'delay_first_shot': True,
+    'perk_indices': [1,3,10]
+}
+create_weapon(taipan)
+# name, fire_rate, reload_time, damage_per_shot, mag_cap, ammo_total, delay_first_shot, burst_weapon, burst_bullets, swap_group, swap_time, perk_indices, buff_indices
 #the.add_weapon(the.name, the.fire_rate, the.reload_time, the.damage_per_shot, the.mag_cap, the.ammo_total, the.delay_first_shot, the.burst_weapon, the.burst_bullets, the.swap_group, the.swap_time, the.perk_indices, the.buff_indices)
 
-#fttc + bns (cataclysmic)
-piss = Weapon("cataclysmic", 120, 1.43, 50000, 6, 20, True, False, 0, 0, 1.5, [2,15], [1])
+# fttc + bns (cataclysmic)
+cataclysmic = {
+    'name': 'cataclysmic',
+    'fire_rate': 120,
+    'reload_time': 1.43,
+    'damage_per_shot': 50000,
+    'mag_cap': 6,
+    'ammo_total': 20,
+    'delay_first_shot': True,
+    'perk_indices': [2, 15]
+}
+create_weapon(cataclysmic)
 #piss.add_weapon(piss.name, piss.fire_rate, piss.reload_time, piss.damage_per_shot, piss.mag_cap, piss.ammo_total, piss.delay_first_shot, piss.burst_weapon, piss.burst_bullets, piss.swap_group, piss.swap_time, piss.perk_indices, the.buff_indices)
 
-#stormchaser ? (i am cheating since burst lfrs use 1 bullet for 3 rather than 3 for 3 so this is wacky :/)
-stormchaser = Weapon("stormchaser", 120, 1.43, 20000, 15, 63, True, True, 3, 0, 1.5, [10], [1])
+# stormchaser ? (i am cheating since burst lfrs use 1 bullet for 3 rather than 3 for 3 so this is wacky :/)
+stormchaser = {
+    'name': 'stormchaser',
+    'fire_rate': 120,
+    'reload_time': 1.43,
+    'damage_per_shot': 20000,
+    'mag_cap': 15,
+    'ammo_total': 63,
+    'delay_first_shot': True,
+    'burst_weapon': True,
+    'burst_bullets': 3,
+    'perk_indices': [10]
+}
+create_weapon(stormchaser)
 #storm.add_weapon(storm.name, storm.fire_rate, storm.reload_time, storm.damage_per_shot, storm.mag_cap, storm.ammo_total, storm.delay_first_shot, storm.burst_weapon, storm.burst_bullets, storm.swap_group, storm.swap_time, storm.perk_indices, storm.buff_indices)
 
 #debug
-gun1_group1 = Weapon("1.1", 120, 1.43, 50000, 6, 20, True, False, 0, 1, 1.84, [2,15], [1])
-gun2_group1 = Weapon("1.2", 120, 1.43, 50000, 6, 20, True, False, 0, 1, 1.84, [2,15], [1])
-gun1_group2 = Weapon("2.1", 120, 1.43, 50000, 6, 20, True, False, 0, 2, 1.84, [2,15], [1])
-gun2_group2 = Weapon("2.2", 120, 1.43, 50000, 6, 20, True, False, 0, 2, 1.84, [2,15], [1])
-gun1_group3 = Weapon("3.1", 120, 1.43, 50000, 6, 20, True, False, 0, 3, 1.84, [2,15], [1])
-gun2_group3 = Weapon("3.2", 120, 1.43, 50000, 6, 20, True, False, 0, 3, 1.84, [2,15], [1])
+# create_weapon("1.1", 120, 1.43, 50000, 6, 20, True, False, 0, 1, 1.84, [2,15], [1])
+# create_weapon("1.2", 120, 1.43, 50000, 6, 20, True, False, 0, 1, 1.84, [2,15], [1])
+# create_weapon("2.1", 120, 1.43, 50000, 6, 20, True, False, 0, 2, 1.84, [2,15], [1])
+# create_weapon("2.2", 120, 1.43, 50000, 6, 20, True, False, 0, 2, 1.84, [2,15], [1])
+# create_weapon("3.1", 120, 1.43, 50000, 6, 20, True, False, 0, 3, 1.84, [2,15], [1])
+# create_weapon("3.2", 120, 1.43, 50000, 6, 20, True, False, 0, 3, 1.84, [2,15], [1])
 
 #calculate damage function
 Damage.DamageCalculate()
