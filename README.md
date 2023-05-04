@@ -47,7 +47,7 @@ python main.py -d n -rf yippee.json
 ```
 
 ## To-Do
-1. maybe a whole gui. maybe installing a requirements.txt for matplotlib. dunno
+1. maybe a whole gui. maybe installing a requirements.txt for matplotlib. dunno.
 2. roxy is currently working on functions for weapon perks and ensuring all interactions work as well as adding to the perk pool. roxy (me, i) will not be adding some perks like: field prep, elemental capacitor, etc. that basically can be accounted for by simply including the baseline stats beforehand (field prep being reload speed and reserves, elemental capacitor possibly being reload speed)
 3. burst type weapons (fuck (this will require understanding how RoF affects the time between bursts but like also delay between burst fires????)) i basically have 0 clue still how i am going to do this, both bullet based weapons and charge based weapons (looking at you Stormchaser, n Fire and Forget)
 4. cleaning up comments after everything?
