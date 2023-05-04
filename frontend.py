@@ -7,11 +7,6 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 import weaponclassrewrite as backend
 
-
-###############################
-##  Myssto frontend concept  ## hi myssto :3 -k
-###############################
-
 # TODO
 # 1. Default ini
 # 2. Nav bar // DONE
@@ -116,6 +111,7 @@ class GUI(tk.Frame):
         self.graph_menu()
         self.weapons_menu()
         self.options_menu()
+        self.log_menu()
 
     def navbar(self):
         # Root frame
@@ -223,7 +219,6 @@ class GUI(tk.Frame):
         self.graph_wep5_label.grid(row=5, column=0, padx=5, pady=5, sticky=tk.W)
         self.graph_wep5_combo = ttk.Combobox(self.graph_wep_frame, **self.combo_style)
         self.graph_wep5_combo.grid(row=5, column=1, padx=5, pady=5, sticky=tk.W)
-        self.graph_wep5_combo.bind("<<ComboboxSelected>>",lambda e: self.graph_frame.focus())
         self.graph_wep5_label.grid_forget()
         self.graph_wep5_combo.grid_forget()
 
@@ -231,7 +226,6 @@ class GUI(tk.Frame):
         self.graph_wep6_label.grid(row=6, column=0, padx=5, pady=5, sticky=tk.W)
         self.graph_wep6_combo = ttk.Combobox(self.graph_wep_frame, **self.combo_style)
         self.graph_wep6_combo.grid(row=6, column=1, padx=5, pady=5, sticky=tk.W)
-        self.graph_wep6_combo.bind("<<ComboboxSelected>>",lambda e: self.graph_frame.focus())
         self.graph_wep6_label.grid_forget()
         self.graph_wep6_combo.grid_forget()
 
@@ -239,7 +233,6 @@ class GUI(tk.Frame):
         self.graph_wep7_label.grid(row=7, column=0, padx=5, pady=5, sticky=tk.W)
         self.graph_wep7_combo = ttk.Combobox(self.graph_wep_frame, **self.combo_style)
         self.graph_wep7_combo.grid(row=7, column=1, padx=5, pady=5, sticky=tk.W)
-        self.graph_wep7_combo.bind("<<ComboboxSelected>>",lambda e: self.graph_frame.focus())
         self.graph_wep7_label.grid_forget()
         self.graph_wep7_combo.grid_forget()
 
@@ -247,7 +240,6 @@ class GUI(tk.Frame):
         self.graph_wep8_label.grid(row=8, column=0, padx=5, pady=5, sticky=tk.W)
         self.graph_wep8_combo = ttk.Combobox(self.graph_wep_frame, **self.combo_style)
         self.graph_wep8_combo.grid(row=8, column=1, padx=5, pady=5, sticky=tk.W)
-        self.graph_wep8_combo.bind("<<ComboboxSelected>>",lambda e: self.graph_frame.focus())
         self.graph_wep8_label.grid_forget()
         self.graph_wep8_combo.grid_forget()
 
@@ -255,7 +247,6 @@ class GUI(tk.Frame):
         self.graph_wep9_label.grid(row=9, column=0, padx=5, pady=5, sticky=tk.W)
         self.graph_wep9_combo = ttk.Combobox(self.graph_wep_frame, **self.combo_style)
         self.graph_wep9_combo.grid(row=9, column=1, padx=5, pady=5, sticky=tk.W)
-        self.graph_wep9_combo.bind("<<ComboboxSelected>>",lambda e: self.graph_frame.focus())
         self.graph_wep9_label.grid_forget()
         self.graph_wep9_combo.grid_forget()
 
@@ -263,7 +254,6 @@ class GUI(tk.Frame):
         self.graph_wep10_label.grid(row=10, column=0, padx=5, pady=5, sticky=tk.W)
         self.graph_wep10_combo = ttk.Combobox(self.graph_wep_frame, **self.combo_style)
         self.graph_wep10_combo.grid(row=10, column=1, padx=5, pady=5, sticky=tk.W)
-        self.graph_wep10_combo.bind("<<ComboboxSelected>>",lambda e: self.graph_frame.focus())
         self.graph_wep10_label.grid_forget()
         self.graph_wep10_combo.grid_forget()
 
@@ -284,7 +274,7 @@ class GUI(tk.Frame):
         self.ax.set_xlim(0, 45)
         self.ax.set_ylim(0, 300000)
 
-        self.canvas.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.canvas.get_tk_widget().pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=15, pady=15)
 
     def generate_graph(self):
         pass
@@ -317,9 +307,11 @@ class GUI(tk.Frame):
                 if idx <= ammount:
                     labels[idx].grid(row=(idx+1), column=0, padx=5, pady=5, sticky=tk.W)
                     x.grid(row=(idx+1), column=1, padx=5, pady=5, sticky=tk.W)
+                    x.bind("<<ComboboxSelected>>",lambda e: self.graph_frame.focus())
                 else:
                     labels[idx].grid_forget()
                     x.grid_forget()
+        self.graph_frame.focus()
 
     def weapons_menu(self):
         # Root frame
