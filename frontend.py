@@ -8,6 +8,7 @@ from tkinter import ttk
 from tkinter.filedialog import asksaveasfile
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
+import matplotlib as mpl
 import weaponclassrewrite as backend
 
 # TODO
@@ -82,6 +83,7 @@ class GUI(tk.Frame):
             self.check_button_style = {'bg': '#1E1E1E', 'fg': '#CCCCCC', 'selectcolor': '#1E1E1E'}
             self.button_style = {'bg': '#1E1E1E', 'fg': '#CCCCCC'}
             self.matplotlib_bg = "#1E1E1E"
+            self.matplotlib_fg = "#CCCCCC"
             self.wep_frame_bg = "#1E1E1E"
             self.listbox_bg = "#808080"
             self.white_text = "#CCCCCC"
@@ -94,6 +96,7 @@ class GUI(tk.Frame):
             self.wep_frame_bg = "#FFFFFF"
             self.listbox_bg = "#808080"
             self.white_text = "#000000"
+            self.matplotlib_fg = "#000000"
 
         if self.settings.cmd_prints == 'True':
             pass
@@ -211,6 +214,12 @@ class GUI(tk.Frame):
         self.graph_save_button = tk.Button(self.graph_wep_frame, text="Save Graph", command=self.save_graph, **self.button_style)
         self.graph_save_button.grid(row=15, column=1, padx=8, pady=5, sticky=tk.W)
 
+        mpl.rcParams['text.color'] = self.matplotlib_fg
+        mpl.rcParams['axes.edgecolor'] = self.matplotlib_fg
+        mpl.rcParams['xtick.color'] = self.matplotlib_fg
+        mpl.rcParams['ytick.color'] = self.matplotlib_fg
+        mpl.rcParams['axes.labelcolor'] = self.matplotlib_fg
+
         # Create a Matplotlib figure and canvas
         self.fig = Figure(figsize=(5, 4), dpi=100)
         self.ax = self.fig.add_subplot(111)
@@ -218,12 +227,21 @@ class GUI(tk.Frame):
         self.ax.set_facecolor(self.matplotlib_bg)
         self.fig.set_facecolor(self.matplotlib_bg)
 
+        # self.ax.rcParams['text.color'] = self.matplotlib_fg
+        # self.ax.rcParams['axes.edgecolor'] = self.matplotlib_fg
+        # self.ax.rcParams['xtick.color'] = self.matplotlib_fg
+        # self.ax.rcParams['ytick.color'] = self.matplotlib_fg
+        # self.ax.rcParams['axes.labelcolor'] = self.matplotlib_fg
+
+
         # Set default axis and labels
         self.ax.set_title("DPS Over Time")
         self.ax.set_xlabel("Time (seconds)")
         self.ax.set_ylabel("DPS", labelpad=-340, rotation='horizontal')
         self.ax.set_xlim(0, 45)
         self.ax.set_ylim(0, 300000)
+
+        self.matplotlib_fg
 
         self.canvas.get_tk_widget().pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=15, pady=15)
 
