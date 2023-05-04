@@ -19,8 +19,6 @@ import weaponclassrewrite as backend
 # 5. Add graph config to settings or graph menu?
 # 6. Look into on-hover tooltips
 
-# GITIGNORE SOME BITCHES
-
 class Settings:
     def __init__(self):
         self.config = configparser.ConfigParser()
@@ -57,6 +55,7 @@ class Settings:
         # Re-run the script
             # NOTE execl as an executable is really volatile
             # maybe we look into another way to reload app? -mys
+            # yeah prolly, I just wrote this quickly to have something that works but by all means do it better
         os.execl(sys.executable, sys.executable, *sys.argv)
 
 class GUI(tk.Frame):
@@ -226,13 +225,6 @@ class GUI(tk.Frame):
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.graph_frame)
         self.ax.set_facecolor(self.matplotlib_bg)
         self.fig.set_facecolor(self.matplotlib_bg)
-
-        # self.ax.rcParams['text.color'] = self.matplotlib_fg
-        # self.ax.rcParams['axes.edgecolor'] = self.matplotlib_fg
-        # self.ax.rcParams['xtick.color'] = self.matplotlib_fg
-        # self.ax.rcParams['ytick.color'] = self.matplotlib_fg
-        # self.ax.rcParams['axes.labelcolor'] = self.matplotlib_fg
-
 
         # Set default axis and labels
         self.ax.set_title("DPS Over Time")
@@ -452,7 +444,7 @@ class GUI(tk.Frame):
                 perk_indices.append(index)
 
         # TODO figure out a working list comprehension for this its annoying me
-        # perk_indices = [index if perkname[0] in [perk1, perk2] for index, perkname in backend.PERKS_LIST.values()]
+        perk_indices = [index for index, perkname in backend.PERKS_LIST.items() if perkname[0] in [perk1, perk2]]
 
         enhance1 = self.weapons_menu_vars['enhance1'].get()
         enhance2 = self.weapons_menu_vars['enhance2'].get()
@@ -513,9 +505,6 @@ class GUI(tk.Frame):
         self.settings.save_settings()
         self.settings.restart_program(root)
 
-    # Placeholder for log menu
-    # Honestly don't know if I want to go through the trouble of doing this
-    # It would clutter the code a lot (at least the only way I know how to do it) -mys
     def log_menu(self):
         self.log_frame = tk.Frame(self, **self.frame_style)
         self.log_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
@@ -537,8 +526,6 @@ class GUI(tk.Frame):
 
         # Hide the log frame on start
         self.log_frame.pack_forget()
-
-
 
 class TextRedirector:
     def __init__(self, text_widget):
