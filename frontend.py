@@ -24,7 +24,6 @@ class Settings:
             self.config.read_file(f)
         self.interface_theme = self.config.get('Interface', 'Theme')
         self.cmd_prints = self.config.getboolean('Interface', 'CMDPrints')
-        self.calc_when_damage_dealt = self.config.get('Calculations', 'WhenDamageDealt')
 
     def set_interface_theme(self, theme):
         self.interface_theme = theme
@@ -38,7 +37,6 @@ class Settings:
     def save_settings(self):
         self.config.set('Interface', 'Theme', self.interface_theme)
         self.config.set('Interface', 'CMDPrints', str(self.cmd_prints))
-        self.config.set('Calculations', 'WhenDamageDealt', self.calc_when_damage_dealt)
 
         with open('settings.ini', 'w') as configfile:
             self.config.write(configfile)
@@ -89,11 +87,6 @@ class GUI(tk.Frame):
             self.listbox_bg = "#808080"
 
         if self.settings.cmd_prints == 'True':
-            pass
-        else:
-            pass
-
-        if self.settings.calc_when_damage_dealt.lower() == 'whenattacking':
             pass
         else:
             pass
@@ -476,16 +469,6 @@ class GUI(tk.Frame):
         self.setting2_combo.grid(row=1, column=1, padx=5, pady=5, sticky=tk.W)
         self.setting2_combo.set(str(self.settings.cmd_prints))
         self.setting2_combo.bind("<<ComboboxSelected>>", lambda e: self.options_frame.focus())
-
-        # Setting 3 (whendamagedealt)
-        setting4_options = ['What', 'Is', 'This']
-        # ^ ANY TRUERS
-        self.setting4_label = tk.Label(self.options_frame, text="When Damage Dealt", **self.button_style)
-        self.setting4_label.grid(row=3, column=0, padx=5, pady=5, sticky=tk.W)
-        self.setting4_combo = ttk.Combobox(self.options_frame, values=setting4_options, **self.combo_style)
-        self.setting4_combo.grid(row=3, column=1, padx=5, pady=5, sticky=tk.W)
-        self.setting4_combo.set(self.settings.calc_when_damage_dealt)
-        self.setting4_combo.bind("<<ComboboxSelected>>", lambda e: self.options_frame.focus())
 
         # Apply Settings button
         self.apply_settings_button = tk.Button(self.options_frame, text="Apply Settings", command=self.apply_settings, **self.button_style)
