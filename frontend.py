@@ -24,7 +24,6 @@ class Settings:
             self.config.read_file(f)
         self.interface_theme = self.config.get('Interface', 'Theme')
         self.cmd_prints = self.config.getboolean('Interface', 'CMDPrints')
-        self.multi_weapon = self.config.getboolean('Interface', 'Multiweapon')
         self.calc_when_damage_dealt = self.config.get('Calculations', 'WhenDamageDealt')
 
     def set_interface_theme(self, theme):
@@ -39,7 +38,6 @@ class Settings:
     def save_settings(self):
         self.config.set('Interface', 'Theme', self.interface_theme)
         self.config.set('Interface', 'CMDPrints', str(self.cmd_prints))
-        self.config.set('Interface', 'Multiweapon', str(self.multi_weapon))
         self.config.set('Calculations', 'WhenDamageDealt', self.calc_when_damage_dealt)
 
         with open('settings.ini', 'w') as configfile:
@@ -391,9 +389,9 @@ class GUI(tk.Frame):
         self.swap_time_entry.grid(row=8, column=1, padx=5, pady=5, sticky=tk.W)
 
         # Perk select
-        perk_choices = [value[0] for value in backend.PERKS.values()]
+        perk_choices = [value[0] for value in backend.PERKS_LIST.values()]
         # TODO Possibly implement tooltips on hover?
-        # perk_tooltips = [value[1] for value in backend.PERKS.values()]
+        # perk_tooltips = [value[1] for value in backend.PERKS_LIST.values()]
 
         self.perk1_label = tk.Label(self.weapons_frame, text="Perk 1", **self.button_style)
         self.perk1_label.grid(row=9, column=0, padx=5, pady=5, sticky=tk.W)

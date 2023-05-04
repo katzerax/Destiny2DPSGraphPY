@@ -279,362 +279,17 @@ class Damage:
                                 print("name:", weapon.get_name(), "| damage at", (i/100) ,"seconds:", t_dmg[i], "| dps:[",round(t_dmg[i]/(i/100), 1),"]","| per shot:<", dmg_output, ">")
                                 stale_val = t_dmg[i]
 
-
-                
                 dps = [0]
                 for i in range(cls.ticks):
                     if i != 0:
                         dps.append(t_dmg[i] / cls.x[i])
-                
-                
+
                 #print("name:", weapons_list[z].get_name(), "| dps at 10 seconds:", dps[999])
                 #print("name:", weapons_list[z].get_name(), "| dps at 13 seconds:", dps[1299])
                 #print("name:", weapons_list[z].get_name(), "| dps at 20 seconds:", dps[1999])
 
-
     #im going to cry myself to sleep trying to figure out what the hell this is going to do for me!!!
     #this can likely be integrated into the main function that just checks for whether swap_group = 0 or not
-    
-    swap_group1 = []
-    swap_group2 = []
-    swap_group3 = []
-    swap_groups = [swap_group1, swap_group2, swap_group3]
-
-    @classmethod
-    def DamageCalculateMulti(cls):
-        for weapon in weapons_list.values():
-            if weapon.get_swap_group():
-
-                #could be expanded ig but i just wanna see if this even works
-                if weapons_list[z].get_swap_group() == 1:
-                    cls.swap_group1.append(weapons_list[z])
-
-                if weapons_list[z].get_swap_group() == 2:
-                    cls.swap_group2.append(weapons_list[z])
-
-                if weapons_list[z].get_swap_group() == 3:
-                    cls.swap_group3.append(weapons_list[z])
-
-        for z in range(len(cls.swap_groups)):
-
-            #'global' variables
-            t_dmg = []
-            time_elapsed = 0
-            total_damage = 0
-            stale_val = 0
-
-            Damage.TripleTapClear()
-            Damage.FTTCClear()
-            Damage.VeistStingerClear()
-            Damage.BNSClear()
-
-            #weapon 1
-            if len(cls.swap_groups[z]) >= 1:
-                fire_ready1 = False
-                weapon1_ready = True
-                ammo_fired1 = 0
-                burst_shot1 = 0
-                empty_check1 = 0
-
-                delay_first_shot1 = cls.swap_groups[z][0].get_dfs()
-                burst_weapon1 = cls.swap_groups[z][0].get_burst_variable()
-                fire_stale1 = cls.swap_groups[z][0].get_fire_rate()
-
-                if burst_weapon1 == True:
-                    burst_bullets1 = cls.swap_groups[z][0].get_burst_bullets()
-                    fire_delay1 = round((60/fire_stale1)/2, cls.round_coeff)
-                    burst_delay1 = round(((60/fire_stale1)/2)/burst_bullets1, cls.round_coeff)
-
-                elif burst_weapon1 == False:
-                    fire_delay1 = round(60/fire_stale1, cls.round_coeff)
-
-                dfs_delay1 = round(60/fire_stale1, cls.round_coeff)
-                fire_timer1 = dfs_delay1 if delay_first_shot1 else 0
-                reload_time1 = cls.swap_groups[z][0].get_reload_time()
-                swap_time1 = cls.swap_groups[z][0].get_swap_time()
-
-                mag_cap1 = cls.swap_groups[z][0].get_mag_cap()
-                ammo_magazine1 = mag_cap1
-
-                ammo_total1 = cls.swap_groups[z][0].get_ammo_total()
-
-                damage_per_shot1 = cls.swap_groups[z][0].get_damage_per_shot()
-                dmg_output1 = damage_per_shot1
-
-                applied_perks1 = cls.swap_groups[z][0].get_perks()
-                number_to_flag1 = {1: "TT_On", 2: "FTTC_On", 3: "VS_On", 10: "FL_On", 15: "BNS_On"}
-                flags1 = {"TT_On": False, "FTTC_On": False, "VS_On": False, "FL_On": False, "BNS_On": False}
-
-                for number in applied_perks1:
-                    if number in number_to_flag1:
-                        flags1[number_to_flag1[number]] = True
-
-
-            #weapon 2
-            if len(cls.swap_groups[z]) >= 2:
-                fire_ready2 = False
-                weapon2_ready = False
-                ammo_fired2 = 0
-                burst_shot2 = 0
-                empty_check2 = 0
-
-                delay_first_shot2 = cls.swap_groups[z][1].get_dfs()
-                burst_weapon2 = cls.swap_groups[z][1].get_burst_variable()
-                fire_stale2 = cls.swap_groups[z][1].get_fire_rate()
-
-                if burst_weapon2 == True:
-                    burst_bullets2 = cls.swap_groups[z][1].get_burst_bullets()
-                    fire_delay2 = round((60/fire_stale2)/2, cls.round_coeff)
-                    burst_delay2 = round(((60/fire_stale2)/2)/burst_bullets2, cls.round_coeff)
-
-                elif burst_weapon2 == False:
-                    fire_delay2 = round(60/fire_stale2, cls.round_coeff)
-
-                dfs_delay2 = round(60/fire_stale2, cls.round_coeff)
-                fire_timer2 = dfs_delay2 if delay_first_shot2 else 0
-                reload_time2 = cls.swap_groups[z][1].get_reload_time()
-                swap_time2 = cls.swap_groups[z][1].get_swap_time()
-
-                mag_cap2 = cls.swap_groups[z][1].get_mag_cap()
-                ammo_magazine2 = mag_cap2
-
-                ammo_total2 = cls.swap_groups[z][1].get_ammo_total()
-
-                damage_per_shot2 = cls.swap_groups[z][1].get_damage_per_shot()
-                dmg_output2 = damage_per_shot2
-
-                applied_perks2 = cls.swap_groups[z][1].get_perks()
-                number_to_flag2 = {1: "TT_On", 2: "FTTC_On", 3: "VS_On", 10: "FL_On", 15: "BNS_On"}
-                flags2 = {"TT_On": False, "FTTC_On": False, "VS_On": False, "FL_On": False, "BNS_On": False}
-
-                for number in applied_perks2:
-                    if number in number_to_flag2:
-                        flags2[number_to_flag2[number]] = True
-
-
-            #weapon 3
-            if len(cls.swap_groups[z]) >= 3:
-                fire_ready3 = False
-                ammo_fired3 = 0
-                burst_shot3 = 0
-                empty_check3 = 0
-
-                delay_first_shot3 = cls.swap_groups[z][2].get_dfs()
-                burst_weapon3 = cls.swap_groups[z][2].get_burst_variable()
-                fire_stale3 = cls.swap_groups[z][2].get_fire_rate()
-
-                if burst_weapon3 == True:
-                    burst_bullets3 = cls.swap_groups[z][2].get_burst_bullets()
-                    fire_delay3 = round((60/fire_stale3)/2, cls.round_coeff)
-                    burst_delay3 = round(((60/fire_stale3)/2)/burst_bullets3, cls.round_coeff)
-
-                elif burst_weapon3 == False:
-                    fire_delay3 = round(60/fire_stale3, cls.round_coeff)
-
-                dfs_delay3 = round(60/fire_stale3, cls.round_coeff)
-                fire_timer3 = dfs_delay3 if delay_first_shot3 else 0
-                reload_time3 = cls.swap_groups[z][2].get_reload_time()
-                swap_time3 = cls.swap_groups[z][2].get_swap_time()
-
-                mag_cap3 = cls.swap_groups[z][2].get_mag_cap()
-                ammo_magazine3 = mag_cap3
-
-                ammo_total3 = cls.swap_groups[z][2].get_ammo_total()
-
-                damage_per_shot3 = cls.swap_groups[z][2].get_damage_per_shot()
-                dmg_output3 = damage_per_shot3
-
-                applied_perks3 = cls.swap_groups[z][2].get_perks()
-                number_to_flag3 = {1: "TT_On", 2: "FTTC_On", 3: "VS_On", 10: "FL_On", 15: "BNS_On"}
-                flags3 = {"TT_On": False, "FTTC_On": False, "VS_On": False, "FL_On": False, "BNS_On": False}
-
-                for number in applied_perks3:
-                    if number in number_to_flag3:
-                        flags3[number_to_flag3[number]] = True
-
-
-            for i in range(cls.ticks):
-                
-                if len(cls.swap_groups[z]) >= 1 and weapon1_ready == True:
-                    dmg_output1 = damage_per_shot1
-                    if flags1["TT_On"]:
-                        ammo_magazine1, ammo_total1 = Damage.TripleTap(ammo_magazine1, ammo_total1, ammo_fired1)
-                    if flags1["FTTC_On"]:
-                        ammo_magazine1, ammo_total1 = Damage.FourthTimesTheCharm(ammo_magazine1, ammo_total1, ammo_fired1)
-                    if flags1["VS_On"]:
-                        ammo_magazine1 = Damage.VeistStinger(ammo_fired1, ammo_magazine1, mag_cap1)
-                    if flags1["FL_On"]:
-                        dmg_output1 = Damage.FiringLine(dmg_output1)
-                    if flags1["BNS_On"]:
-                        dmg_output1 = Damage.BaitNSwitch(ammo_fired1, dmg_output1, time_elapsed)
-
-                if len(cls.swap_groups[z]) >= 2 and weapon2_ready == True:
-                    dmg_output2 = damage_per_shot2
-                    if flags2["TT_On"]:
-                        ammo_magazine2, ammo_total2 = Damage.TripleTap(ammo_magazine2, ammo_total2, ammo_fired2)
-                    if flags2["FTTC_On"]:
-                        ammo_magazine2, ammo_total2 = Damage.FourthTimesTheCharm(ammo_magazine2, ammo_total2, ammo_fired2)
-                    if flags2["VS_On"]:
-                        ammo_magazine2 = Damage.VeistStinger(ammo_fired2, ammo_magazine2, mag_cap2)
-                    if flags2["FL_On"]:
-                        dmg_output2 = Damage.FiringLine(dmg_output2)
-                    if flags2["BNS_On"]:
-                        dmg_output2 = Damage.BaitNSwitch(ammo_fired2, dmg_output2, time_elapsed)
-
-                if len(cls.swap_groups[z]) >= 3:
-                    dmg_output3 = damage_per_shot3
-                    if flags3["TT_On"]:
-                        ammo_magazine3, ammo_total3 = Damage.TripleTap(ammo_magazine3, ammo_total3, ammo_fired3)
-                    if flags3["FTTC_On"]:
-                        ammo_magazine3, ammo_total3 = Damage.FourthTimesTheCharm(ammo_magazine3, ammo_total3, ammo_fired3)
-                    if flags3["VS_On"]:
-                        ammo_magazine3 = Damage.VeistStinger(ammo_fired3, ammo_magazine3, mag_cap3)
-                    if flags3["FL_On"]:
-                        dmg_output3 = Damage.FiringLine(dmg_output3)
-                    if flags3["BNS_On"]:
-                        dmg_output3 = Damage.BaitNSwitch(ammo_fired3, dmg_output3, time_elapsed)
-
-
-                if time_elapsed >= fire_timer1:
-                    fire_ready1 = True
-                    if ammo_total2 == 0:
-                        weapon1_ready = True
-                        if empty_check1 == 0:
-                            fire_timer1 = time_elapsed
-                            fire_timer1 += fire_delay1
-                            empty_check1 = 1
-
-                if time_elapsed >= fire_timer2:
-                    fire_ready2 = True
-                    if ammo_total1 == 0:
-                        weapon2_ready = True
-                        if empty_check2 == 0:
-                            fire_timer2 = time_elapsed
-                            fire_timer2 += fire_delay2
-                            empty_check2 = 1
-
-                if weapon1_ready == True:
-                    if burst_weapon1 == False:
-                        if ammo_total1 == 0:
-                            total_damage = total_damage
-                            ammo_magazine1 = 0
-                            weapon1_ready = False
-                        elif ammo_magazine1 == 0:
-
-                            if ((ammo_total2 >= mag_cap2 or ammo_total1 < mag_cap1) and (fire_delay1 + reload_time1) >= swap_time2) and (ammo_total2 != 0):
-                                    weapon1_ready = False
-                                    weapon2_ready = True
-                                    fire_timer2 = time_elapsed if fire_ready2 else fire_timer2
-                                    fire_timer2 += swap_time2
-                                    fire_timer2 += fire_delay2 if delay_first_shot2 else 0
-                            
-                            elif ammo_total2 < mag_cap2:
-                                weapon1_ready = True
-
-                            if ammo_magazine2 == 0 and weapon2_ready == True:
-                                fire_timer2 += reload_time2
-                                ammo_magazine2 = mag_cap2
-                                ammo_fired2 = 0
-
-                            elif ammo_magazine2 == 0 and weapon2_ready == False:
-                                fire_timer1 += reload_time1
-                                fire_timer1 -= fire_delay1 if delay_first_shot1 == True else 0
-                                fire_timer1 = round(fire_timer1, cls.round_coeff)
-                                ammo_fired1 = 0
-                                ammo_magazine1 = mag_cap1
-
-                        elif time_elapsed >= fire_timer1:
-                            total_damage += dmg_output1
-                            fire_timer1 = time_elapsed
-                            fire_timer1 += fire_delay1
-                            fire_timer1 = round(fire_timer1, cls.round_coeff)
-                            ammo_fired1 += 1
-                            ammo_magazine1 -= 1
-                            ammo_total1 -= 1
-
-                elif weapon2_ready == True:
-                    if burst_weapon2 == False:
-                        if ammo_total2 == 0:
-                            total_damage = total_damage
-                            ammo_magazine2 = 0
-                            weapon2_ready = False
-                        elif ammo_magazine2 == 0:
-
-                            if ((ammo_total1 >= mag_cap1 or ammo_total2 < mag_cap2) and (fire_delay2 + reload_time2) >= swap_time1) and (ammo_total1 != 0):
-                                    weapon2_ready = False
-                                    weapon1_ready = True
-                                    fire_timer1 = time_elapsed if fire_ready1 else fire_timer1
-                                    fire_timer1 += swap_time1
-                                    fire_timer1 += fire_delay1 if delay_first_shot1 else 0
-                            
-                            elif ammo_total1 < mag_cap1:
-                                weapon2_ready = True
-
-                            if ammo_magazine1 == 0 and weapon1_ready == True:
-                                fire_timer1 += reload_time1
-                                ammo_magazine1 = mag_cap1
-                                ammo_fired1 = 0
-
-                            elif ammo_magazine1 == 0 and weapon1_ready == False:
-                                fire_timer2 += reload_time2
-                                fire_timer2 -= fire_delay2 if delay_first_shot2 == True else 0
-                                fire_timer2 = round(fire_timer2, cls.round_coeff)
-                                ammo_fired2 = 0
-                                ammo_magazine2 = mag_cap2
-
-                        elif time_elapsed >= fire_timer2:
-                            total_damage += dmg_output2
-                            fire_timer2 = time_elapsed
-                            fire_timer2 += fire_delay2
-                            fire_timer2 = round(fire_timer2, cls.round_coeff)
-                            ammo_fired2 += 1
-                            ammo_magazine2 -= 1
-                            ammo_total2 -= 1
-   
-                time_elapsed += cls.x_increments
-                time_elapsed = round(time_elapsed, 5)
-                t_dmg.append(total_damage)
-                if stale_val != t_dmg[i]:
-                    if i != 0:
-                        print("weapons:", cls.swap_groups[z][0].get_name(), cls.swap_groups[z][1].get_name(), "| damage at", (i/100) ,"seconds:", t_dmg[i], "| dps:[",round(t_dmg[i]/(i/100), 1),"]","| per shot:<", dmg_output1, ">")
-                        print("total:", ammo_total1, ammo_total2)
-                        stale_val = t_dmg[i]
-
-                
-                # burst weapon logic skeleton
-                # if burst_weapon1 == True:
-                #     if ammo_total1 == 0:
-                #         total_damage = total_damage
-                #     elif ammo_magazine1 == 0:
-                #         fire_timer1 += reload_time1
-                #         fire_timer1 -= fire_delay1 if delay_first_shot1 == True else 0
-                #         fire_timer1 = round(fire_timer1, cls.round_coeff)
-                #         ammo_fired1 = 0
-                #         ammo_magazine1 = mag_cap1
-                #     elif time_elapsed == fire_timer1:
-                #         if burst_shot1 >= 0 and burst_shot1 < burst_bullets1:
-                #             fire_timer1 += burst_delay1
-                #             fire_timer1 = round(fire_timer1, cls.round_coeff)
-                #             total_damage += dmg_output1
-                #             burst_shot1 += 1
-                #             ammo_fired1 += 1
-                #             ammo_magazine1 -= 1
-                #             ammo_total1 -= 1
-                #         elif burst_shot1 >= burst_bullets1:
-                #             burst_shot1 = 0
-                #             fire_timer1 += (dfs_delay1 - burst_delay1) if delay_first_shot1 else fire_delay1
-                #             fire_timer1 = round(fire_timer1, cls.round_coeff)
-
-                #     time_elapsed += cls.x_increments
-                #     time_elapsed = round(time_elapsed, 5)
-                #     t_dmg.append(total_damage)
-                #     if stale_val != t_dmg[i]:
-                #         if i != 0:
-                #             print("weapons:", cls.swap_groups[z][0].get_name(), cls.swap_groups[z][1].get_name(), "| damage at", (i/100) ,"seconds:", t_dmg[i], "| dps:[",round(t_dmg[i]/(i/100), 1),"]","| per shot:<", dmg_output1, ">")
-                #             print("fired:", ammo_fired1)
-                #             stale_val = t_dmg[i]
-
-
 
     #triple tap - 1
     tt_addcheck = 0
@@ -744,14 +399,9 @@ class Damage:
         
         return dmg_output
 
-                #could add a bns_proc = 2 segment for handling lockouts if i ever figure out how that might work
+                # NOTE could add a bns_proc = 2 segment for handling lockouts if i ever figure out how that might work
 
 # triple tap + firing line + veist (taipan)
-# With the new system we can avoid having to pass in 0s and false for weapon attributes
-# that are non-implicit like being a burst weapon or in a swap combo and only provide
-# the information that we need to plus any extras. Below is what a dictionary of valid
-# weapon settings would look like, and this can be mirrored into a json file so that we
-# can easily load pre-made lists of weapons :)
 taipan = {
     'name': 'taipan',
     'fire_rate': 120,
@@ -763,8 +413,6 @@ taipan = {
     'perk_indices': [1,3,10]
 }
 create_weapon(taipan)
-# name, fire_rate, reload_time, damage_per_shot, mag_cap, ammo_total, delay_first_shot, burst_weapon, burst_bullets, swap_group, swap_time, perk_indices, buff_indices
-#the.add_weapon(the.name, the.fire_rate, the.reload_time, the.damage_per_shot, the.mag_cap, the.ammo_total, the.delay_first_shot, the.burst_weapon, the.burst_bullets, the.swap_group, the.swap_time, the.perk_indices, the.buff_indices)
 
 # fttc + bns (cataclysmic)
 cataclysmic = {
@@ -778,7 +426,6 @@ cataclysmic = {
     'perk_indices': [2, 15]
 }
 create_weapon(cataclysmic)
-#piss.add_weapon(piss.name, piss.fire_rate, piss.reload_time, piss.damage_per_shot, piss.mag_cap, piss.ammo_total, piss.delay_first_shot, piss.burst_weapon, piss.burst_bullets, piss.swap_group, piss.swap_time, piss.perk_indices, the.buff_indices)
 
 # stormchaser ? (i am cheating since burst lfrs use 1 bullet for 3 rather than 3 for 3 so this is wacky :/)
 stormchaser = {
@@ -794,7 +441,6 @@ stormchaser = {
     'perk_indices': [10]
 }
 create_weapon(stormchaser)
-#storm.add_weapon(storm.name, storm.fire_rate, storm.reload_time, storm.damage_per_shot, storm.mag_cap, storm.ammo_total, storm.delay_first_shot, storm.burst_weapon, storm.burst_bullets, storm.swap_group, storm.swap_time, storm.perk_indices, storm.buff_indices)
 
 #debug
 # create_weapon("1.1", 120, 1.43, 50000, 6, 20, True, False, 0, 1, 1.84, [2,15], [1])
@@ -806,8 +452,6 @@ create_weapon(stormchaser)
 
 #calculate damage function
 Damage.DamageCalculate()
-
-Damage.DamageCalculateMulti()
 
 #keeping this for reference of how to call weapon instances i guess but idk
 #Damage(the).print_weapon_instance()
