@@ -145,7 +145,7 @@ class Weapon:
         return self.swap_time
     
     def get_full_settings(self):
-        return self.name, {
+        return {
             'name': self.name,
             'fire_rate': self.fire_rate,
             'reload_time': self.reload_time,
@@ -162,6 +162,13 @@ class Weapon:
             'enhance2': self.enhanced_perks,
             'buff_indices': self.buff_indices,
         }
+    
+    def get_pruned_settings(self):
+        settings = self.get_full_settings()
+        for key, value in settings.copy().items():
+            if value == False or 0 or not bool(value):
+                del settings[key]
+        return settings
 class Damage:
     def __init__(self, weapon_instance):
         self.weapon_instance = weapon_instance
@@ -227,10 +234,6 @@ class Damage:
                 ammo_magazine = mag_cap
                 ammo_total = weapon.get_ammo_total()
 
-                # Damage Values
-                damage_per_shot = weapon.get_damage_per_shot()
-                dmg_output = damage_per_shot
-
                 # Perks
                 applied_perks = weapon.get_perks()
                 number_to_flag = {1: "TT_On", 2: "FTTC_On", 3: "VS_On", 4: "CC_On", 5: "OF_On", 10: "FL_On", 15: "BNS_On"}
@@ -246,7 +249,7 @@ class Damage:
                 for i in range(cls.ticks):
 
                     # Resets damage so weapons don't do e+17 :)
-                    dmg_output = damage_per_shot
+                    dmg_output = weapon.get_damage_per_shot()
 
                     # Checks for active perks
                     if flags["TT_On"]: #1

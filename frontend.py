@@ -2,6 +2,8 @@ import sys
 import os
 import configparser
 import pickle
+import json
+import csv
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
@@ -27,8 +29,10 @@ class Settings:
         # Add check for existing settings // create default if not
         with open(ini_path, 'r', encoding='utf-8') as f:
             self.config.read_file(f)
-        self.interface_theme = self.config.get('Interface', 'Theme')
-        self.cmd_prints = self.config.getboolean('Interface', 'CMDPrints')
+        self.interface_theme = self.config.get('Interface', 'theme')
+        self.cmd_prints = self.config.getboolean('Interface', 'cmdprints')
+        self.do_auto_save = self.config.getboolean('AutoSave', 'enabled')
+        self.auto_save_path = self.config.get('AutoSave', 'path')
 
     def set_interface_theme(self, theme):
         self.interface_theme = theme
@@ -36,12 +40,17 @@ class Settings:
     def set_cmd_prints(self, value):
         self.cmd_prints = value
 
-    def set_calc_when_damage_dealt(self, value):
-        self.calc_when_damage_dealt = value
+    def set_do_auto_save(self, value):
+        self.do_auto_save = value
+
+    def set_auto_save_path(self, value):
+        self.auto_save_path = value
 
     def save_settings(self):
         self.config.set('Interface', 'Theme', self.interface_theme)
         self.config.set('Interface', 'CMDPrints', str(self.cmd_prints))
+        self.config.set('AutoSave', str(self.do_auto_save))
+        self.config.set('AutoSave', self.auto_save_path)
 
         with open('settings.ini', 'w') as configfile:
             self.config.write(configfile)
@@ -79,9 +88,10 @@ class GUI(tk.Frame):
             self.configure(bg='#1E1E1E')
             self.master.configure(bg='#1E1E1E', highlightthickness=2, highlightcolor='#000000')
             self.combo_style = {'width': 17, 'state': 'readonly'}
+            self.label_style = {'bg': '#1E1E1E', 'fg': '#CCCCCC'}
             self.frame_style = {'bg': '#1E1E1E', 'highlightcolor': '#000000', 'highlightbackground': '#000000', 'highlightthickness': 2}
             self.check_button_style = {'bg': '#1E1E1E', 'fg': '#CCCCCC', 'selectcolor': '#1E1E1E'}
-            self.button_style = {'bg': '#1E1E1E', 'fg': '#CCCCCC'}
+            self.button_style = {'bg': '#1E1E1E', 'fg': '#CCCCCC', 'height': 1, 'width': 17}
             self.matplotlib_bg = "#1E1E1E"
             self.matplotlib_fg = "#CCCCCC"
             self.wep_frame_bg = "#1E1E1E"
@@ -116,6 +126,8 @@ class GUI(tk.Frame):
         self.nav_frame.pack(side=tk.LEFT, fill=tk.Y)
 
         listbox_style = {
+            'bg': '#1E1E1E', 
+            'fg': '#CCCCCC',
             'height': 5,
             'highlightthickness': 0,
             'borderwidth': 0,
@@ -129,7 +141,7 @@ class GUI(tk.Frame):
             'exportselection': False
         }
         # Create navbar and load options
-        self.nav_listbox = tk.Listbox(self.nav_frame, **self.button_style, **listbox_style)
+        self.nav_listbox = tk.Listbox(self.nav_frame, **listbox_style)
         self.nav_listbox.pack()
         self.nav_listbox.insert(1, 'Graph')
         self.nav_listbox.insert(2, 'Weapons')
@@ -182,7 +194,7 @@ class GUI(tk.Frame):
 
         # No. of weps
         wep_count = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
-        self.graph_wep_select_label = tk.Label(self.graph_wep_frame, text='Number of Weapons', **self.button_style)
+        self.graph_wep_select_label = tk.Label(self.graph_wep_frame, text='Number of Weapons', **self.label_style)
         self.graph_wep_select_label.grid(row=0, column=0, **self.default_padding)
         self.graph_wep_select_combo = ttk.Combobox(self.graph_wep_frame, values=wep_count, width=3, state='readonly')
         self.graph_wep_select_combo.grid(row=0, column=1, **self.default_padding)
@@ -191,7 +203,7 @@ class GUI(tk.Frame):
 
         # Build weapon select widgets
         self.graph_wep_widgets = [
-                ( tk.Label(self.graph_wep_frame, text=f'Weapon {i+1}', **self.button_style),
+                ( tk.Label(self.graph_wep_frame, text=f'Weapon {i+1}', **self.label_style),
                 ttk.Combobox(self.graph_wep_frame, **self.combo_style)
                 ) for i in range(10)
             ]
@@ -287,30 +299,30 @@ class GUI(tk.Frame):
 
         # Widgets
         self.weapons_menu_widgets = {
-            'header': tk.Label(self.weapons_frame, text="Weapon Creation", **self.button_style),
-            'type': (tk.Label(workingframe, text="Type", **self.button_style),
+            'header': tk.Label(self.weapons_frame, text="Weapon Creation", **self.label_style),
+            'type': (tk.Label(workingframe, text="Type", **self.label_style),
                     ttk.Combobox(workingframe, values=type_options, width=17, state='disabled')),
-            'name': (tk.Label(workingframe, text="Name", **self.button_style),
+            'name': (tk.Label(workingframe, text="Name", **self.label_style),
                     tk.Entry(workingframe)),
-            'fire_rate': (tk.Label(workingframe, text="Fire Rate", **self.button_style),
+            'fire_rate': (tk.Label(workingframe, text="Fire Rate", **self.label_style),
                           tk.Entry(workingframe, validate='key', validatecommand=(val_float, '%S'))),
-            'reload_time': (tk.Label(workingframe, text="Reload Time", **self.button_style),
+            'reload_time': (tk.Label(workingframe, text="Reload Time", **self.label_style),
                             tk.Entry(workingframe, validate='key', validatecommand=(val_float, '%S'))),
-            'damage_per_shot': (tk.Label(workingframe, text="Damage per Shot", **self.button_style),
+            'damage_per_shot': (tk.Label(workingframe, text="Damage per Shot", **self.label_style),
                                 tk.Entry(workingframe, validate='key', validatecommand=(val_int, '%S'))),
-            'mag_size': (tk.Label(workingframe, text="Magazine Capacity", **self.button_style),
+            'mag_size': (tk.Label(workingframe, text="Magazine Capacity", **self.label_style),
                          tk.Entry(workingframe, validate='key', validatecommand=(val_int, '%S'))),
-            'reserve_ammo': (tk.Label(workingframe, text="Ammo Total", **self.button_style),
+            'reserve_ammo': (tk.Label(workingframe, text="Ammo Total", **self.label_style),
                              tk.Entry(workingframe, validate='key', validatecommand=(val_int, '%S'))),
-            'perk1': (tk.Label(workingframe, text="Perk 1", **self.button_style),
+            'perk1': (tk.Label(workingframe, text="Perk 1", **self.label_style),
                       ttk.Combobox(workingframe, values=perk_choices, **self.combo_style)),
-            'perk2': (tk.Label(workingframe, text="Perk 2", **self.button_style),
+            'perk2': (tk.Label(workingframe, text="Perk 2", **self.label_style),
                       ttk.Combobox(workingframe, values=perk_choices, **self.combo_style)),
             'enhance_toggle': (tk.Checkbutton(workingframe, text="Perk 1 Enhanced", variable=self.weapons_menu_vars['enhance1'], **self.check_button_style),
                                tk.Checkbutton(workingframe, text="Perk 2 Enhanced", variable=self.weapons_menu_vars['enhance2'], **self.check_button_style)),
             'burst_fusion_toggle': (tk.Checkbutton(workingframe, text="Burst Weapon", variable=self.weapons_menu_vars['burst_wep'], command=self.toggle_burst, **self.check_button_style),
                                     tk.Checkbutton(workingframe, text="Fusion Weapon", variable=self.weapons_menu_vars['fusion_wep'], **self.check_button_style)),
-            'burst_bullets': (tk.Label(workingframe, text="Bullets Per Burst", **self.button_style),
+            'burst_bullets': (tk.Label(workingframe, text="Bullets Per Burst", **self.label_style),
                               tk.Entry(workingframe, validate='key', validatecommand=(val_int, '%S'))),
             'create_wep': tk.Button(workingframe, text="Create Weapon", command=self.create_weapon_handler, **self.button_style)
         }
@@ -374,24 +386,24 @@ class GUI(tk.Frame):
 
     def create_weapon_handler(self):
         exitcode = self.create_weapon()
-        print(exitcode)
+        basestr = f'Weapon creation exited with error code {exitcode}:'
         match exitcode:
             case 0:
                 # NOTE Having a popup for a success is kinda aids ill work on something else
                 messagebox.showinfo('Success', 'Weapon created successfully')
-                print('Weapon creation exited with error code 0: success')
+                print(f'{basestr} Success')
             case 1:
                 messagebox.showerror('Name Error', 'Make sure the name for your weapon contains at least one letter')
-                print('Weapon creation exited with error code 1: Name Error')
+                print(f'{basestr} Name Error')
             case 2:
                 messagebox.showerror('Float Error', 'Make sure Fire Rate and Reload Time are valid numbers')
-                print('Weapon creation exited with error code 2: Floating Point Error')
+                print(f'{basestr} Floating Point Error')
             case 3:
                 messagebox.showerror('Integer Error', 'Make sure Damage per Shot, Mag Size, and Ammo Total are valid numbers')
-                print('Weapon creation exited with error code 3: Integer Error')
+                print(f'{basestr} Integer Error')
             case _:
                 messagebox.showerror('Creation Error', 'There was an error creating your weapon')
-                print('Weapon creation exited with error code 4+: Unknown Error')
+                print(f'{basestr} Unknown Error')
         
     def create_weapon(self):
         # Name validation
@@ -473,48 +485,57 @@ class GUI(tk.Frame):
 
         # Combobox options
         ui_theme_choices = ['Dark', 'Light']
-        impexp_exp_exts = ['json', 'csv', 'pck']
+        impexp_exp_exts = ['json', 'csv', 'pickle']
 
-        self.options_widgets = {
-            'ui': {
-                'header': tk.Label(workingframe, text='UI', **self.button_style),
-                'theme': (tk.Label(workingframe, text='Theme', **self.button_style),
-                        ttk.Combobox(workingframe, values=ui_theme_choices, **self.combo_style))
-            },
+        # Widget vars
+        self.options_menu_vars = {
+            'autosave': tk.BooleanVar(value=self.settings.do_auto_save)
+        }
+        # Widgets
+        self.options_menu_widgets = {
             # Graph
             'graph': {
-                'header': tk.Label(workingframe, text='Graph', **self.button_style),
-                'xLabel': (tk.Label(workingframe, text='X Axis Name', **self.button_style),
+                'header': tk.Label(workingframe, text='Graph', **self.label_style),
+                'xLabel': (tk.Label(workingframe, text='X Axis Name', **self.label_style),
                         tk.Entry(workingframe)),
-                'xLim': (tk.Label(workingframe, text='X Axis Upper Limit', **self.button_style),
+                'xLim': (tk.Label(workingframe, text='X Axis Upper Limit', **self.label_style),
                         tk.Entry(workingframe)),
-                'yLabel': (tk.Label(workingframe, text='Y Axis Name', **self.button_style),
+                'yLabel': (tk.Label(workingframe, text='Y Axis Name', **self.label_style),
                         tk.Entry(workingframe)),
-                'yLim': (tk.Label(workingframe, text='Y Axis Upper Limit', **self.button_style),
+                'yLim': (tk.Label(workingframe, text='Y Axis Upper Limit', **self.label_style),
                         tk.Entry(workingframe))
             },
             # Import / Export
-            'impext': {
-                'header': tk.Label(workingframe, text='Import / Export', **self.button_style),
-                'export': (tk.Button(workingframe, text='Export As', width=17, **self.button_style),
+            'impexp': {
+                'header': tk.Label(workingframe, text='Import / Export', **self.label_style),
+                'export': (tk.Button(workingframe, text='Export As', command=self.export_wep_list, **self.button_style),
                         ttk.Combobox(workingframe, values=impexp_exp_exts, **self.combo_style)),
-                'log_impff': (tk.Button(workingframe, text='Log Current Weapons', width=17, **self.button_style),
-                            tk.Button(workingframe, text='Import From File', width=17, **self.button_style))
-            }
+                'log_impff': (tk.Button(workingframe, text='Log Current Weapons', command=self.print_wep_list, **self.button_style),
+                            tk.Button(workingframe, text='Import From File', **self.button_style)),
+                'auto_save_toggle': tk.Checkbutton(workingframe, text='Auto Save / Load', command=self.toggle_auto_save, **self.check_button_style),
+                'auto_save_path': (tk.Button(workingframe, text='Auto-Save Path', **self.button_style),
+                                  tk.Entry(workingframe, state='disabled', **self.label_style))
+            },
+            # GUI
+            'ui': {
+                'header': tk.Label(workingframe, text='UI', **self.label_style),
+                'theme': (tk.Label(workingframe, text='Theme', **self.label_style),
+                        ttk.Combobox(workingframe, values=ui_theme_choices, **self.combo_style)),
+                'testbut': tk.Button(workingframe, text='test', command=self.test_func, **self.button_style),
+            },
         }
 
         # Default combobox vals
-        self.options_widgets['impext']['export'][1].set(impexp_exp_exts[0])
-        self.options_widgets['ui']['theme'][1].set(self.settings.interface_theme)
+        self.options_menu_widgets['impexp']['export'][1].set(impexp_exp_exts[0])
+        self.options_menu_widgets['ui']['theme'][1].set(self.settings.interface_theme)
 
         # Grid placement
         max_outer_column = 2
-        chunks = [list(self.options_widgets.copy().items())[x:x+max_outer_column] for x in range(0, len(self.options_widgets), max_outer_column)]
+        chunks = [list(self.options_menu_widgets.copy().items())[x:x+max_outer_column] for x in range(0, len(self.options_menu_widgets), max_outer_column)]
         # Assuming 2: [ [ ( name1, { group1 } ), ( name2, { group2 } ) ], ... ]
         ro = 0
         for chunk in chunks:
-            # Store current offset, add to total
-            # This assures sections are alligned vertically
+            # Store current offset, add to total. This assures sections are alligned vertically
             cro = max([len(widgetgroup) for groupname, widgetgroup in chunk])
             ro += cro
             step = 0
@@ -530,19 +551,95 @@ class GUI(tk.Frame):
                     # Handle single elements first
                     if not type(widget) is tuple:
                         widget.grid(**grid[0], **self.default_padding)
-                        self.options_widgets[groupname][key] = (widget, grid[0])
+                        self.options_menu_widgets[groupname][key] = (widget, grid[0])
                         continue
                     # Handle label + input elements
                     label, usrinput = widget
                     label.grid(**grid[0], **self.default_padding)
                     usrinput.grid(**grid[1], **self.default_padding)
-                    self.options_widgets[groupname][key] = (label, usrinput, grid)
+                    self.options_menu_widgets[groupname][key] = (label, usrinput, grid)
                     # Bind defocus to combos
                     if isinstance(usrinput, ttk.Combobox):
                         usrinput.bind("<<ComboboxSelected>>",lambda e: self.options_frame.focus())
         
         # Hide this menu on start
+        if not self.settings.do_auto_save:
+            self.options_menu_widgets['impexp']['auto_save_path'][0].grid_forget()
+            self.options_menu_widgets['impexp']['auto_save_path'][1].grid_forget()
         self.options_frame.pack_forget()
+
+    def test_func(self):
+        d = [weapon.get_pruned_settings() for weapon in backend.weapons_list.values()]
+        print(json.dumps(d, indent=4))
+        pass
+
+    def export_wep_list_handler(self):
+        exitcode = self.export_wep_list()
+        basestr = f'Weapon export exited with error code {exitcode}:'
+        match exitcode:
+            case 0:
+                # NOTE Having a popup for a success is kinda aids ill work on something else
+                messagebox.showinfo('Success', 'Weapon list exported successfully')
+                print(f'{basestr} Success')
+            case 1:
+                messagebox.showerror('Empty Weapon List', 'There are no weapons currently available to export')
+                print(f'{basestr} Empty Weapon List')
+            case 2:
+                print(f'{basestr} No Path Selected')
+            case _:
+                messagebox.showerror('Creation Error', 'There was an error creating your weapon')
+                print(f'An exception occured during Weapon Export:')
+                pprint(exitcode)
+
+    def export_wep_list(self):
+        if len(backend.weapons_list) < 0:
+            return 1
+        ext = self.options_menu_widgets['impexp']['export'][1].get()
+        file_path = asksaveasfile(defaultextension=f'.{ext}', filetypes=[('All Files', '*.*')], initialdir='./', initialfile=f'saved_weapons.{ext}')
+        if file_path is None:
+            return 2
+        try:
+            match ext:
+                case 'json':
+                    d = [weapon.get_pruned_settings() for weapon in backend.weapons_list.values()]
+                    with open(file_path.name, file_path.mode) as f:
+                        json.dump(d, fp=f, indent=4)
+                        f.close()
+                    return 0
+                case 'csv':
+                    d = [weapon.get_full_settings() for weapon in backend.weapons_list.values()]
+                    d_names = d[0].keys()
+                    with open(file_path.name, file_path.mode) as f:
+                        writer = csv.DictWriter(f, fieldnames=d_names)
+                        writer.writeheader()
+                        writer.writerows(d)
+                        f.close()
+                    return 0
+                case 'pickle' | _:
+                    d = backend.weapons_list
+                    with open(file_path.name, 'wb') as f:
+                        pickle.dump(d, f, protocol=pickle.HIGHEST_PROTOCOL)
+                        f.close()
+                    return 0
+        except BaseException as e:
+            return e
+    
+    def toggle_auto_save(self):
+        label, entry, gridpos = self.options_menu_widgets['impexp']['auto_save_path']
+        if label.winfo_ismapped():
+            label.grid_forget()
+            entry.grid_forget()
+        else:
+            grid1, grid2 = gridpos
+            label.grid(**grid1, **self.default_padding)
+            entry.grid(**grid2, **self.default_padding)
+
+    def print_wep_list(self):
+        print('Current list of weapons:\n')
+        for weapon in backend.weapons_list.values():
+            settings = weapon.get_pruned_settings()
+            pprint(settings, sort_dicts=False)
+            print()
 
     def apply_settings(self):
         self.settings.set_interface_theme(self.setting1_combo.get())
