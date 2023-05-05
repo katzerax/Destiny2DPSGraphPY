@@ -6,6 +6,7 @@ import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
 from tkinter.filedialog import asksaveasfile
+from pprint import pprint
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 import matplotlib as mpl
@@ -245,6 +246,7 @@ class GUI(tk.Frame):
         if file_path is None:
             return
         self.fig.savefig(file_path.name)
+        print(f'Saved graph as "{file_path.name}"')
 
     def toggle_weapon_combos(self, evt):
         # Get ammount of weps requested
@@ -454,7 +456,8 @@ class GUI(tk.Frame):
         'delay_first_shot': bool(fusion_wep),
         'perk_indices': perk_indices
         }
-        print(weapon_options)
+        print('Attempting to create weapon with options:')
+        print("\n".join("{}\t{}".format(k, v) for k, v in weapon_options.items()))
 
         if backend.create_weapon(weapon_options):
             print(backend.weapons_list)
@@ -465,30 +468,78 @@ class GUI(tk.Frame):
         
     def options_menu(self):
         # Root frame
-        self.options_frame = tk.Frame(self, **self.frame_style)
+        workingframe = self.options_frame = tk.Frame(self, **self.frame_style)
         self.options_frame.pack(side=tk.LEFT, fill=tk.Y)
 
-        # Setting 1 (ui theme)
-        setting1_options = ['Light', 'Dark']
-        self.setting1_label = tk.Label(self.options_frame, text="UI Mode", **self.button_style)
-        self.setting1_label.grid(row=0, column=0, **self.default_padding)
-        self.setting1_combo = ttk.Combobox(self.options_frame, values=setting1_options, **self.combo_style)
-        self.setting1_combo.grid(row=0, column=1, **self.default_padding)
-        self.setting1_combo.set(self.settings.interface_theme)
-        self.setting1_combo.bind("<<ComboboxSelected>>", lambda e: self.options_frame.focus())
+        # Combobox options
+        ui_theme_choices = ['Dark', 'Light']
+        impexp_exp_exts = ['json', 'csv', 'pck']
 
-        # Setting 2 (cmd prints)
-        setting2_options = ['True', 'False']
-        self.setting2_label = tk.Label(self.options_frame, text="CMD Prints", **self.button_style)
-        self.setting2_label.grid(row=1, column=0, **self.default_padding)
-        self.setting2_combo = ttk.Combobox(self.options_frame, values=setting2_options, **self.combo_style)
-        self.setting2_combo.grid(row=1, column=1, **self.default_padding)
-        self.setting2_combo.set(str(self.settings.cmd_prints))
-        self.setting2_combo.bind("<<ComboboxSelected>>", lambda e: self.options_frame.focus())
+        self.options_widgets = {
+            'ui': {
+                'header': tk.Label(workingframe, text='UI', **self.button_style),
+                'theme': (tk.Label(workingframe, text='Theme', **self.button_style),
+                        ttk.Combobox(workingframe, values=ui_theme_choices, **self.combo_style))
+            },
+            # Graph
+            'graph': {
+                'header': tk.Label(workingframe, text='Graph', **self.button_style),
+                'xLabel': (tk.Label(workingframe, text='X Axis Name', **self.button_style),
+                        tk.Entry(workingframe)),
+                'xLim': (tk.Label(workingframe, text='X Axis Upper Limit', **self.button_style),
+                        tk.Entry(workingframe)),
+                'yLabel': (tk.Label(workingframe, text='Y Axis Name', **self.button_style),
+                        tk.Entry(workingframe)),
+                'yLim': (tk.Label(workingframe, text='Y Axis Upper Limit', **self.button_style),
+                        tk.Entry(workingframe))
+            },
+            # Import / Export
+            'impext': {
+                'header': tk.Label(workingframe, text='Import / Export', **self.button_style),
+                'export': (tk.Button(workingframe, text='Export As', width=17, **self.button_style),
+                        ttk.Combobox(workingframe, values=impexp_exp_exts, **self.combo_style)),
+                'log_impff': (tk.Button(workingframe, text='Log Current Weapons', width=17, **self.button_style),
+                            tk.Button(workingframe, text='Import From File', width=17, **self.button_style))
+            }
+        }
 
-        # Apply Settings button
-        self.apply_settings_button = tk.Button(self.options_frame, text="Apply Settings", command=self.apply_settings, **self.button_style)
-        self.apply_settings_button.grid(row=4, column=0, padx=8, pady=5, sticky=tk.W)
+        # Default combobox vals
+        self.options_widgets['impext']['export'][1].set(impexp_exp_exts[0])
+        self.options_widgets['ui']['theme'][1].set(self.settings.interface_theme)
+
+        # Grid placement
+        max_outer_column = 2
+        chunks = [list(self.options_widgets.copy().items())[x:x+max_outer_column] for x in range(0, len(self.options_widgets), max_outer_column)]
+        # Assuming 2: [ [ ( name1, { group1 } ), ( name2, { group2 } ) ], ... ]
+        ro = 0
+        for chunk in chunks:
+            # Store current offset, add to total
+            # This assures sections are alligned vertically
+            cro = max([len(widgetgroup) for groupname, widgetgroup in chunk])
+            ro += cro
+            step = 0
+            for combined in chunk:
+                # Set columns stepping by 2 based on index of group
+                groupname, widgetgroup = combined
+                column = step
+                step += 2
+                for idz, widget_keyval in enumerate(widgetgroup.items()):
+                    key, widget = widget_keyval
+                    grid = ({'row': idz+(ro-cro), 'column': column},
+                            {'row': idz+(ro-cro), 'column': column+1})
+                    # Handle single elements first
+                    if not type(widget) is tuple:
+                        widget.grid(**grid[0], **self.default_padding)
+                        self.options_widgets[groupname][key] = (widget, grid[0])
+                        continue
+                    # Handle label + input elements
+                    label, usrinput = widget
+                    label.grid(**grid[0], **self.default_padding)
+                    usrinput.grid(**grid[1], **self.default_padding)
+                    self.options_widgets[groupname][key] = (label, usrinput, grid)
+                    # Bind defocus to combos
+                    if isinstance(usrinput, ttk.Combobox):
+                        usrinput.bind("<<ComboboxSelected>>",lambda e: self.options_frame.focus())
         
         # Hide this menu on start
         self.options_frame.pack_forget()

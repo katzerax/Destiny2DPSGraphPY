@@ -6,7 +6,10 @@ PERKS_LIST = {
     0: ("Null", "No selection"),
     1: ("Triple Tap", "Landing 3 precision hits refunds 1 ammo back to the magazine."),
     2: ("Fourth Times the Charm", "Landing 4 precision hits refunds 2 ammo back to the magazine."),
-    6: ("Vorpal Weapon", "Flat damage increase of 10% to heavies, 15% to specials, and 20% to primaries."),
+    4: ('Clown Cartridge', 'Randomly grants 10-50%% increased mag capacity on reload.'),
+    5: ('Overflow', 'Upon picking up special or heavy ammo magazine gets overflowed to 200%% of its regular capacity from reserves.'),
+    6: ('Rapid Hit', 'Gain 1 stack up to 5 for every precision hit. Scales at 5 | 30 | 35 | 42 | 60 reload speed for 2 seconds.'),
+    7: ("Vorpal Weapon", "Flat damage increase of 10% to heavies, 15% to specials, and 20% to primaries."),
     10: ("Firing Line", "Gain 20%% increased precision damage when within 15 meters of 2 or more allies."),
     15: ("Bait and Switch", "10 seconds of 35%% increased damage upon dealing damage with all 3 weapons within 3 seconds."),
 }
@@ -29,7 +32,10 @@ def create_weapon(weapon_settings: dict):
     return True
 
 class Weapon:
-    def __init__(self, name:str, fire_rate:float, reload_time:float, damage_per_shot:int, mag_cap:int, ammo_total:int, ammo_type:int=1, elemental_type:int=1, enhanced_perks:bool=False, delay_first_shot:bool=False, burst_weapon:bool=False, burst_bullets:int=0, swap_group:int=0, swap_time:float=0, perk_indices:list=[], buff_indices:list=[]):
+    def __init__(self, name:str, fire_rate:float, reload_time:float, damage_per_shot:int, 
+                 mag_cap:int, ammo_total:int, ammo_type:int=1, elemental_type:int=1, 
+                 enhanced_perks:bool=False, delay_first_shot:bool=False, burst_weapon:bool=False, 
+                 burst_bullets:int=0, swap_group:int=0, swap_time:float=0, perk_indices:list=[], buff_indices:list=[]):
         # Set positional args
         self.name = name
         self.fire_rate = fire_rate
@@ -138,6 +144,24 @@ class Weapon:
     def get_swap_time(self):
         return self.swap_time
     
+    def get_full_settings(self):
+        return self.name, {
+            'name': self.name,
+            'fire_rate': self.fire_rate,
+            'reload_time': self.reload_time,
+            'damage_per_shot': self.damage_per_shot,
+            'mag_cap': self.mag_cap,
+            'ammo_total': self.ammo_total,
+            'ammo_type': self.ammo_type,
+            'elemental_type': self.elemental_type,
+            'delay_first_shot': self.delay_first_shot,
+            'burst_weapon': self.burst_weapon,
+            'burst_bullets': self.burst_bullets,
+            'perk_indices': self.perk_indices,
+            'enhance1': self.enhanced_perks,
+            'enhance2': self.enhanced_perks,
+            'buff_indices': self.buff_indices,
+        }
 class Damage:
     def __init__(self, weapon_instance):
         self.weapon_instance = weapon_instance
