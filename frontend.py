@@ -7,7 +7,7 @@ import csv
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
-from tkinter.filedialog import asksaveasfile
+from tkinter.filedialog import asksaveasfile, askopenfilename
 from pprint import pprint
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
@@ -48,16 +48,31 @@ class Settings:
     def set_auto_save_path(self, value):
         self.auto_save_path = value
 
+    def set_graph_title(self, value):
+        self.graph_title = value
+
+    def set_graph_xlabel(self, value):
+        self.graph_xlabel = value
+
+    def set_graph_xlim(self, value):
+        self.graph_xlim = value
+
+    def set_graph_ylabel(self, value):
+        self.graph_ylabel = value
+
+    def set_graph_ylim(self, value):
+        self.graph_ylim = value
+
     def save_settings(self):
         self.config.set('Interface', 'theme', self.interface_theme)
         self.config.set('Interface', 'log_mode', self.log_mode)
-        self.config.set('AutoSave', str(self.do_auto_save))
-        self.config.set('AutoSave', self.auto_save_path)
-        self.config.set('Graph', self.graph_title)
-        self.config.set('Graph', self.graph_xlabel)
-        self.config.set('Graph', int(self.graph_xlim))
-        self.config.set('Graph', self.graph_ylabel)
-        self.config.set('Graph', int(self.graph_ylim))
+        self.config.set('AutoSave', 'enabled', str(self.do_auto_save))
+        self.config.set('AutoSave', 'path', self.auto_save_path)
+        self.config.set('Graph', 'title', self.graph_title)
+        self.config.set('Graph', 'xlabel', self.graph_xlabel)
+        self.config.set('Graph', 'xlim', str(self.graph_xlim))
+        self.config.set('Graph', 'ylabel', self.graph_ylabel)
+        self.config.set('Graph', 'ylim', str(self.graph_ylim))
 
         with open('settings.ini', 'w') as f:
             self.config.write(f)
@@ -86,31 +101,49 @@ class GUI(tk.Frame):
     def load_settings(self):
         # Instance settings
         self.settings = Settings()
+
         self.default_padding = {'padx': 5, 'pady': 5, 'sticky': tk.W}
+        self.combo_style = {'width': 17, 'state': 'readonly'}
         # Access and apply settings
         if self.settings.interface_theme.lower() == 'dark':
             self.configure(bg='#1E1E1E')
             self.master.configure(bg='#1E1E1E', highlightthickness=2, highlightcolor='#000000')
-            self.combo_style = {'width': 17, 'state': 'readonly'}
+
             self.label_style = {'bg': '#1E1E1E', 'fg': '#CCCCCC'}
             self.frame_style = {'bg': '#1E1E1E', 'highlightcolor': '#000000', 'highlightbackground': '#000000', 'highlightthickness': 2}
+            self.frame_bg = "#1E1E1E"
             self.check_button_style = {'bg': '#1E1E1E', 'fg': '#CCCCCC', 'selectcolor': '#1E1E1E'}
             self.button_style = {'bg': '#1E1E1E', 'fg': '#CCCCCC', 'height': 1, 'width': 17}
             self.matplotlib_bg = "#1E1E1E"
             self.matplotlib_fg = "#CCCCCC"
-            self.wep_frame_bg = "#1E1E1E"
             self.listbox_bg = "#808080"
             self.white_text = "#CCCCCC"
         else:
+            self.label_style = {'bg': '#1E1E1E', 'fg': '#CCCCCC'}
+            self.frame_style = {'bg': '#FFFFFF', 'highlightcolor': '#000000', 'highlightbackground': '#FFFFFF', 'highlightthickness': 2}
+            self.frame_bg = "#FFFFFF"
             self.check_button_style = {}
             self.button_style = {}
             self.matplotlib_bg = "#FFFFFF"
-            self.frame_style = {'bg': '#FFFFFF', 'highlightcolor': '#FFFFFF', 'highlightbackground': '#FFFFFF', 'highlightthickness': 2}
-            self.combo_style = {'width': 17, 'state': 'readonly'}
-            self.wep_frame_bg = "#FFFFFF"
+            self.matplotlib_fg = "#000000"
             self.listbox_bg = "#808080"
             self.white_text = "#000000"
-            self.matplotlib_fg = "#000000"
+
+        self.navbar_style = {
+            'bg': '#1E1E1E', 
+            'fg': '#CCCCCC',
+            'height': 5,
+            'highlightthickness': 0,
+            'borderwidth': 0,
+            'highlightcolor': '#000000', #
+            'selectbackground': self.listbox_bg, #808080
+            'selectforeground': '#FFFFFF',
+            'selectborderwidth': 0,
+            'activestyle': 'none',
+            'font': 20,
+            'width': 10,
+            'exportselection': False
+        }
 
         if self.settings.log_mode == 'True':
             pass
@@ -129,23 +162,8 @@ class GUI(tk.Frame):
         self.nav_frame = tk.Frame(self, **self.frame_style)
         self.nav_frame.pack(side=tk.LEFT, fill=tk.Y)
 
-        listbox_style = {
-            'bg': '#1E1E1E', 
-            'fg': '#CCCCCC',
-            'height': 5,
-            'highlightthickness': 0,
-            'borderwidth': 0,
-            'highlightcolor': '#000000', #
-            'selectbackground': self.listbox_bg, #808080
-            'selectforeground': '#FFFFFF',
-            'selectborderwidth': 0,
-            'activestyle': 'none',
-            'font': 20,
-            'width': 10,
-            'exportselection': False
-        }
         # Create navbar and load options
-        self.nav_listbox = tk.Listbox(self.nav_frame, **listbox_style)
+        self.nav_listbox = tk.Listbox(self.nav_frame, **self.navbar_style)
         self.nav_listbox.pack()
         self.nav_listbox.insert(1, 'Graph')
         self.nav_listbox.insert(2, 'Weapons')
@@ -193,7 +211,7 @@ class GUI(tk.Frame):
         self.graph_frame.pack(side=tk.LEFT, fill=tk.Y)
 
         # Wep select frame
-        self.graph_wep_frame = tk.Frame(self.graph_frame, bg=self.wep_frame_bg)
+        self.graph_wep_frame = tk.Frame(self.graph_frame, bg=self.frame_bg)
         self.graph_wep_frame.pack(side=tk.LEFT, fill=tk.Y)
 
         # No. of weps
@@ -203,7 +221,7 @@ class GUI(tk.Frame):
         self.graph_wep_select_combo = ttk.Combobox(self.graph_wep_frame, values=wep_count, width=3, state='readonly')
         self.graph_wep_select_combo.grid(row=0, column=1, **self.default_padding)
         self.graph_wep_select_combo.set(wep_count[2])
-        self.graph_wep_select_combo.bind("<<ComboboxSelected>>",lambda e: self.graph_frame.focus())
+        self.graph_wep_select_combo.bind("<<ComboboxSelected>>", self.graph_numweapons)
 
         # Build weapon select widgets
         self.graph_wep_widgets = [
@@ -481,7 +499,8 @@ class GUI(tk.Frame):
         self.options_frame.pack(side=tk.LEFT, fill=tk.Y)
 
         # Combobox options
-        ui_theme_choices = ['Dark', 'Light']
+        interface_theme_choices = ['Dark', 'Light']
+        interface_logmode_choices = ['App', 'Console', 'Both']
         impexp_exp_exts = ['json', 'csv', 'pickle']
 
         # Input validation
@@ -490,6 +509,7 @@ class GUI(tk.Frame):
         # Widget vars
         self.options_menu_vars = {
             'autosave': tk.BooleanVar(value=self.settings.do_auto_save),
+            'autosave_path': tk.StringVar(value=self.settings.auto_save_path),
             'graph_title': tk.StringVar(value=self.settings.graph_title),
             'graph_xlabel': tk.StringVar(value=self.settings.graph_xlabel),
             'graph_xlim': tk.IntVar(value=self.settings.graph_xlim),
@@ -503,14 +523,14 @@ class GUI(tk.Frame):
                 'header': tk.Label(workingframe, text='Graph', **self.label_style),
                 'title': (tk.Label(workingframe, text='Graph Title', **self.label_style),
                           tk.Entry(workingframe, textvariable=self.options_menu_vars['graph_title'])),
-                'xLabel': (tk.Label(workingframe, text='X Axis Name', **self.label_style),
+                'xlabel': (tk.Label(workingframe, text='X Axis Name', **self.label_style),
                         tk.Entry(workingframe, textvariable=self.options_menu_vars['graph_xlabel'])),
-                'xLim': (tk.Label(workingframe, text='X Axis Upper Limit', **self.label_style),
+                'xlim': (tk.Label(workingframe, text='X Axis Upper Limit', **self.label_style),
                         tk.Entry(workingframe, textvariable=self.options_menu_vars['graph_xlim'],
                                  validate='key', validatecommand=(val_int, '%S'))),
-                'yLabel': (tk.Label(workingframe, text='Y Axis Name', **self.label_style),
+                'ylabel': (tk.Label(workingframe, text='Y Axis Name', **self.label_style),
                         tk.Entry(workingframe, textvariable=self.options_menu_vars['graph_ylabel'])),
-                'yLim': (tk.Label(workingframe, text='Y Axis Upper Limit', **self.label_style),
+                'ylim': (tk.Label(workingframe, text='Y Axis Upper Limit', **self.label_style),
                         tk.Entry(workingframe, textvariable=self.options_menu_vars['graph_ylim'],
                                  validate='key', validatecommand=(val_int, '%S')))
             },
@@ -522,7 +542,8 @@ class GUI(tk.Frame):
                         ttk.Combobox(workingframe, values=impexp_exp_exts, **self.combo_style)),
                 'log_impff': (tk.Button(workingframe, text='Log Current Weapons', 
                                         command=self.options_print_weps, **self.button_style),
-                            tk.Button(workingframe, text='Import From File', **self.button_style)),
+                            tk.Button(workingframe, text='Import From File', 
+                                      command=self.options_import_weps_handler, **self.button_style)),
                 'auto_save_toggle': tk.Checkbutton(workingframe, text='Auto Save / Load', variable=self.options_menu_vars['autosave'], 
                                                    command=self.options_toggle_autosave, **self.check_button_style),
                 'auto_save_path': (tk.Button(workingframe, text='Auto-Save Path', **self.button_style),
@@ -532,14 +553,17 @@ class GUI(tk.Frame):
             'interface': {
                 'header': tk.Label(workingframe, text='Interface', **self.label_style),
                 'theme': (tk.Label(workingframe, text='Theme', **self.label_style),
-                        ttk.Combobox(workingframe, values=ui_theme_choices, **self.combo_style)),
-                'testbut': tk.Button(workingframe, text='test', command=self.test_func, **self.button_style),
+                        ttk.Combobox(workingframe, values=interface_theme_choices, **self.combo_style)),
+                'logmode': (tk.Label(workingframe, text='Log Mode', **self.label_style),
+                            ttk.Combobox(workingframe, values=interface_logmode_choices, **self.combo_style)),
+                'testbut': tk.Button(workingframe, text='test_func :)', command=self.test_func, **self.button_style),
             },
         }
 
         # Default combobox vals
         self.options_menu_widgets['impexp']['export'][1].set(impexp_exp_exts[0])
         self.options_menu_widgets['interface']['theme'][1].set(self.settings.interface_theme)
+        self.options_menu_widgets['interface']['logmode'][1].set(self.settings.log_mode)
 
         # Grid placement
         max_outer_column = 2
@@ -550,6 +574,7 @@ class GUI(tk.Frame):
             # Store current offset, add to total. This assures sections are alligned vertically
             cro = max([len(widgetgroup) for groupname, widgetgroup in chunk])
             ro += cro + 1
+            # One grid space of padding after first outer column
             if not ro-cro-1 == 0:
                 spacer = tk.Label(workingframe, text=' ', **self.label_style)
                 spacer.grid(row=ro-cro-1, column=0, **self.default_padding)
@@ -576,7 +601,15 @@ class GUI(tk.Frame):
                     # Bind defocus to combos
                     if isinstance(usrinput, ttk.Combobox):
                         usrinput.bind("<<ComboboxSelected>>",lambda e: self.options_frame.focus())
-        
+
+        # Final Spacer
+        spacer = tk.Label(workingframe, text=' ', **self.label_style)
+        spacer.grid(row=ro, column=0, **self.default_padding)
+        # Apply settings button (Always oriented bottom left)
+        self.options_apply_settings_button = tk.Button(workingframe, text='Apply Settings', 
+                                                       command=self.options_apply_settings, **self.button_style)
+        self.options_apply_settings_button.grid(row=ro+1, column=0, **self.default_padding)
+
         # Hide this menu on start
         if not self.settings.do_auto_save:
             self.options_menu_widgets['impexp']['auto_save_path'][0].grid_forget()
@@ -584,10 +617,89 @@ class GUI(tk.Frame):
         self.options_frame.pack_forget()
 
     def test_func(self):
-        d = [weapon.get_pruned_settings() for weapon in backend.weapons_list.values()]
-        print(json.dumps(d, indent=4))
         pass
 
+    def options_import_weps_handler(self):
+        exitcode = self.options_export_weps()
+        basestr = f'Weapon Import exited with code {exitcode}:'
+        match exitcode:
+            case 0:
+                messagebox.showinfo('Success', 'Weapon list imported successfully.')
+                print(f'{basestr} Success')
+            case 1:
+                print(f'{basestr} Operation Canceled')
+            case 2:
+                print(f'{basestr} No Path Selected')
+            case 3:
+                messagebox.showerror('Invalid File Type', 'Selected file must be of type: (.json, .pickle)')
+                print(f'{basestr} Invalid File Type')
+            case 4:
+                messagebox.showerror('Invalid Json Data', 'Json data selected for import is invalid.')
+                print(f'{basestr} Invalid Json Data')
+            case 5:
+                messagebox.showerror('Invalid Pickle Data', 'Pickle data selected for import is invalid.')
+                print(f'{basestr} Invalid Pickle Data')
+            case 6:
+                messagebox.showerror('Import Error', 'An unknown error occured while importing your weapons. Check log for more info.')
+                print(f'{basestr} How did you get here?')
+            case _:
+                messagebox.showerror('Import Error', 'An error occured while importing your weapons. Check log for more info.')
+                print(f'An exception occured during Weapon Import:')
+                pprint(exitcode)
+
+    def options_import_weps(self):
+        # Warn about current list deletion
+        confirm = messagebox.askokcancel('Import Warning', 'Are you sure you want to import a list of weapons?' +
+                                         '\nDoing so will irreversably clear your current list. Make sure to export if you would like to keep your current list.',)
+        if not confirm:
+            return 1
+        # File dialogue
+        file_path = askopenfilename(
+            filetypes=(('JSON Files', '*.json'), ('Pickle Files', '*.pickle'), ('All Files', '*.*')),
+            initialdir='./'
+            )
+        if file_path is None:
+            return 2
+        if not file_path.endswith(('.json','.pickle')):
+            return 3
+        
+        # Load backup back into memory on import fail
+        def reclaim(backup):
+            reclaimed = pickle.loads(backup)
+            backend.weapons_list = reclaimed
+
+        try:
+            # Create a temporary backup of current list
+            temp_bak = pickle.dumps(backend.weapons_list)
+            # Import json
+            if file_path.endswith('.json'):
+                with open(file_path, 'r') as f:
+                    backend.weapons_list = dict()
+                    data = json.load(f)
+                    for wepsettings in data:
+                        success = backend.create_weapon(wepsettings)
+                        if not success:
+                            reclaim(temp_bak)
+                            return 4
+                    return 0
+            # Import pickle
+            elif file_path.endswith('.pickle'):
+                with open(file_path, 'rb') as f:
+                    backend.weapons_list = dict()
+                    data = pickle.load(f)
+                    for wep in data.values():
+                        if not isinstance(wep, backend.Weapon):
+                            reclaim(temp_bak)
+                            return 5
+                    backend.weapons_list = data
+                    return 0
+            else:
+                return 6
+        except Exception as e:
+            reclaim = pickle.loads(temp_bak)
+            backend.weapons_list = reclaim
+            return e
+    
     def options_export_weps_handler(self):
         exitcode = self.options_export_weps()
         basestr = f'Weapon Export exited with code {exitcode}:'
@@ -636,7 +748,7 @@ class GUI(tk.Frame):
                         pickle.dump(d, f, protocol=pickle.HIGHEST_PROTOCOL)
                         f.close()
                     return 0
-        except BaseException as e:
+        except Exception as e:
             return e
     
     def options_toggle_autosave(self):
@@ -657,8 +769,15 @@ class GUI(tk.Frame):
             print()
 
     def options_apply_settings(self):
-        self.settings.set_interface_theme(self.setting1_combo.get())
-        self.settings.set_log_mode(self.setting2_combo.get())
+        self.settings.set_interface_theme(self.options_menu_widgets['interface']['theme'][1].get())
+        self.settings.set_log_mode(self.options_menu_widgets['interface']['logmode'][1].get())
+        self.settings.set_do_auto_save(self.options_menu_vars['autosave'].get())
+        self.settings.set_auto_save_path(self.options_menu_widgets['impexp']['auto_save_path'][1].get())
+        self.settings.set_graph_title(self.options_menu_widgets['graph']['title'][1].get())
+        self.settings.set_graph_xlabel(self.options_menu_widgets['graph']['xlabel'][1].get())
+        self.settings.set_graph_xlim(self.options_menu_widgets['graph']['xlim'][1].get())
+        self.settings.set_graph_ylabel(self.options_menu_widgets['graph']['ylabel'][1].get())
+        self.settings.set_graph_ylim(self.options_menu_widgets['graph']['ylim'][1].get())
         self.settings.save_settings()
         self.settings.restart_gui(root)
 

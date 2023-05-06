@@ -26,7 +26,8 @@ weapons_list = {
 def create_weapon(weapon_settings: dict):
     try:
         new_weapon = Weapon(**weapon_settings)
-    except BaseException:
+    except Exception as e:
+        print(e)
         return False
     weapons_list[str(weapon_settings['name'])] = new_weapon
     return True
