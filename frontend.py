@@ -30,6 +30,11 @@ class Settings:
         self.log_mode = self.config.get('Interface', 'log_mode')
         self.do_auto_save = self.config.getboolean('AutoSave', 'enabled')
         self.auto_save_path = self.config.get('AutoSave', 'path')
+        self.graph_title = self.config.get('Graph', 'title')
+        self.graph_xlabel = self.config.get('Graph', 'xlabel')
+        self.graph_xlim = self.config.getint('Graph', 'xlim')
+        self.graph_ylabel = self.config.get('Graph', 'ylabel')
+        self.graph_ylim = self.config.getint('Graph', 'ylim')
 
     def set_interface_theme(self, theme):
         self.interface_theme = theme
@@ -48,9 +53,15 @@ class Settings:
         self.config.set('Interface', 'log_mode', self.log_mode)
         self.config.set('AutoSave', str(self.do_auto_save))
         self.config.set('AutoSave', self.auto_save_path)
+        self.config.set('Graph', self.graph_title)
+        self.config.set('Graph', self.graph_xlabel)
+        self.config.set('Graph', int(self.graph_xlim))
+        self.config.set('Graph', self.graph_ylabel)
+        self.config.set('Graph', int(self.graph_ylim))
 
-        with open('settings.ini', 'w') as configfile:
-            self.config.write(configfile)
+        with open('settings.ini', 'w') as f:
+            self.config.write(f)
+            f.close()
 
     def reset_settings(self):
         pass
@@ -234,12 +245,12 @@ class GUI(tk.Frame):
         self.ax.set_facecolor(self.matplotlib_bg)
         self.fig.set_facecolor(self.matplotlib_bg)
 
-        # Set default axis and labels
-        self.ax.set_title("DPS Over Time")
-        self.ax.set_xlabel("Time (seconds)")
-        self.ax.set_ylabel("DPS", labelpad=-340, rotation='horizontal')
-        self.ax.set_xlim(0, 45)
-        self.ax.set_ylim(0, 300000)
+        # Set axis and labels
+        self.ax.set_title(self.settings.graph_title)
+        self.ax.set_xlabel(self.settings.graph_xlabel)
+        self.ax.set_ylabel(self.settings.graph_ylabel, labelpad=-340, rotation='horizontal')
+        self.ax.set_xlim(0, self.settings.graph_xlim)
+        self.ax.set_ylim(0, self.settings.graph_ylim)
 
         self.canvas.get_tk_widget().pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=15, pady=15)
 
@@ -274,13 +285,13 @@ class GUI(tk.Frame):
         workingframe = self.weapons_frame = tk.Frame(self, **self.frame_style)
         self.weapons_frame.pack(side=tk.LEFT, fill=tk.Y)
 
-        # Input validation
-        val_float = (self.register(self.weapons_val_float))
-        val_int = (self.register(self.weapons_val_int))
-
         # Combobox options
         type_options = ['Single Weapon', 'Weapon Swap']
         perk_choices = [value[0] for value in backend.PERKS_LIST.values()]
+
+        # Input validation
+        val_int = self.register(self.util_valint)
+        val_float = self.register(self.util_valfloat)
 
         # Widget vars
         self.weapons_menu_vars = {
@@ -369,18 +380,6 @@ class GUI(tk.Frame):
         else:
             label.grid(row=gridpos, column=0, **self.default_padding)
             entry.grid(row=gridpos, column=1, **self.default_padding)
-
-    def weapons_val_float(self, char):
-        if char in '0123456789.':
-            return True
-        else:
-            return False
-        
-    def weapons_val_int(self, char):
-        if char in '0123456789':
-            return True
-        else:
-            return False
 
     def weapons_create_weapon_handler(self):
         exitcode = self.weapons_create_weapon()
@@ -485,23 +484,35 @@ class GUI(tk.Frame):
         ui_theme_choices = ['Dark', 'Light']
         impexp_exp_exts = ['json', 'csv', 'pickle']
 
+        # Input validation
+        val_int = self.register(self.util_valint)
+
         # Widget vars
         self.options_menu_vars = {
-            'autosave': tk.BooleanVar(value=self.settings.do_auto_save)
+            'autosave': tk.BooleanVar(value=self.settings.do_auto_save),
+            'graph_title': tk.StringVar(value=self.settings.graph_title),
+            'graph_xlabel': tk.StringVar(value=self.settings.graph_xlabel),
+            'graph_xlim': tk.IntVar(value=self.settings.graph_xlim),
+            'graph_ylabel': tk.StringVar(value=self.settings.graph_ylabel),
+            'graph_ylim': tk.IntVar(value=self.settings.graph_ylim)
         }
         # Widgets
         self.options_menu_widgets = {
             # Graph
             'graph': {
                 'header': tk.Label(workingframe, text='Graph', **self.label_style),
+                'title': (tk.Label(workingframe, text='Graph Title', **self.label_style),
+                          tk.Entry(workingframe, textvariable=self.options_menu_vars['graph_title'])),
                 'xLabel': (tk.Label(workingframe, text='X Axis Name', **self.label_style),
-                        tk.Entry(workingframe)),
+                        tk.Entry(workingframe, textvariable=self.options_menu_vars['graph_xlabel'])),
                 'xLim': (tk.Label(workingframe, text='X Axis Upper Limit', **self.label_style),
-                        tk.Entry(workingframe)),
+                        tk.Entry(workingframe, textvariable=self.options_menu_vars['graph_xlim'],
+                                 validate='key', validatecommand=(val_int, '%S'))),
                 'yLabel': (tk.Label(workingframe, text='Y Axis Name', **self.label_style),
-                        tk.Entry(workingframe)),
+                        tk.Entry(workingframe, textvariable=self.options_menu_vars['graph_ylabel'])),
                 'yLim': (tk.Label(workingframe, text='Y Axis Upper Limit', **self.label_style),
-                        tk.Entry(workingframe))
+                        tk.Entry(workingframe, textvariable=self.options_menu_vars['graph_ylim'],
+                                 validate='key', validatecommand=(val_int, '%S')))
             },
             # Import / Export
             'impexp': {
@@ -512,14 +523,14 @@ class GUI(tk.Frame):
                 'log_impff': (tk.Button(workingframe, text='Log Current Weapons', 
                                         command=self.options_print_weps, **self.button_style),
                             tk.Button(workingframe, text='Import From File', **self.button_style)),
-                'auto_save_toggle': tk.Checkbutton(workingframe, text='Auto Save / Load', 
+                'auto_save_toggle': tk.Checkbutton(workingframe, text='Auto Save / Load', variable=self.options_menu_vars['autosave'], 
                                                    command=self.options_toggle_autosave, **self.check_button_style),
                 'auto_save_path': (tk.Button(workingframe, text='Auto-Save Path', **self.button_style),
                                   tk.Entry(workingframe, state='disabled', **self.label_style))
             },
             # GUI
-            'ui': {
-                'header': tk.Label(workingframe, text='UI', **self.label_style),
+            'interface': {
+                'header': tk.Label(workingframe, text='Interface', **self.label_style),
                 'theme': (tk.Label(workingframe, text='Theme', **self.label_style),
                         ttk.Combobox(workingframe, values=ui_theme_choices, **self.combo_style)),
                 'testbut': tk.Button(workingframe, text='test', command=self.test_func, **self.button_style),
@@ -528,7 +539,7 @@ class GUI(tk.Frame):
 
         # Default combobox vals
         self.options_menu_widgets['impexp']['export'][1].set(impexp_exp_exts[0])
-        self.options_menu_widgets['ui']['theme'][1].set(self.settings.interface_theme)
+        self.options_menu_widgets['interface']['theme'][1].set(self.settings.interface_theme)
 
         # Grid placement
         max_outer_column = 2
@@ -538,7 +549,10 @@ class GUI(tk.Frame):
         for chunk in chunks:
             # Store current offset, add to total. This assures sections are alligned vertically
             cro = max([len(widgetgroup) for groupname, widgetgroup in chunk])
-            ro += cro
+            ro += cro + 1
+            if not ro-cro-1 == 0:
+                spacer = tk.Label(workingframe, text=' ', **self.label_style)
+                spacer.grid(row=ro-cro-1, column=0, **self.default_padding)
             step = 0
             for combined in chunk:
                 # Set columns stepping by 2 based on index of group
@@ -669,6 +683,18 @@ class GUI(tk.Frame):
 
         # Hide the log frame on start
         self.log_frame.pack_forget()
+
+    def util_valfloat(self, char):
+        if char in '0123456789.':
+            return True
+        else:
+            return False
+        
+    def util_valint(self, char):
+        if char in '0123456789':
+            return True
+        else:
+            return False
 class TextRedirector:
     def __init__(self, text_widget):
         self.text_widget = text_widget
