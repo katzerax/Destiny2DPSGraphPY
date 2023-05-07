@@ -520,7 +520,7 @@ class GUI(tk.Frame):
         'damage_per_shot': int(damage_per_shot),
         'mag_cap': int(mag_size),
         'ammo_total': int(reserve_ammo),
-        'delay_first_shot': bool(fusion_wep),
+        'fusion_weapon': bool(fusion_wep),
         'perk_indices': perk_indices
         }
         print('Attempting to create weapon with options:')
