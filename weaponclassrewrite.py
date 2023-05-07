@@ -240,8 +240,8 @@ class Damage:
 
                 # Perks
                 applied_perks = weapon.get_perks()
-                number_to_flag = {1: "TT_On", 2: "FTTC_On", 3: "VS_On", 4: "CC_On", 5: "OF_On", 6: "RH_On", 7: "VW_On", 8: "FF_On", 10: "FL_On", 15: "BNS_On"}
-                flags = {"TT_On": False, "FTTC_On": False, "VS_On": False, "CC_On": False, "OF_On": False, "RH_On": False, "VW_On": False, "FF_On": False, "FL_On": False, "BNS_On": False} 
+                number_to_flag = {1: "TT_On", 2: "FTTC_On", 3: "VS_On", 4: "CC_On", 5: "OF_On", 6: "RH_On", 7: "VW_On", 8: "FF_On", 9: "HIR_On", 10: "FL_On", 15: "BNS_On"}
+                flags = {"TT_On": False, "FTTC_On": False, "VS_On": False, "CC_On": False, "OF_On": False, "RH_On": False, "VW_On": False, "FF_On": False, "HIR_On": False, "FL_On": False, "BNS_On": False} 
 
                 # For print statement (stores last hit damage value to crosscheck when to print a new statement)
                 stale_val = 0
@@ -274,6 +274,8 @@ class Damage:
                         dmg_output = Damage.VorpalWeapon(ammo_type, dmg_output)
                     if flags["FF_On"]: #8
                         dmg_output = Damage.FocusedFury(ammo_fired, mag_cap, dmg_output, time_elapsed, enhanced_perks)
+                    if flags["HIR_On"]: #9
+                        dmg_output = Damage.HighImpactReserves(ammo_magazine, mag_cap, dmg_output, enhanced_perks)
                     if flags["FL_On"]: #10
                         dmg_output = Damage.FiringLine(dmg_output)
                     if flags["BNS_On"]: #15
