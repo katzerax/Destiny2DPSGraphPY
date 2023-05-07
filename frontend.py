@@ -13,7 +13,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-import weaponclassrewrite as backend
+import backend as backend
 
 # TODO
 # 1. Default ini
@@ -314,8 +314,6 @@ class GUI(tk.Frame):
         # Add legend and re-draw
         self.ax.legend()
         self.canvas.draw()
-
-
 
     def graph_save_graph(self):
         file_path = asksaveasfile(defaultextension='.png', filetypes=[('All Files', '*.*')], initialdir='./', initialfile='dps_graph.png')
