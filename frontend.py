@@ -96,7 +96,7 @@ class GUI(tk.Frame):
         self.pack()
         self.load_settings()
         self.initGUI()
-        sys.stdout = TextRedirector(self.log_text)
+        redirect_logs(self.log_text, self.settings.log_mode)
 
     def load_settings(self):
         # Instance settings
@@ -119,6 +119,7 @@ class GUI(tk.Frame):
             self.listbox_bg = "#808080"
             self.white_text = "#CCCCCC"
         else:
+            # TODO Light mode needs quite a bit of work
             self.label_style = {'bg': '#1E1E1E', 'fg': '#CCCCCC'}
             self.frame_style = {'bg': '#FFFFFF', 'highlightcolor': '#000000', 'highlightbackground': '#FFFFFF', 'highlightthickness': 2}
             self.frame_bg = "#FFFFFF"
@@ -144,11 +145,6 @@ class GUI(tk.Frame):
             'width': 10,
             'exportselection': False
         }
-
-        if self.settings.log_mode == 'True':
-            pass
-        else:
-            pass
 
     def initGUI(self):
         self.navbar()
@@ -617,6 +613,7 @@ class GUI(tk.Frame):
         self.options_frame.pack_forget()
 
     def test_func(self):
+        print('balls')
         pass
 
     def options_import_weps_handler(self):
@@ -814,18 +811,35 @@ class GUI(tk.Frame):
             return True
         else:
             return False
-class TextRedirector:
-    def __init__(self, text_widget):
-        self.text_widget = text_widget
 
-    def write(self, string):
-        self.text_widget.config(state=tk.NORMAL)
-        self.text_widget.insert(tk.END, string)
-        self.text_widget.see(tk.END)
-        self.text_widget.config(state=tk.DISABLED)
+def redirect_logs(text_widget: tk.Widget, log_mode: str):
+    
+    def write_to_app(string):
+        text_widget.config(state=tk.NORMAL)
+        text_widget.insert(tk.END, string)
+        text_widget.see(tk.END)
+        text_widget.config(state=tk.DISABLED)
 
-    def flush(self):
-        pass
+    if log_mode in ['App', 'Both']:
+        use_decorator = True if log_mode == 'Both' else False
+    else:
+        write_to_app('Log Menu will not print logs due to selecting "Console" for Log Mode option' +
+                     '\nCheck your console for relevant logs')
+        return
+
+    def decorator(func):
+        def inner(inpStr):
+            try:
+                write_to_app(inpStr)
+                return func(inpStr)
+            except:
+                return func(inpStr)
+        return inner
+    
+    if use_decorator:
+        sys.stdout.write = decorator(sys.stdout.write)
+    else:
+        sys.stdout.write = write_to_app
 
 def global_start_gui():
     global root
