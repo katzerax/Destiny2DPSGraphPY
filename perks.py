@@ -249,13 +249,14 @@ class BaitNSwitch(Perk):
         super().__init__(isenhanced)
         self.bns_proc = 0
         self.bns_timercheck = 0
+        self.ammo_fired_bns = 0
 
         if not isenhanced:
             self.bns_timer = 10
         elif isenhanced:
             self.bns_timer = 11
 
-    def output(self, ammo_fired, dmg_output, time_elapsed):
+    def output(self, ammo_fired, dmg_output, time_elapsed, **args):
 
         if self.bns_proc == 0:
             if (ammo_fired - self.ammo_fired_bns) >= 1:

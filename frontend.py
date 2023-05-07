@@ -29,6 +29,7 @@ class Settings:
             self.config.read_file(f)
         self.interface_theme = self.config.get('Interface', 'theme')
         self.log_mode = self.config.get('Interface', 'log_mode')
+        self.do_dmg_prints = self.config.getboolean('Interface', 'dmg_steps')
         self.do_auto_save = self.config.getboolean('AutoSave', 'enabled')
         self.auto_save_path = self.config.get('AutoSave', 'path')
         self.graph_title = self.config.get('Graph', 'title')
@@ -42,6 +43,9 @@ class Settings:
 
     def set_log_mode(self, value):
         self.log_mode = value
+
+    def set_do_dmg_prints(self, value):
+        self.do_dmg_prints = value
 
     def set_do_auto_save(self, value):
         self.do_auto_save = value
@@ -67,6 +71,7 @@ class Settings:
     def save_settings(self):
         self.config.set('Interface', 'theme', self.interface_theme)
         self.config.set('Interface', 'log_mode', self.log_mode)
+        self.config.set('Interface', 'dmg_prints', str(self.do_dmg_prints))
         self.config.set('AutoSave', 'enabled', str(self.do_auto_save))
         self.config.set('AutoSave', 'path', self.auto_save_path)
         self.config.set('Graph', 'title', self.graph_title)
@@ -95,9 +100,7 @@ class GUI(tk.Frame):
         self.master.title('Destiny2DPSGraphPY')
         self.master.resizable(False, False)
         self.pack()
-        self.load_settings()
         self.initGUI()
-        redirect_logs(self.log_text, self.settings.log_mode)
 
     def load_settings(self):
         # Instance settings
@@ -153,11 +156,14 @@ class GUI(tk.Frame):
         }
 
     def initGUI(self):
+        self.load_settings()
         self.navbar()
         self.graph_menu()
         self.weapons_menu()
         self.options_menu()
         self.log_menu()
+        redirect_logs(self.log_text, self.settings.log_mode)
+        backend.set_do_dmg_prints(self.settings.do_dmg_prints)
 
     def navbar(self):
         # Root frame
@@ -282,7 +288,7 @@ class GUI(tk.Frame):
         self.ax.clear()
         
         # Loop through weapon dropdowns
-        for idx, (_, dropdown) in enumerate(self.graph_wep_widgets):
+        for (_, dropdown) in self.graph_wep_widgets:
             # Check if dropdown is visible
             if not dropdown.winfo_viewable():
                 continue
@@ -299,7 +305,7 @@ class GUI(tk.Frame):
 
             # Get damage values by calling the Damage class with the weapon object
             damage = backend.Damage(weapon)
-            dps = damage.DamageCalculate(weapon)
+            dps = damage.DamageCalculate()
 
             # Plot the weapon damage
             self.ax.plot(damage.x, dps, label=f'{selected_weapon}')
@@ -321,6 +327,10 @@ class GUI(tk.Frame):
             return
         self.fig.savefig(file_path.name)
         print(f'Saved graph as "{file_path.name}"')
+
+    def graph_update_weapons(self, wep_names):
+        for (_, dropdown) in self.graph_wep_widgets:
+            dropdown.config(values=wep_names)
 
     def graph_numweapons(self, evt):
         # Get ammount of weps requested
@@ -527,10 +537,9 @@ class GUI(tk.Frame):
         print("\n".join("{}\t{}".format(k, v) for k, v in weapon_options.items()))
 
         if backend.create_weapon(weapon_options):
-            print(backend.weapons_list)
+            self.graph_update_weapons(list(backend.weapons_list.keys()))
             return 0
         else:
-            print(backend.weapons_list)
             return 4
         
     def options_menu(self):
@@ -709,9 +718,10 @@ class GUI(tk.Frame):
             reclaimed = pickle.loads(backup)
             backend.weapons_list = reclaimed
 
+        # Create a temporary backup of current list
+        temp_bak = pickle.dumps(backend.weapons_list)
+
         try:
-            # Create a temporary backup of current list
-            temp_bak = pickle.dumps(backend.weapons_list)
             # Import json
             if file_path.endswith('.json'):
                 with open(file_path, 'r') as f:
@@ -722,6 +732,7 @@ class GUI(tk.Frame):
                         if not success:
                             reclaim(temp_bak)
                             return 4
+                    self.graph_update_weapons(list(backend.weapons_list.keys()))
                     return 0
             # Import pickle
             elif file_path.endswith('.pickle'):
@@ -733,12 +744,12 @@ class GUI(tk.Frame):
                             reclaim(temp_bak)
                             return 5
                     backend.weapons_list = data
+                    self.graph_update_weapons(list(backend.weapons_list.keys()))
                     return 0
             else:
                 return 6
         except Exception as e:
-            reclaim = pickle.loads(temp_bak)
-            backend.weapons_list = reclaim
+            reclaim(temp_bak)
             return e
     
     def options_export_weps_handler(self):
