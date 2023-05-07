@@ -108,7 +108,6 @@ class GUI(tk.Frame):
         if self.settings.interface_theme.lower() == 'dark':
             self.configure(bg='#1E1E1E')
             self.master.configure(bg='#1E1E1E', highlightthickness=2, highlightcolor='#000000')
-
             self.label_style = {'bg': '#1E1E1E', 'fg': '#CCCCCC'}
             self.frame_style = {'bg': '#1E1E1E', 'highlightcolor': '#000000', 'highlightbackground': '#000000', 'highlightthickness': 2}
             self.frame_bg = "#1E1E1E"
@@ -118,9 +117,13 @@ class GUI(tk.Frame):
             self.matplotlib_fg = "#CCCCCC"
             self.listbox_bg = "#808080"
             self.white_text = "#CCCCCC"
+            self.navbar_bg = '#1E1E1E'
+            self.navbar_fg = '#CCCCCC'
         else:
             # TODO Light mode needs quite a bit of work
-            self.label_style = {'bg': '#1E1E1E', 'fg': '#CCCCCC'}
+            self.configure(bg='#FFFFFF')
+            self.master.configure(bg='#FFFFFF', highlightthickness=2, highlightcolor='#000000')
+            self.label_style = {'bg': '#FFFFFF', 'fg': '#000000'}
             self.frame_style = {'bg': '#FFFFFF', 'highlightcolor': '#000000', 'highlightbackground': '#FFFFFF', 'highlightthickness': 2}
             self.frame_bg = "#FFFFFF"
             self.check_button_style = {}
@@ -129,10 +132,12 @@ class GUI(tk.Frame):
             self.matplotlib_fg = "#000000"
             self.listbox_bg = "#808080"
             self.white_text = "#000000"
+            self.navbar_bg = '#FFFFFF'
+            self.navbar_fg = '#000000'
 
         self.navbar_style = {
-            'bg': '#1E1E1E', 
-            'fg': '#CCCCCC',
+            'bg': self.navbar_bg, 
+            'fg': self.navbar_fg,
             'height': 5,
             'highlightthickness': 0,
             'borderwidth': 0,
@@ -613,7 +618,7 @@ class GUI(tk.Frame):
         self.options_frame.pack_forget()
 
     def test_func(self):
-        print('balls')
+        print('balls\n')
         pass
 
     def options_import_weps_handler(self):
