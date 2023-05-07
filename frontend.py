@@ -825,6 +825,7 @@ def redirect_logs(text_widget: tk.Widget, log_mode: str):
     else:
         write_to_app('Log Menu will not print logs due to selecting "Console" for Log Mode option' +
                      '\nCheck your console for relevant logs')
+        sys.stdout.write = stdoutwrite
         return
 
     def decorator(func):
@@ -837,9 +838,10 @@ def redirect_logs(text_widget: tk.Widget, log_mode: str):
         return inner
     
     if use_decorator:
-        sys.stdout.write = decorator(sys.stdout.write)
+        sys.stdout.write = decorator(stdoutwrite)
     else:
         sys.stdout.write = write_to_app
+
 
 def global_start_gui():
     global root
@@ -847,4 +849,5 @@ def global_start_gui():
     app = GUI(master=root)
     app.mainloop()
 
+stdoutwrite = sys.stdout.write
 global_start_gui()
