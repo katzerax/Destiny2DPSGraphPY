@@ -661,7 +661,7 @@ class GUI(tk.Frame):
         pass
 
     def options_import_weps_handler(self):
-        exitcode = self.options_export_weps()
+        exitcode = self.options_import_weps()
         basestr = f'Weapon Import exited with code {exitcode}:'
         match exitcode:
             case 0:
