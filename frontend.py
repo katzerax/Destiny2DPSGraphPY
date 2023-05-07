@@ -12,6 +12,7 @@ from pprint import pprint
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 import matplotlib as mpl
+import matplotlib.pyplot as plt
 import weaponclassrewrite as backend
 
 # TODO
@@ -120,7 +121,7 @@ class GUI(tk.Frame):
             self.navbar_bg = '#1E1E1E'
             self.navbar_fg = '#CCCCCC'
         else:
-            # TODO Light mode needs quite a bit of work
+            # TODO Light mode should always be checked after changes to the ui
             self.configure(bg='#FFFFFF')
             self.master.configure(bg='#FFFFFF', highlightthickness=2, highlightcolor='#000000')
             self.label_style = {'bg': '#FFFFFF', 'fg': '#000000'}
@@ -221,13 +222,16 @@ class GUI(tk.Frame):
         self.graph_wep_select_label.grid(row=0, column=0, **self.default_padding)
         self.graph_wep_select_combo = ttk.Combobox(self.graph_wep_frame, values=wep_count, width=3, state='readonly')
         self.graph_wep_select_combo.grid(row=0, column=1, **self.default_padding)
-        self.graph_wep_select_combo.set(wep_count[2])
+        self.graph_wep_select_combo.set(wep_count[0]) # Changed it to one wep by default
         self.graph_wep_select_combo.bind("<<ComboboxSelected>>", self.graph_numweapons)
+
+        # Extract weapon names from the dictionary
+        existing_weapons = list(backend.weapons_list.keys())
 
         # Build weapon select widgets
         self.graph_wep_widgets = [
                 ( tk.Label(self.graph_wep_frame, text=f'Weapon {i+1}', **self.label_style),
-                ttk.Combobox(self.graph_wep_frame, **self.combo_style)
+                ttk.Combobox(self.graph_wep_frame, values=existing_weapons, **self.combo_style)
                 ) for i in range(10)
             ]
         # Grid placement
@@ -236,8 +240,8 @@ class GUI(tk.Frame):
             label.grid(row=(idx+1), column=0, **self.default_padding)
             combo.grid(row=(idx+1), column=1, **self.default_padding)
             combo.bind("<<ComboboxSelected>>",lambda e: self.graph_frame.focus())
-            # Display only 3 by default
-            if idx > 2:
+            # Display only 3 by default - no more - K
+            if idx > 0: # Changed it to one by default
                 label.grid_forget()
                 combo.grid_forget()
 
@@ -274,7 +278,44 @@ class GUI(tk.Frame):
         self.canvas.get_tk_widget().pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=15, pady=15)
 
     def graph_generate_graph(self):
-        pass
+        # Clear previous plot
+        self.ax.clear()
+        
+        # Loop through weapon dropdowns
+        for idx, (_, dropdown) in enumerate(self.graph_wep_widgets):
+            # Check if dropdown is visible
+            if not dropdown.winfo_viewable():
+                continue
+
+            # Get selected weapon
+            selected_weapon = dropdown.get()
+
+            # Check if weapon is selected
+            if not selected_weapon:
+                continue
+
+            # Get weapon object
+            weapon = backend.weapons_list[selected_weapon]
+
+            # Get damage values by calling the Damage class with the weapon object
+            damage = backend.Damage(weapon)
+            dps = damage.DamageCalculate()
+
+            # Plot the weapon damage
+            self.ax.plot(damage.x, dps, label=f'{selected_weapon}')
+
+        # Set the axis labels and title
+        self.ax.set_xlabel(self.settings.graph_xlabel)
+        self.ax.set_xlim(0, self.settings.graph_xlim)
+        self.ax.set_ylabel(self.settings.graph_ylabel)
+        self.ax.set_ylim(0, self.settings.graph_ylim)
+        self.ax.set_title(self.settings.graph_title)
+
+        # Add legend and re-draw
+        self.ax.legend()
+        self.canvas.draw()
+
+
 
     def graph_save_graph(self):
         file_path = asksaveasfile(defaultextension='.png', filetypes=[('All Files', '*.*')], initialdir='./', initialfile='dps_graph.png')
