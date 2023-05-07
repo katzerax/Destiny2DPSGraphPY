@@ -170,6 +170,7 @@ class Weapon:
             if value == False or 0 or not bool(value):
                 del settings[key]
         return settings
+
 class Damage:
     def __init__(self, weapon_instance):
         self.weapon_instance = weapon_instance
@@ -199,6 +200,8 @@ class Damage:
                 Damage.TripleTapClear()
                 Damage.FTTCClear()
                 Damage.VeistStingerClear()
+                Damage.RapidHitClear()
+                Damage.FocusedFuryClear()
                 Damage.BNSClear()
 
                 # Fired Variables
@@ -228,17 +231,17 @@ class Damage:
                 dfs_delay = round(60/fire_stale, cls.round_coeff)
 
                 fire_timer = dfs_delay if delay_first_shot else 0
-                reload_time = weapon.get_reload_time()
 
                 # Ammunition
                 mag_cap = weapon.get_mag_cap()
                 ammo_magazine = mag_cap
                 ammo_total = weapon.get_ammo_total()
+                ammo_type = weapon.get_ammo_type()
 
                 # Perks
                 applied_perks = weapon.get_perks()
-                number_to_flag = {1: "TT_On", 2: "FTTC_On", 3: "VS_On", 4: "CC_On", 5: "OF_On", 10: "FL_On", 15: "BNS_On"}
-                flags = {"TT_On": False, "FTTC_On": False, "VS_On": False, "CC_On": False, "OF_On": False, "FL_On": False, "BNS_On": False} 
+                number_to_flag = {1: "TT_On", 2: "FTTC_On", 3: "VS_On", 4: "CC_On", 5: "OF_On", 6: "RH_On", 7: "VW_On", 8: "FF_On", 10: "FL_On", 15: "BNS_On"}
+                flags = {"TT_On": False, "FTTC_On": False, "VS_On": False, "CC_On": False, "OF_On": False, "RH_On": False, "VW_On": False, "FF_On": False, "FL_On": False, "BNS_On": False} 
 
                 # For print statement (stores last hit damage value to crosscheck when to print a new statement)
                 stale_val = 0
@@ -251,6 +254,8 @@ class Damage:
 
                     # Resets damage so weapons don't do e+17 :)
                     dmg_output = weapon.get_damage_per_shot()
+                    # The same for the reload speed
+                    reload_time = weapon.get_reload_time()
 
                     # Checks for active perks
                     if flags["TT_On"]: #1
@@ -263,6 +268,12 @@ class Damage:
                         ammo_magazine = Damage.ClownCartridge(mag_cap, ammo_magazine, ammo_fired, total_damage)
                     if flags["OF_On"]: #5
                         ammo_magazine = Damage.Overflow(mag_cap, ammo_magazine, enhanced_perks)
+                    if flags["RH_On"]: #6
+                        reload_time = Damage.RapidHit(ammo_fired, reload_time)
+                    if flags["VW_On"]: #7
+                        dmg_output = Damage.VorpalWeapon(ammo_type, dmg_output)
+                    if flags["FF_On"]: #8
+                        dmg_output = Damage.FocusedFury(ammo_fired, mag_cap, dmg_output, time_elapsed, enhanced_perks)
                     if flags["FL_On"]: #10
                         dmg_output = Damage.FiringLine(dmg_output)
                     if flags["BNS_On"]: #15
@@ -308,7 +319,8 @@ class Damage:
                             fire_timer += reload_time
                             fire_timer -= fire_delay if delay_first_shot else 0
                             fire_timer = round(fire_timer, cls.round_coeff)
-                            ammo_fired = 0
+                            # Rox: I want to test how things function without this 'ammo_fired' reset, as it may prove to be more beneficial to track specific needs within specific perks
+                            #ammo_fired = 0
                             ammo_magazine = mag_cap
 
                         elif time_elapsed >= fire_timer:
@@ -450,14 +462,77 @@ class Damage:
         return ammo_magazine
     
     #rapid hit - 6
+    rapid_hit_stacks = 0
+
     @classmethod
-    def RapidHit(cls):
-        pass
+    def RapidHitClear(cls):
+        cls.rapid_hit_stacks = 0
+
+    @classmethod
+    def RapidHit(cls, ammo_fired, reload_time):
+        cls.rapid_hit_stacks = math.floor(ammo_fired)
+        if cls.rapid_hit_stacks == 1:
+            reload_time = round(reload_time / 1.1, cls.round_coeff)
+        if cls.rapid_hit_stacks == 2:
+            reload_time = round(reload_time / 1.13, cls.round_coeff)
+        if cls.rapid_hit_stacks == 3:
+            reload_time = round(reload_time / 1.15, cls.round_coeff)
+        if cls.rapid_hit_stacks == 4:
+            reload_time = round(reload_time / 1.17, cls.round_coeff)
+        if cls.rapid_hit_stacks >= 5:
+            reload_time = round(reload_time / 1.2, cls.round_coeff)
+        
+        return reload_time
 
     #vorpal weapon - 7
     @classmethod
-    def VorpalWeapon(cls):
-        pass
+    def VorpalWeapon(cls, ammo_type, dmg_output):
+        if ammo_type == 1: # Primary ammo
+            dmg_output *= 1.2
+        elif ammo_type == 2: # Special ammo
+            dmg_output *= 1.15
+        elif ammo_type == 3: # Heavy ammo
+            dmg_output *= 1.1
+        else:
+            dmg_output *= 1.1 # Assuming that if someone enables Vorpal Weapon, but does not list an ammo type, it is heavy.
+
+        return dmg_output
+
+    #focused fury - 8
+    ff_active = 0
+    ff_time = 0
+    ff_ammo = 0
+
+    @classmethod
+    def FocusedFuryClear(cls):
+        cls.ff_active = 0
+        cls.ff_time = 0
+        cls.ff_ammo = 0
+
+    @classmethod
+    def FocusedFury(cls, ammo_fired, mag_cap, dmg_output, time_elapsed, enhanced_perks):
+
+        if not cls.ff_active:
+            if (ammo_fired - cls.ff_ammo) >= math.ceil(mag_cap/2):
+                dmg_output *= 1.2
+                cls.ff_time = time_elapsed
+                cls.ff_active = 1
+
+        elif cls.ff_active and not enhanced_perks:
+            if (time_elapsed - cls.ff_time) < 10:
+                dmg_output *= 1.2
+            elif (time_elapsed - cls.ff_time) >= 10:
+                cls.ff_active = 0
+                cls.ff_ammo = ammo_fired
+
+        elif cls.ff_active and enhanced_perks:
+            if (time_elapsed - cls.ff_time) < 11:
+                dmg_output *= 1.2
+            elif (time_elapsed - cls.ff_time) >= 11:
+                cls.ff_active = 0
+                cls.ff_ammo = ammo_fired
+
+        return dmg_output
 
     #firing line - 10
     @classmethod
