@@ -204,7 +204,7 @@ class Damage:
                 if do_cmd_prints:
                     if stale_dmg != t_dmg[tick]:
                         if tick != 0:
-                            print(f'Weapon: {weapon.name} | Damage at {tick/100} secs: {t_dmg[tick]} | DPS: [{round(t_dmg[tick]/(tick/100), 1)}] | Per Shot: < {ti["dmg_output"]} > ')
+                            print(f'Weapon: {weapon.name} | Damage at {tick/100} secs: {t_dmg[tick]} | DPS: [{round(t_dmg[tick]/(tick/100), 1)}] | Per Shot: <{ti["dmg_output"]}> ')
                             stale_dmg = t_dmg[tick]
 
             # Burst type weapon
