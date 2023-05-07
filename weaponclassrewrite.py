@@ -357,7 +357,8 @@ class Damage:
                 #print("name:", weapons_list[z].get_name(), "| dps at 10 seconds:", dps[999])
                 #print("name:", weapons_list[z].get_name(), "| dps at 13 seconds:", dps[1299])
                 #print("name:", weapons_list[z].get_name(), "| dps at 20 seconds:", dps[1999])
-
+                return(dps)
+            
     #triple tap - 1
     tt_addcheck = 0
     tt_ammocheck = 0
