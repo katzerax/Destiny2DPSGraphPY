@@ -1,10 +1,14 @@
 # Destiny2DPSGraphPY
 
-This is a GUI python program that will produce a graph showing the Destiny 2 DPS over time for certain types of weapons. It is configurable for several things, but is assuming that [insert assumptions here].
+This is a GUI python program that will produce a graph showing the Destiny 2 DPS over time for certain types of weapons. It is configurable for several things, but is assuming that you are consistently landing critical hits, reloading as soon as the magazine is empty, and preparing perks for dps phases (Bait n Switch, Overflow, etc.)
 
-This is heavily based on the styling of [Prelapse's DPS over time graphs on YouTube](https://www.youtube.com/playlist?list=PLmMhH44rl0aVkIqWzaCr_wrYkk5EFAeIZ). The key difference is that [Prelapse manually enters every data point into a spreadsheet to graph them.](https://media.discordapp.net/attachments/1005973866075664504/1061868926239248416/image.png?width=810&height=117) In this project, this is done automatically with variables. This is fundamentally useful for automating the process, as well as allowing you to measure dps over time graphs on your own for whatever weapon you want.
+The critical hits assumption also includes weapons that don't necessarily 'crit' such as rockets and grenade launchers, as these weapons don't come with perks that require crits.
 
-YOU WILL NEED TO KNOW THE STATS FOR THE WEAPONS YOU ARE GRAPHING. That is, you'll need to know the following: [the following].
+This is heavily based on the styling of [Prelapse's DPS over time graphs on YouTube](https://www.youtube.com/playlist?list=PLmMhH44rl0aVkIqWzaCr_wrYkk5EFAeIZ). The key difference is that [Prelapse manually enters every data point into a spreadsheet to graph them.](https://media.discordapp.net/attachments/1005973866075664504/1061868926239248416/image.png?width=810&height=117) In this project, this is done automatically with variables. This is fundamentally useful for automating the process, as well as allowing you to measure dps over time graphs on your own for whatever weapon you want. The goal of this project is to be able to simulate weapons within a reasonable degree to bypass needs to manually test and calculate damage.
+
+It is a requirement to know some fundamentals of the weapon that is being tested, which includes: Rate of Fire in RPM, Reload Time in Seconds, Damage per Shot/Hit, Magazine Capacity, and the Total Ammount of Ammo (reserves + magazine).
+
+Other optional variables include: Perks, Enhancing Perks, Buffs, Ammo Type (Primary, Special, etc), Elemental Type (Kinetic, Solar, etc), Burst/Pulse Weapon, and Fusion Type Weapon.
 
 Please see the Install and Usage sections of this readme.
 
@@ -45,6 +49,10 @@ As of release 6.0, the code has been completely rewritten and overhauled to now 
 5. create instructions for how to obtain every stat to use for the program
 6. QA test the whole program before a public announcement
 
-## Example graphs
-![Figure_1](https://user-images.githubusercontent.com/65287118/210054539-a0629674-e846-43ed-8e1f-808482d20a66.png)
-![Figure_1](https://user-images.githubusercontent.com/65287118/209410562-fc720bb0-fd7c-492b-8a41-7422d72d4cf2.png)
+## UI Images
+### Main Screen
+![Figure_1](https://media.discordapp.net/attachments/1099105715051823144/1104598556788142110/image.png)
+### Weapons Menu
+![Figure_1](https://media.discordapp.net/attachments/1099105715051823144/1104598617572003910/image.png)
+### Options
+![Figure_1](https://media.discordapp.net/attachments/1099105715051823144/1104598701000884244/image.png)
