@@ -516,7 +516,7 @@ class GUI(tk.Frame):
                 return 3
     
         perk1 = self.weapons_menu_widgets['perk1'][1].get()
-        perk2 = self.weapons_menu_widgets['perk1'][1].get()
+        perk2 = self.weapons_menu_widgets['perk2'][1].get()
         # THANKS K
         perk_indices = [index for index, perkname in backend.PERKS_LIST.items() if list(perkname)[0] in [perk1, perk2]]
         perk_indices = None if perk_indices == [0] else perk_indices
