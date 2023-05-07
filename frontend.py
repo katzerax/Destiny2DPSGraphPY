@@ -299,7 +299,7 @@ class GUI(tk.Frame):
 
             # Get damage values by calling the Damage class with the weapon object
             damage = backend.Damage(weapon)
-            dps = damage.DamageCalculate()
+            dps = damage.DamageCalculate(weapon)
 
             # Plot the weapon damage
             self.ax.plot(damage.x, dps, label=f'{selected_weapon}')

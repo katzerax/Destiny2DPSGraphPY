@@ -1,6 +1,9 @@
 import stat
 import math
 import random
+from perks import *
+from buffs import *
+from origin_traits import *
 
 PERKS_LIST = {
     0: ("Null", "No selection"),
@@ -179,7 +182,7 @@ class Damage:
         print(self.weapon_instance.get_perks())
 
     # Graph config
-    ticks = 45000
+    ticks = 4500
     x_increments = 0.01
     x = []
     for i in range(ticks):
@@ -187,178 +190,176 @@ class Damage:
     round_coeff = len(str(x_increments).split(".")[1])
 
     @classmethod
-    def DamageCalculate(cls):
-        for weapon in weapons_list.values():
-            if not weapon.get_swap_group():
+    def DamageCalculate(cls, weapon):
 
-                # General Variables
-                t_dmg = []
-                time_elapsed = 0
-                total_damage = 0
+        # General Variables
+        t_dmg = []
+        time_elapsed = 0
+        total_damage = 0
 
-                # Clearing relevant perk class functions for each new weapon
-                Damage.TripleTapClear()
-                Damage.FTTCClear()
-                Damage.VeistStingerClear()
-                Damage.RapidHitClear()
-                Damage.FocusedFuryClear()
-                Damage.BNSClear()
+        # Clearing relevant perk class functions for each new weapon
+        Damage.TripleTapClear()
+        Damage.FTTCClear()
+        Damage.VeistStingerClear()
+        Damage.RapidHitClear()
+        Damage.FocusedFuryClear()
+        Damage.BNSClear()
 
-                # Fired Variables
-                ammo_fired = 0
-                burst_shot = 0
+        # Fired Variables
+        ammo_fired = 0
+        burst_shot = 0
 
-                # Boolean Values
-                enhanced_perks = weapon.get_enhanced_perks()
-                delay_first_shot = weapon.get_dfs()
-                burst_weapon = weapon.get_burst_variable()
+        # Boolean Values
+        enhanced_perks = weapon.get_enhanced_perks()
+        delay_first_shot = weapon.get_dfs()
+        burst_weapon = weapon.get_burst_variable()
 
-                # Fire Rate Calculations
-                fire_stale = weapon.get_fire_rate()
+        # Fire Rate Calculations
+        fire_stale = weapon.get_fire_rate()
 
-                if not burst_weapon:
-                    fire_delay = round(60/fire_stale, cls.round_coeff)
+        if not burst_weapon:
+            fire_delay = round(60/fire_stale, cls.round_coeff)
 
-                #this rate of fire calculation may need some looking at :P, but basically it takes a rate of fire and then
-                #just cuts it in half, half to shoot in a burst, the other to pause between shots..
-                #for delay first shot, might just have it be equal to the normal fire delay? who knows. <--- this is what i did
-                #5 minutes later rox here: i made DFS burst weapons have to complete a full charge sequence despite '120 RPM' not actually meaning 120 rpm... it just means 500ms charge time (since 500ms = 2 shots/second = 120rpm? idfk)
-                elif burst_weapon:
-                    burst_bullets = weapon.get_burst_bullets()
-                    fire_delay = round((60/fire_stale)/2, cls.round_coeff)
-                    burst_delay = round(((60/fire_stale)/2)/burst_bullets, cls.round_coeff)
+        #this rate of fire calculation may need some looking at :P, but basically it takes a rate of fire and then
+        #just cuts it in half, half to shoot in a burst, the other to pause between shots..
+        #for delay first shot, might just have it be equal to the normal fire delay? who knows. <--- this is what i did
+        #5 minutes later rox here: i made DFS burst weapons have to complete a full charge sequence despite '120 RPM' not actually meaning 120 rpm... it just means 500ms charge time (since 500ms = 2 shots/second = 120rpm? idfk)
+        elif burst_weapon:
+            burst_bullets = weapon.get_burst_bullets()
+            fire_delay = round((60/fire_stale)/2, cls.round_coeff)
+            burst_delay = round(((60/fire_stale)/2)/burst_bullets, cls.round_coeff)
 
-                dfs_delay = round(60/fire_stale, cls.round_coeff)
+        dfs_delay = round(60/fire_stale, cls.round_coeff)
 
-                fire_timer = dfs_delay if delay_first_shot else 0
+        fire_timer = dfs_delay if delay_first_shot else 0
 
-                # Ammunition
-                mag_cap = weapon.get_mag_cap()
-                ammo_magazine = mag_cap
-                ammo_total = weapon.get_ammo_total()
-                ammo_type = weapon.get_ammo_type()
+        # Ammunition
+        mag_cap = weapon.get_mag_cap()
+        ammo_magazine = mag_cap
+        ammo_total = weapon.get_ammo_total()
+        ammo_type = weapon.get_ammo_type()
 
-                # Perks
-                applied_perks = weapon.get_perks()
-                number_to_flag = {1: "TT_On", 2: "FTTC_On", 3: "VS_On", 4: "CC_On", 5: "OF_On", 6: "RH_On", 7: "VW_On", 8: "FF_On", 9: "HIR_On", 10: "FL_On", 15: "BNS_On"}
-                flags = {"TT_On": False, "FTTC_On": False, "VS_On": False, "CC_On": False, "OF_On": False, "RH_On": False, "VW_On": False, "FF_On": False, "HIR_On": False, "FL_On": False, "BNS_On": False} 
+        # Perks
+        applied_perks = weapon.get_perks()
+        number_to_flag = {1: "TT_On", 2: "FTTC_On", 3: "VS_On", 4: "CC_On", 5: "OF_On", 6: "RH_On", 7: "VW_On", 8: "FF_On", 9: "HIR_On", 10: "FL_On", 15: "BNS_On"}
+        flags = {"TT_On": False, "FTTC_On": False, "VS_On": False, "CC_On": False, "OF_On": False, "RH_On": False, "VW_On": False, "FF_On": False, "HIR_On": False, "FL_On": False, "BNS_On": False} 
 
-                # For print statement (stores last hit damage value to crosscheck when to print a new statement)
-                stale_val = 0
+        # For print statement (stores last hit damage value to crosscheck when to print a new statement)
+        stale_val = 0
 
-                for number in applied_perks:
-                    if number in number_to_flag:
-                        flags[number_to_flag[number]] = True
+        for number in applied_perks:
+            if number in number_to_flag:
+                flags[number_to_flag[number]] = True
 
-                for i in range(cls.ticks):
+        for i in range(cls.ticks):
 
-                    # Resets damage so weapons don't do e+17 :)
-                    dmg_output = weapon.get_damage_per_shot()
-                    # The same for the reload speed
-                    reload_time = weapon.get_reload_time()
+            # Resets damage so weapons don't do e+17 :)
+            dmg_output = weapon.get_damage_per_shot()
+            # The same for the reload speed
+            reload_time = weapon.get_reload_time()
 
-                    # Checks for active perks
-                    if flags["TT_On"]: #1
-                        ammo_magazine, ammo_total = Damage.TripleTap(ammo_magazine, ammo_total, ammo_fired)
-                    if flags["FTTC_On"]: #2
-                        ammo_magazine, ammo_total = Damage.FourthTimesTheCharm(ammo_magazine, ammo_total, ammo_fired)
-                    if flags["VS_On"]: #3
-                        ammo_magazine = Damage.VeistStinger(ammo_fired, ammo_magazine, mag_cap)
-                    if flags["CC_On"]: #4
-                        ammo_magazine = Damage.ClownCartridge(mag_cap, ammo_magazine, ammo_fired, total_damage)
-                    if flags["OF_On"]: #5
-                        ammo_magazine = Damage.Overflow(mag_cap, ammo_magazine, enhanced_perks)
-                    if flags["RH_On"]: #6
-                        reload_time = Damage.RapidHit(ammo_fired, reload_time)
-                    if flags["VW_On"]: #7
-                        dmg_output = Damage.VorpalWeapon(ammo_type, dmg_output)
-                    if flags["FF_On"]: #8
-                        dmg_output = Damage.FocusedFury(ammo_fired, mag_cap, dmg_output, time_elapsed, enhanced_perks)
-                    if flags["HIR_On"]: #9
-                        dmg_output = Damage.HighImpactReserves(ammo_magazine, mag_cap, dmg_output, enhanced_perks)
-                    if flags["FL_On"]: #10
-                        dmg_output = Damage.FiringLine(dmg_output)
-                    if flags["BNS_On"]: #15
-                        dmg_output = Damage.BaitNSwitch(ammo_fired, dmg_output, time_elapsed, enhanced_perks)
+            # Checks for active perks
+            if flags["TT_On"]: #1
+                ammo_magazine, ammo_total = Damage.TripleTap(ammo_magazine, ammo_total, ammo_fired)
+            if flags["FTTC_On"]: #2
+                ammo_magazine, ammo_total = Damage.FourthTimesTheCharm(ammo_magazine, ammo_total, ammo_fired)
+            if flags["VS_On"]: #3
+                ammo_magazine = Damage.VeistStinger(ammo_fired, ammo_magazine, mag_cap)
+            if flags["CC_On"]: #4
+                ammo_magazine = Damage.ClownCartridge(mag_cap, ammo_magazine, ammo_fired, total_damage)
+            if flags["OF_On"]: #5
+                ammo_magazine = Damage.Overflow(mag_cap, ammo_magazine, enhanced_perks)
+            if flags["RH_On"]: #6
+                reload_time = Damage.RapidHit(ammo_fired, reload_time)
+            if flags["VW_On"]: #7
+                dmg_output = Damage.VorpalWeapon(ammo_type, dmg_output)
+            if flags["FF_On"]: #8
+                dmg_output = Damage.FocusedFury(ammo_fired, mag_cap, dmg_output, time_elapsed, enhanced_perks)
+            if flags["HIR_On"]: #9
+                dmg_output = Damage.HighImpactReserves(ammo_magazine, mag_cap, dmg_output, enhanced_perks)
+            if flags["FL_On"]: #10
+                dmg_output = Damage.FiringLine(dmg_output)
+            if flags["BNS_On"]: #15
+                dmg_output = Damage.BaitNSwitch(ammo_fired, dmg_output, time_elapsed, enhanced_perks)
 
-                    # Standard Weapon
-                    if not burst_weapon:
-                        # Checks to make sure there is still ammo left
-                        if ammo_total == 0:
-                            total_damage = total_damage
-                        # Checks to see if weapon needs a reload
-                        elif ammo_magazine == 0:
-                            fire_timer += reload_time
-                            fire_timer -= fire_delay if delay_first_shot == True else 0
-                            fire_timer = round(fire_timer, cls.round_coeff)
-                            ammo_fired = 0
-                            ammo_magazine = mag_cap
-                        # Checks to fire
-                        elif time_elapsed >= fire_timer:
-                            total_damage += dmg_output
-                            fire_timer += fire_delay
-                            fire_timer = round(fire_timer, cls.round_coeff)
-                            ammo_fired += 1
-                            ammo_magazine -= 1
-                            ammo_total -= 1
+            # Standard Weapon
+            if not burst_weapon:
+                # Checks to make sure there is still ammo left
+                if ammo_total == 0:
+                    total_damage = total_damage
+                # Checks to see if weapon needs a reload
+                elif ammo_magazine == 0:
+                    fire_timer += reload_time
+                    fire_timer -= fire_delay if delay_first_shot == True else 0
+                    fire_timer = round(fire_timer, cls.round_coeff)
+                    ammo_fired = 0
+                    ammo_magazine = mag_cap
+                # Checks to fire
+                elif time_elapsed >= fire_timer:
+                    total_damage += dmg_output
+                    fire_timer += fire_delay
+                    fire_timer = round(fire_timer, cls.round_coeff)
+                    ammo_fired += 1
+                    ammo_magazine -= 1
+                    ammo_total -= 1
 
-                        # Increments time value and appends total damage to a list to calculate over the index points later                        
-                        time_elapsed += cls.x_increments
-                        time_elapsed = round(time_elapsed, 5)
-                        t_dmg.append(total_damage)
-                        if stale_val != t_dmg[i]:
-                            if i != 0:
-                                print("name:", weapon.get_name(), "| damage at", (i/100) ,"seconds:", t_dmg[i], "| dps:[",round(t_dmg[i]/(i/100), 1),"]","| per shot:<", dmg_output, ">")
-                                stale_val = t_dmg[i]
-
-                    # Burst type weapon
-                    elif burst_weapon:
-
-                        if ammo_total == 0:
-                            total_damage = total_damage
-
-                        elif ammo_magazine == 0:
-                            fire_timer += reload_time
-                            fire_timer -= fire_delay if delay_first_shot else 0
-                            fire_timer = round(fire_timer, cls.round_coeff)
-                            # Rox: I want to test how things function without this 'ammo_fired' reset, as it may prove to be more beneficial to track specific needs within specific perks
-                            #ammo_fired = 0
-                            ammo_magazine = mag_cap
-
-                        elif time_elapsed >= fire_timer:
-                            # Checks to ensure that weapon is still within burst timing/bullet ammount
-                            if burst_shot >= 0 and burst_shot < burst_bullets:
-                                fire_timer += burst_delay
-                                fire_timer = round(fire_timer, cls.round_coeff)
-                                total_damage += dmg_output
-                                burst_shot += 1
-                                ammo_fired += 1
-                                ammo_magazine -= 1
-                                ammo_total -= 1
-                            # Once weapon passes this, it gets the rest of the standard fire delay
-                            elif burst_shot >= burst_bullets:
-                                burst_shot = 0
-                                fire_timer += (dfs_delay - burst_delay) if delay_first_shot else fire_delay
-                                fire_timer = round(fire_timer, cls.round_coeff)
-                    
-                        time_elapsed += cls.x_increments
-                        time_elapsed = round(time_elapsed, 5)
-                        t_dmg.append(total_damage)
-                        if stale_val != t_dmg[i]:
-                            if i != 0:
-                                print("name:", weapon.get_name(), "| damage at", (i/100) ,"seconds:", t_dmg[i], "| dps:[",round(t_dmg[i]/(i/100), 1),"]","| per shot:<", dmg_output, ">")
-                                stale_val = t_dmg[i]
-
-                dps = [0]
-                for i in range(cls.ticks):
+                # Increments time value and appends total damage to a list to calculate over the index points later                        
+                time_elapsed += cls.x_increments
+                time_elapsed = round(time_elapsed, 5)
+                t_dmg.append(total_damage)
+                if stale_val != t_dmg[i]:
                     if i != 0:
-                        dps.append(t_dmg[i] / cls.x[i])
+                        print("name:", weapon.get_name(), "| damage at", (i/100) ,"seconds:", t_dmg[i], "| dps:[",round(t_dmg[i]/(i/100), 1),"]","| per shot:<", dmg_output, ">")
+                        stale_val = t_dmg[i]
 
-                #print("name:", weapons_list[z].get_name(), "| dps at 10 seconds:", dps[999])
-                #print("name:", weapons_list[z].get_name(), "| dps at 13 seconds:", dps[1299])
-                #print("name:", weapons_list[z].get_name(), "| dps at 20 seconds:", dps[1999])
-                return(dps)
+            # Burst type weapon
+            elif burst_weapon:
+
+                if ammo_total == 0:
+                    total_damage = total_damage
+
+                elif ammo_magazine == 0:
+                    fire_timer += reload_time
+                    fire_timer -= fire_delay if delay_first_shot else 0
+                    fire_timer = round(fire_timer, cls.round_coeff)
+                    # Rox: I want to test how things function without this 'ammo_fired' reset, as it may prove to be more beneficial to track specific needs within specific perks
+                    #ammo_fired = 0
+                    ammo_magazine = mag_cap
+
+                elif time_elapsed >= fire_timer:
+                    # Checks to ensure that weapon is still within burst timing/bullet ammount
+                    if burst_shot >= 0 and burst_shot < burst_bullets:
+                        fire_timer += burst_delay
+                        fire_timer = round(fire_timer, cls.round_coeff)
+                        total_damage += dmg_output
+                        burst_shot += 1
+                        ammo_fired += 1
+                        ammo_magazine -= 1
+                        ammo_total -= 1
+                    # Once weapon passes this, it gets the rest of the standard fire delay
+                    elif burst_shot >= burst_bullets:
+                        burst_shot = 0
+                        fire_timer += (dfs_delay - burst_delay) if delay_first_shot else fire_delay
+                        fire_timer = round(fire_timer, cls.round_coeff)
             
+                time_elapsed += cls.x_increments
+                time_elapsed = round(time_elapsed, 5)
+                t_dmg.append(total_damage)
+                if stale_val != t_dmg[i]:
+                    if i != 0:
+                        print("name:", weapon.get_name(), "| damage at", (i/100) ,"seconds:", t_dmg[i], "| dps:[",round(t_dmg[i]/(i/100), 1),"]","| per shot:<", dmg_output, ">")
+                        stale_val = t_dmg[i]
+
+        dps = [0]
+        for i in range(cls.ticks):
+            if i != 0:
+                dps.append(t_dmg[i] / cls.x[i])
+
+        #print("name:", weapons_list[z].get_name(), "| dps at 10 seconds:", dps[999])
+        #print("name:", weapons_list[z].get_name(), "| dps at 13 seconds:", dps[1299])
+        #print("name:", weapons_list[z].get_name(), "| dps at 20 seconds:", dps[1999])
+        return(dps)
+        
     #triple tap - 1
     tt_addcheck = 0
     tt_ammocheck = 0
@@ -711,4 +712,4 @@ create_weapon(cataclysmic_cc)
 # create_weapon(stormchaser)
 
 #calculate damage function
-Damage.DamageCalculate()
+# Damage.DamageCalculate()
