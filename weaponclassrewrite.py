@@ -533,13 +533,46 @@ class Damage:
                 cls.ff_ammo = ammo_fired
 
         return dmg_output
+    
+    #high impact reserves - 9
+    @classmethod
+    def HighImpactReserves(cls, ammo_magazine, mag_cap, dmg_output, enhanced_perks):
+
+        if ammo_magazine < (mag_cap/2) and not enhanced_perks:
+            hir_scalar = ammo_magazine / (mag_cap/2)
+            dmg_output = (hir_scalar * (dmg_output * 1.125)) + ((1 - hir_scalar) * (dmg_output * 1.255))
+
+        elif ammo_magazine < (mag_cap/(4/3)) and enhanced_perks:
+            hir_scalar = ammo_magazine / (mag_cap/(4/3))
+            dmg_output = (hir_scalar * (dmg_output * 1.125)) + ((1 - hir_scalar) * (dmg_output * 1.255))
+
+        return dmg_output
 
     #firing line - 10
     @classmethod
     def FiringLine(cls, dmg_output):
         dmg_output *= 1.2
         return dmg_output
+    
+    #explosive light - 11
+    @classmethod
+    def ExplosiveLight(cls):
+        pass
 
+    #cascade point - 12
+    @classmethod
+    def CascadePoint(cls):
+        pass
+
+    #explosive payload - 13
+    @classmethod
+    def ExplosivePayload(cls):
+        pass # 14% bonus
+
+    #frenzy - 14
+    @classmethod
+    def Frenzy(cls):
+        pass
 
     #bait n switch - 15
     bns_proc = 0
@@ -583,6 +616,43 @@ class Damage:
         return dmg_output
 
                 # NOTE could add a bns_proc = 2 segment for handling lockouts if i ever figure out how that might work
+        
+    #target lock - 16
+    @classmethod
+    def TargetLock(cls):
+        pass
+
+
+    # PLAYER BUFFS - to be listed in a different section than perks
+
+    @classmethod
+    def WellofRadiance(cls):
+        pass
+
+    @classmethod
+    def WardofDawn(cls):
+        pass
+
+    @classmethod
+    def Shadowshot(cls):
+        pass
+
+    @classmethod
+    def WolfPack(cls):
+        pass
+
+    # ORIGIN TRAITS - basically additional & optional 3rd perks
+    @classmethod
+    def RunnethOver(cls):
+        pass
+
+    # Veist Stinger will be moved out of perks and down here at some point
+
+    # - nanotech tracers
+    # - alacrity
+    # - celerity
+    # - bitterspite
+    # - hot swap
 
 # triple tap + firing line + veist (taipan)
 # taipan = {
