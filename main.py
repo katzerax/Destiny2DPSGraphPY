@@ -294,7 +294,7 @@ class GUI(tk.Frame):
         mpl.rcParams['axes.labelcolor'] = self.matplotlib_fg
 
         # Create a Matplotlib figure and canvas
-        self.fig = Figure(figsize=(5, 4), dpi=100)
+        self.fig = Figure(figsize=(5, 4), dpi=117)
         self.ax = self.fig.add_subplot(111)
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.graph_frame)
         self.ax.set_facecolor(self.matplotlib_bg)
