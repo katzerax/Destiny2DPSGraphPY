@@ -4,6 +4,7 @@ import configparser
 import pickle
 import json
 import csv
+import time
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
@@ -12,7 +13,6 @@ from pprint import pprint
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 import matplotlib as mpl
-import matplotlib.pyplot as plt
 import backend as backend
 
 # TODO
@@ -28,7 +28,8 @@ class Settings:
             self.config.read_file(f)
         self.interface_theme = self.config.get('Interface', 'theme')
         self.log_mode = self.config.get('Interface', 'log_mode')
-        self.do_dmg_prints = self.config.getboolean('Interface', 'dmg_steps')
+        self.do_dmg_prints = self.config.getboolean('Interface', 'dmg_prints')
+        self.debug_mode = self.config.getboolean('Interface', 'debug_mode')
         self.do_auto_save = self.config.getboolean('AutoSave', 'enabled')
         self.auto_save_path = self.config.get('AutoSave', 'path')
         self.graph_title = self.config.get('Graph', 'title')
@@ -37,13 +38,17 @@ class Settings:
         self.graph_ylabel = self.config.get('Graph', 'ylabel')
         self.graph_ylim = self.config.getint('Graph', 'ylim')
 
-    def check_and_create_settings_file(self, ini_path): # You guys may want to take a look at this
+    # You guys may want to take a look at this
+    #   YOU SET LIGHT MODE BY DEFAULT YOU MONSTER
+    #   Other than that looks fine to me
+    def check_and_create_settings_file(self, ini_path):
         if not os.path.exists(ini_path):
             default_settings = {
                 'Interface': {
-                    'theme': 'Light',
+                    'theme': 'Dark',
                     'log_mode': 'App',
-                    'dmg_steps': 'True'
+                    'dmg_steps': 'True',
+                    'debug_mode': 'False'
                 },
                 'AutoSave': {
                     'enabled': 'False',
@@ -67,9 +72,10 @@ class Settings:
                 self.config.write(f)
 
     def reset_settings_to_defaults(self):
-        self.interface_theme = 'Light'
+        self.interface_theme = 'Dark'
         self.log_mode = 'App'
         self.do_dmg_prints = False
+        self.debug_mode = False
         self.do_auto_save = False
         self.auto_save_path = ''
         self.graph_title = 'DPS Over Time'
@@ -84,6 +90,7 @@ class Settings:
         self.config.set('Interface', 'theme', self.interface_theme)
         self.config.set('Interface', 'log_mode', self.log_mode)
         self.config.set('Interface', 'dmg_prints', str(self.do_dmg_prints))
+        self.config.set('Interface', 'debug_mode', str(self.debug_mode))
         self.config.set('AutoSave', 'enabled', str(self.do_auto_save))
         self.config.set('AutoSave', 'path', self.auto_save_path)
         self.config.set('Graph', 'title', self.graph_title)
@@ -175,8 +182,9 @@ class GUI(tk.Frame):
         self.log_menu()
 
         redirect_logs(self.log_text, self.settings.log_mode)
-        if self.settings.do_auto_save:
-            self.options_import_weps_handler(self.settings.auto_save_path)
+        if firstrun:
+            if self.settings.do_auto_save:
+                self.options_import_weps_handler(self.settings.auto_save_path)
 
     def navbar(self):
         # Root frame
@@ -306,6 +314,8 @@ class GUI(tk.Frame):
             [backend.weapons_list[dropdown.get()] for (_, dropdown) in self.graph_wep_widgets if dropdown.winfo_viewable() and dropdown.get() != '']
 
         if seleced_weps:
+            if self.settings.do_dmg_prints:
+                totaltime_elapsed = time.time()
             try:
                 for weapon in seleced_weps:
                     # Get damage values by for DamageCalculate
@@ -324,6 +334,9 @@ class GUI(tk.Frame):
                 # Add legend and re-draw
                 self.ax.legend(facecolor=self.navbar_bg)
                 self.canvas.draw()
+                if self.settings.do_dmg_prints:
+                    totaltime_elapsed = round(totaltime_elapsed - time.time(), 2) * -1
+                    print(f'Total calculation time: {totaltime_elapsed} secs')
                 print('Graph Generation exited with code 0: Success')
             except Exception as e:
                 print('Error Occured during Graph Generation:')
@@ -575,6 +588,8 @@ class GUI(tk.Frame):
         self.options_menu_vars = {
             'autosave': tk.BooleanVar(value=self.settings.do_auto_save),
             'autosave_path': tk.StringVar(value=self.settings.auto_save_path),
+            'debug_mode': tk.BooleanVar(value=self.settings.debug_mode),
+            'dmg_prints': tk.BooleanVar(value=self.settings.do_dmg_prints),
             'graph_title': tk.StringVar(value=self.settings.graph_title),
             'graph_xlabel': tk.StringVar(value=self.settings.graph_xlabel),
             'graph_xlim': tk.IntVar(value=self.settings.graph_xlim),
@@ -622,9 +637,22 @@ class GUI(tk.Frame):
                         ttk.Combobox(workingframe, values=interface_theme_choices, **self.combo_style)),
                 'logmode': (tk.Label(workingframe, text='Log Mode', **self.label_style),
                             ttk.Combobox(workingframe, values=interface_logmode_choices, **self.combo_style)),
-                'testbut': tk.Button(workingframe, text='test_func :)', command=self.test_func, **self.button_style),
+                'debugmode_dmgprints': (tk.Checkbutton(workingframe, text='Debug Mode', **self.check_button_style,
+                                            variable=self.options_menu_vars['debug_mode']),
+                                        tk.Checkbutton(workingframe, text='Print Dmg Steps', **self.check_button_style,
+                                            variable=self.options_menu_vars['dmg_prints']))
             },
         }
+
+        # Debug mode widgets
+        if self.settings.debug_mode:
+            self.options_menu_widgets['debug'] = {
+                'header': tk.Label(workingframe, text='Debug', **self.label_style),
+                'clearcache': (tk.Button(workingframe, text='Clear Graph Cache',
+                                        command=self.options_debug_ccache, **self.button_style),
+                                tk.Button(workingframe, text='test_func :)',
+                                          command=self.test_func, **self.button_style))
+            }
 
         # Default combobox vals
         self.options_menu_widgets['impexp']['export'][1].set(impexp_exp_exts[0])
@@ -896,6 +924,8 @@ class GUI(tk.Frame):
     def options_apply_settings(self):
         self.settings.interface_theme = self.options_menu_widgets['interface']['theme'][1].get()
         self.settings.log_mode = self.options_menu_widgets['interface']['logmode'][1].get()
+        self.settings.debug_mode = self.options_menu_vars['debug_mode'].get()
+        self.settings.do_dmg_prints = self.options_menu_vars['dmg_prints'].get()
         self.settings.do_auto_save = self.options_menu_vars['autosave'].get()
         self.settings.auto_save_path = self.options_menu_vars['autosave_path'].get()
         self.settings.graph_title = self.options_menu_vars['graph_title'].get()
@@ -905,6 +935,13 @@ class GUI(tk.Frame):
         self.settings.graph_ylim = self.options_menu_vars['graph_ylim'].get()
         self.settings.save_settings()
         self.settings.restart_gui(root)
+
+    def options_debug_ccache(self):
+        if backend.weapons_list:
+            for weapon in backend.weapons_list.values():
+                if weapon.cached_graph_data:
+                    weapon.cached_graph_data = None
+                    print(f'Debug: Cached graph data cleared for: {weapon.name}')
 
     def log_menu(self):
         self.log_frame = tk.Frame(self, **self.frame_style)
@@ -976,5 +1013,7 @@ def global_start_gui():
     app = GUI(master=root)
     app.mainloop()
 
+firstrun = True
 stdoutwrite = sys.stdout.write
 global_start_gui()
+firstrun = False

@@ -1,5 +1,6 @@
 from perks import *
 from buffs import *
+import time
 import copy
 
 weapons_list = {
@@ -56,6 +57,8 @@ class Weapon:
 
         if self.has_perks:
             self.perk_literals = self.gen_perk_literals()
+        
+        self.cached_graph_data = None
 
     def gen_perk_literals(self):
         fs = self.get_full_settings()
@@ -89,6 +92,18 @@ class Weapon:
         return settings
     
     def DamageCalculate(self):
+        # Check for cached data
+        if self.cached_graph_data:
+            if do_cmd_prints:
+                print(f'Found cached graph data for weapon: {self.name}')
+            return self.cached_graph_data
+        
+        # Logging
+        if do_cmd_prints:
+            print(f'Starting damage calculation for weapon: {self.name}')
+            stale_dmg = 0
+            realtime_elapsed = time.time()
+
         # perk bug !!!
         perks = copy.deepcopy(self.perk_literals) if self.has_perks else None
 
@@ -137,11 +152,6 @@ class Weapon:
             # Some perks require round coeff
             'round_coeff': round_coeff,
         }
-
-        # Log damage mid-calc
-        if do_cmd_prints:
-            print(f'Starting damage calculation for weapon: {self.name}')
-            stale_dmg = 0
         
         # Start main sim loop
         for tick in range(ticks):
@@ -190,7 +200,6 @@ class Weapon:
                     if stale_dmg != t_dmg[tick]:
                         if tick != 0:
                             print(f'Weapon: {self.name} | Damage at {tick/100} secs: {t_dmg[tick]} | DPS: [{round(t_dmg[tick]/(tick/100), 1)}] | Per Shot: <{ti["dmg_output"]}> ')
-                            #print("mysto debug:", weapon.get_full_settings())
                             stale_dmg = t_dmg[tick]
 
             # Burst type weapon
@@ -225,6 +234,7 @@ class Weapon:
             
                 ti['time_elapsed'] = round(ti['time_elapsed'] + x_increments, 5)
                 t_dmg.append(total_damage)
+                # Logging
                 if do_cmd_prints:
                     if stale_dmg != t_dmg[tick]:
                         if tick != 0:
@@ -234,7 +244,13 @@ class Weapon:
         dps = [(t_dmg[i] / x[i]) for i in range(ticks) if not i == 0]
         # tick bug !!!
         dps.insert(0, 0)
-        # Return graph data
+        # Cache graph data
+        self.cached_graph_data = (x, dps)
+        # Logging
+        if do_cmd_prints:
+            realtime_elapsed = round(realtime_elapsed - time.time(), 2) * -1000
+            print(f'Calculation for weapon: {self.name} took {realtime_elapsed} ms')
+
         return x, dps
     
 def set_do_dmg_prints(value:bool):
