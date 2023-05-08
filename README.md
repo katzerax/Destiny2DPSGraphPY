@@ -26,12 +26,12 @@ Alternatively, download from the main github repo directly (this is considered t
 ## Usage
 As of release 6.0, the code has been completely rewritten and overhauled to now utilize a GUI. See the instructions below.
 
-### Settings
-### Main Menu
-### Importing and Exporting
-### Blah blah blah
+### Main Menu 
+### Weapons Menu 
+### Options Menu
+### Log menu 
 
-## Credits [feel free to change these and link to whatever links ya'll want for credit]
+## Credits
 - [K](https://github.com/katzerax) (repo owner and initial programmer, code contributor)
 - [vcat](https://github.com/vixicat) (initial math and calculation logic, code contributor)
 - [snark](https://github.com/rare-snark) (early iteration code contributor)
