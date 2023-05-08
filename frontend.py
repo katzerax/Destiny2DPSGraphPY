@@ -24,8 +24,9 @@ class Settings:
     def __init__(self):
         self.config = configparser.ConfigParser()
         ini_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'settings.ini')
-        # Add check for existing settings // create default if not
+        self.check_and_create_settings_file(ini_path)
         with open(ini_path, 'r', encoding='utf-8') as f:
+            self.config.read_file(f)
             self.config.read_file(f)
         self.interface_theme = self.config.get('Interface', 'theme')
         self.log_mode = self.config.get('Interface', 'log_mode')
@@ -37,6 +38,35 @@ class Settings:
         self.graph_xlim = self.config.getint('Graph', 'xlim')
         self.graph_ylabel = self.config.get('Graph', 'ylabel')
         self.graph_ylim = self.config.getint('Graph', 'ylim')
+
+    def check_and_create_settings_file(self, ini_path): # You guys may want to take a look at this
+        if not os.path.exists(ini_path):
+            default_settings = {
+                'Interface': {
+                    'theme': 'Light',
+                    'log_mode': 'App',
+                    'dmg_steps': 'True'
+                },
+                'AutoSave': {
+                    'enabled': 'False',
+                    'path': ''
+                },
+                'Graph': {
+                    'title': 'DPS Over Time',
+                    'xlabel': 'Time (seconds)',
+                    'xlim': '45',
+                    'ylabel': 'DPS',
+                    'ylim': '300000'
+                }
+            }
+
+            for section, settings in default_settings.items():
+                self.config.add_section(section)
+                for key, value in settings.items():
+                    self.config.set(section, key, value)
+
+            with open(ini_path, 'w', encoding='utf-8') as f:
+                self.config.write(f)
 
     def set_interface_theme(self, theme):
         self.interface_theme = theme
