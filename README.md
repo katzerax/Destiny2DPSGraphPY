@@ -31,7 +31,7 @@ pip install requirements.txt
 
 ## Usage
 As of release 6.0, the code has been completely rewritten and overhauled to now utilize a GUI. See the instructions below.
-To start the gui, open a command prompt to the project directory and run:
+To start the gui, double click main.py OR open a command prompt to the project directory and run:
 ```
 python main.py
 ```
@@ -43,10 +43,10 @@ This is the menu you will be utilizing to create and export graphs. At the top t
 
 ### Weapons Creation Menu 
 The weapons creation menu allows you to well, create weapons. You will need to find the following stats:
-[stat how to find]
-[stat how to find]
-[stat how to find]
-[stat how to find]
+stat + how to find
+stat + how to find
+stat + how to find
+stat + how to find
 Check the applicable checkboxes at the bottom, if it is a burst weapon fill in the bullets per burst additionally, and then click create weapon. If all went well, the log should say weapon created with code 0. If there was an error, it will tell you what it thinks the issue is.
 
 ### Options Menu
