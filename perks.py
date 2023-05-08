@@ -1,225 +1,296 @@
+import stat
 import math
 import random
-#this will not include all perks and traits, as some can be accounted for more consistently using the pre-input variables
-#(this includes some such as Field Prep, which modifies weapons' reserves on an inventory stat basis, as well as maxing weapon archetype reload speed)
 
+# Superclass
+class Perk():
+    def __init__(self, isenhanced:bool=False):
+        self.enhanced = isenhanced
+        self.enabled = True
 
-#magazine + reload perks/traits
-def TripleTap(shots_fired,shots_left_mag,shots_left_reserve,tt_delay,tt_delay_check): #every three shots fired (and presumably hit), it gives one bullet into the mag for free (technically giving more reserves)
-    if shots_fired != 0:
-        if tt_delay == 0:
-            if shots_fired % 3 == 0: #this would need to be checked after every shot to prevent reloads from happening too early
-                shots_left_mag += 1
-                shots_left_reserve += 1
-                tt_delay_check = shots_fired
-                tt_delay = 1
-        else:
-            if tt_delay_check != shots_fired:
-                tt_delay = 0 #this fix ensures that the shot count changes before doing the main check again
-    return shots_left_mag, shots_left_reserve, tt_delay, tt_delay_check 
+# 1 - Triple Tap
+class TripleTap(Perk):
+    """Landing 3 precision hits refunds 1 ammo back to the magazine."""
+    def __init__(self, isenhanced:bool, **args):
+        super().__init__(isenhanced)
+        self.tt_addcheck = 0
+        self.tt_ammocheck = 0
 
-def FTTC(shots_fired,shots_left_mag,shots_left_reserve,fttc_delay,fttc_delay_check): #Fourth Times The Charm, Triple Tap but if it was FOUR and TWO bullets
-    if shots_fired != 0:
-        if fttc_delay ==0:
-            if shots_fired % 4 == 0:
-                shots_left_mag += 2
-                shots_left_reserve += 2
-                fttc_delay_check = shots_fired
-                fttc_delay = 1
-        else:
-            if fttc_delay_check != shots_fired:
-                fttc_delay = 0
-    return shots_left_mag, shots_left_reserve, fttc_delay, fttc_delay_check
+    def output(self, ammo_magazine, ammo_total, ammo_fired, **args):
+        if ammo_fired != 0:
+            if self.tt_addcheck == 0:
+                if ammo_fired % 3 == 0:
+                    ammo_magazine += 1
+                    ammo_total += 1
+                    self.tt_addcheck = 1
+                    self.tt_ammocheck = ammo_fired
+            else:
+                if self.tt_ammocheck != ammo_fired:
+                    self.tt_ammocheck = 0
 
-def VeistStinger(shots_fired, shots_left_mag,magazine_capacity, veist_overflow_cross, veist_check, OF_On): #will need to get rough RNG estimate + dealing with timer lockout + new nerf
-    if shots_fired != veist_check: #more or less working as intended, just need to make sure
-        VeistProc = round(random.randrange(1,100), 5) 
-        veist_check = shots_fired #that the capacity exceed check can get figured out at some point
-        if shots_left_mag == 0: #so if there is no ammo left, it doesnt attempt to check
-            VeistProc = 1
-        if VeistProc >= 90: #10% chance right now, but may need to scale based on magazine size
-            veist_bonus = math.floor(magazine_capacity * 0.25)
-            shots_left_mag += veist_bonus
-        if OF_On == False: #lazy way of fixing this overlap issue.. overflow and veist stinger dont mix anyways
-            if shots_left_mag > magazine_capacity:
-                shots_left_mag = magazine_capacity
-    return shots_left_mag, veist_check
+        return {'ammo_magazine': ammo_magazine, 'ammo_total': ammo_total}
 
+# 2 - Fourth Times the Charm
+class FourthTimesTheCharm(Perk):
+    """Landing 4 precision hits refunds 2 ammo back to the magazine."""
+    def __init__(self, isenhanced:bool, **args):
+        super().__init__(isenhanced)
+        self.fttc_addcheck = 0
+        self.fttc_ammocheck = 0
 
-def ClownCartridge(magazine_capacity, shots_left_mag, clown_check, reload_count):
-    if clown_check != reload_count:
-        clown_check = reload_count
-        ClownCoeff = round(random.randrange(1,100))
-        if ClownCoeff <= 25:
-            shots_left_mag = math.ceil(magazine_capacity * 1.1)
-        elif ClownCoeff <= 50:
-            shots_left_mag = math.ceil(magazine_capacity *1.2)
-        elif ClownCoeff <= 75:
-            shots_left_mag = math.ceil(magazine_capacity *1.3)
-        elif ClownCoeff >= 76:
-            shots_left_mag = math.ceil(magazine_capacity * 1.45)
-    return clown_check, shots_left_mag
+    def output(self, ammo_magazine, ammo_total, ammo_fired, **args):
+        if not ammo_fired:
+            if self.fttc_addcheck == 0:
+                if ammo_fired % 4 == 0:
+                    ammo_magazine += 2
+                    ammo_total += 2
+                    self.fttc_addcheck = 1
+                    self.fttc_ammocheck = ammo_fired
+            else:
+                if self.fttc_ammocheck != ammo_fired:
+                    self.fttc_addcheck = 0
 
-def Overflow(shots_left_mag,of_check,delay_first_shot,veist_overflow_cross,magazine_capacity): #instantly reloads & doubles magazine on ammo pickup (reliably is active for first magazine of dps)
-    if of_check == 0:
-        if delay_first_shot:
-            shots_left_mag = math.floor(shots_left_mag * 2) #this may need to be a floor or ceiling dependent on testing
-            of_check = 1
-        else:
-            shots_left_mag = math.floor((shots_left_mag + 1) * 2) - 1
-            of_check = 1
-    return shots_left_mag, of_check, veist_overflow_cross
+        return {'ammo_magazine': ammo_magazine, 'ammo_total': ammo_total}
+    
+# 3 - Focused Fury
+class FocusedFury(Perk):
+    """Gain 20% increased damage for 12 seconds upon landing 50% of magazine as precision hits"""
+    def __init__(self, isenhanced:bool, **args):
+        super().__init__(isenhanced)
+        self.ff_timecheck = 0
+        self.ff_ammo = 0
+        self.ff_active = 0
 
-def OFEnhanced(shots_left_mag,of_check,delay_first_shot,veist_overflow_cross,magazine_capacity): #instantly reloads & doubles magazine on ammo pickup (reliably is active for first magazine of dps)
-    if of_check == 0:
-        if delay_first_shot:
-            shots_left_mag = math.floor(shots_left_mag * 2.3) #this may need to be a floor or ceiling dependent on testing
-            of_check = 1
-        else:
-            shots_left_mag = math.floor((shots_left_mag + 1) * 2.3) - 1
-            of_check = 1
-    return shots_left_mag, of_check, veist_overflow_cross
+        if not isenhanced:
+            self.ff_timer = 10
+        elif isenhanced:
+            self.ff_timer = 11
+    
+    def output(self, ammo_fired, mag_cap, dmg_output, time_elapsed, **args):
 
-def RapidHit(output_reload_time,rh_stacks,shots_fired,roundingcoeff): #scales reload speed incrementally up to 5 stacks per critical strike, 
-    rh_stacks = math.floor(shots_fired)
-    if rh_stacks >= 5:
-        rh_stacks = 5
-    if rh_stacks == 1: #more studying needs to be put into how reload stat affects reload speed typically
-        output_reload_time = round(output_reload_time / (1.1), roundingcoeff)
-    elif rh_stacks == 2:
-        output_reload_time = round(output_reload_time / (1.13), roundingcoeff)
-    elif rh_stacks == 3:
-        output_reload_time = round(output_reload_time / (1.15), roundingcoeff)
-    elif rh_stacks == 4:
-        output_reload_time = round(output_reload_time / (1.17), roundingcoeff) #estimating these for now, not really accurate at all especially for most weapons
-    elif rh_stacks == 5:
-        output_reload_time = round(output_reload_time / (1.2), roundingcoeff) #actual values: scale * 0.925, stat +60, others see https://www.bungie.net/en/Explore/Detail/News/49126
-    return output_reload_time
+        if not self.ff_active:
+            if (ammo_fired - self.ff_ammo) >= math.ceil(mag_cap/2):
+                dmg_output *= 1.2
+                self.ff_timecheck = time_elapsed
+                self.ff_active = 1
 
-#damage perks
-def VorpalWeapon(ammo_type,shot_dmg_output): #extra damage against boss enemies, 20% for primaries, 15% for special, 10% for heavies
-    if ammo_type == 1: #primary ammo
-        shot_dmg_output = shot_dmg_output * 1.2
-    elif ammo_type == 2: #special ammo
-        shot_dmg_output = shot_dmg_output * 1.15
-    elif ammo_type == 3: #heavy ammo
-        shot_dmg_output = shot_dmg_output * 1.1
-    return shot_dmg_output
+        elif self.ff_active:
+            if (time_elapsed - self.ff_timecheck) < self.ff_timer:
+                dmg_output *= 1.2
+            elif (time_elapsed - self.ff_timecheck) >= self.ff_timer:
+                self.ff_active = 0
+                self.ff_ammo = ammo_fired
 
-def FocusedFury(FFActive,shots_fired_ff,magazine_capacity,time_elapsed,shot_dmg_output,ff_time_check): #checks for whether it is active, then for whether it should activate, then the activation requirements before setting itself active, followed by a check on how to turn it back
-    if FFActive == 0:
-        if shots_fired_ff == math.ceil(magazine_capacity/2): #activates when shots reach half the magazine
-            shot_dmg_output = shot_dmg_output * 1.2
-            FFActive = 1
-            ff_time_check = time_elapsed
-    else:
-        if (time_elapsed - ff_time_check) < 10: 
-            shot_dmg_output = shot_dmg_output * 1.2
-        elif (time_elapsed - ff_time_check) >= 10: 
-            shots_fired_ff = 0
-            FFActive = 0
-    return shot_dmg_output, FFActive, ff_time_check, shots_fired_ff
+        return {'dmg_output': dmg_output}
 
-def FFEnhanced(FFActive,shots_fired_ff,magazine_capacity,time_elapsed,shot_dmg_output,ff_time_check): #checks for whether it is active, then for whether it should activate, then the activation requirements before setting itself active, followed by a check on how to turn it back
-    if FFActive == 0:
-        if shots_fired_ff == math.ceil(magazine_capacity/2): #activates when shots reach half the magazine
-            shot_dmg_output = shot_dmg_output * 1.2
-            FFActive = 1
-            ff_time_check = time_elapsed
-    else:
-        if (time_elapsed - ff_time_check) < 11: 
-            shot_dmg_output = shot_dmg_output * 1.2
-        elif (time_elapsed - ff_time_check) >= 11: 
-            shots_fired_ff = 0
-            FFActive = 0
-    return shot_dmg_output, FFActive, ff_time_check, shots_fired_ff
+# 4 - Clown Cartridge
+class ClownCartridge(Perk):
+    """Randomly grants 10-50% increased mag capacity on reload."""
+    def __init__(self, isenhanced:bool, **args):
+        super().__init__(isenhanced)
+        self.clown_coeff = 0
 
-def HighImpactReserves(shots_left_mag,magazine_capacity,shot_dmg_output): #scales damage from bonus 12.5% to a bonus 25% by the last bullet, starting at half mag
-    if shots_left_mag < magazine_capacity/2:
-        c = shots_left_mag / (magazine_capacity/2)
-        hir_scalar_dmg = (c * (shot_dmg_output * 1.125)) + ((1 - c) * (shot_dmg_output * 1.25)) #as magazine gets emptier, it retains more of the 25% bonus than the 12.5%, although i think the final % may be higher as it will only reach 25% at 0 shots left.
-        hir_bonus_dmg = hir_scalar_dmg - shot_dmg_output
-        shot_dmg_output += hir_bonus_dmg #giving the bonus, could make it so the scalar only multiplies by 0.125, 0.25, and then just += the extra dmg to make this more usable with other bonuses
-    return shot_dmg_output
+    def output(self, mag_cap, ammo_magazine, ammo_fired, total_dmg, **args):
+        if not ammo_fired and total_dmg: # < --- could remove in order to 'prepare' clown cart for dps, if runs itself seven million times, just add an initial check
+            self.clown_coeff = round(random.randrange(1,100))
+            if self.clown_coeff <= 25:
+                ammo_magazine = math.ceil(mag_cap * 1.1)
+            elif self.clown_coeff <= 50:
+                ammo_magazine = math.ceil(mag_cap * 1.2)
+            elif self.clown_coeff <= 75:
+                ammo_magazine = math.ceil(mag_cap * 1.3)
+            elif self.clown_coeff >= 76:
+                ammo_magazine = math.ceil(mag_cap * 1.45)
 
-def HIREnhanced(shots_left_mag,magazine_capacity,shot_dmg_output): #first of many enhanced perks because this game fucking sucks
-    if shots_left_mag < magazine_capacity/(4/3):
-        c = shots_left_mag / magazine_capacity/(4/3)
-        hir_scalar_dmg = (c * (shot_dmg_output * 1.125)) + ((1 - c) * (shot_dmg_output * 1.25))
-        hir_bonus_dmg = hir_scalar_dmg - shot_dmg_output #important that it is shot dmg output as it scales based off buffed dmg as is, not starting dmg
-        shot_dmg_output += hir_bonus_dmg #alt. calculation i mentioned in an above comment
-    return shot_dmg_output
+        return {'ammo_magazine': ammo_magazine}
 
-def FiringLine(shot_dmg_output): #flat bonus 20%, for all cases, permanently, so easy
-    shot_dmg_output *= 1.2
-    return shot_dmg_output
+# 5 - Overflow
+class Overflow(Perk):
+    """Upon picking up special or heavy ammo magazine gets overflowed to 200% of its regular capacity from reserves."""
+    def __init__(self, isenhanced:bool, **args):
+        super().__init__(isenhanced)
+    
+    def output(self, mag_cap, ammo_magazine, **args):
 
-def ExplosiveLight(shot_dmg_output): #explosives only but whatever
-    print("OOPS")
+        if not self.overflow_check and not self.isenhanced:
+            ammo_magazine = math.floor(mag_cap * 2)
+            self.enabled = False
 
-def CascadePoint(fire_delay,roundingcoeff,fire_rate,cascade_fr):
-    cascade_fr = fire_rate * 1.5
-    fire_delay = round(60/cascade_fr, roundingcoeff)
-    return fire_delay
+        elif not self.overflow_check and self.isenhanced:
+            ammo_magazine = math.floor(mag_cap * 2.3)
+            self.enabled = False
 
-def ExplosivePayload(shot_dmg_output): #similar to firing line hehe
-    shot_dmg_output *= 1.14
-    return shot_dmg_output
+        return {'ammo_magazine': ammo_magazine}
 
-def Frenzy(shot_dmg_output,output_reload_time): #15% dmg and bonus 50 reload + handling after being in combat for 12 seconds
-    shot_dmg_output *= 1.15 #assuming it just already is active since it already isnt really a dps perk :p
-    output_reload_time /= 1.4 #should account for delay of activation i think
-    return shot_dmg_output, output_reload_time
+# 6 - Rapid Hit
+class RapidHit(Perk):
+    """Gain 1 stack up to 5 for every precision hit. Scales at (5 | 30 | 35 | 42 | 60) reload speed for 2 seconds."""
+    def __init__(self, isenhanced:bool, **args):
+        super().__init__(isenhanced)
+        self.rapid_hit_stacks = 0
+        
+    def output(self, ammo_fired, reload_time, round_coeff, **args):
+        
+        self.rapid_hit_stacks = math.floor(ammo_fired)
+        
+        match self.rapid_hit_stacks:
+            case 0:
+                return reload_time
+            case 1:
+                reload_time = round(reload_time / 1.1, round_coeff)
+            case 2:
+                reload_time = round(reload_time / 1.13, round_coeff)
+            case 3:
+                reload_time = round(reload_time / 1.15, round_coeff)
+            case 4:
+                reload_time = round(reload_time / 1.17, round_coeff)
+            case 5 | _:
+                reload_time = round(reload_time / 1.2, round_coeff)
+        
+        return {'reload_time': reload_time}
 
-def BaitnSwitch(shots_fired_bns,shot_dmg_output,bait_timer,bait_proc,time_elapsed): #dealing damage with all 3 weapons gives a 35% bonus for 10 seconds, 11 for enhanced
-    if bait_proc == 0: #re-procing might be an editable value
-        if shots_fired_bns >= 1: #assuming that pre damage is done (i.e. shooting other weapons before damage phase)
-                shot_dmg_output *= 1.35 
-                bait_proc = 1
-                bait_timer = time_elapsed
-    if bait_proc == 1:
-        if (time_elapsed - bait_timer) <= 10:
-            shot_dmg_output *= 1.35
-        elif (time_elapsed - bait_timer) > 10:
-            bait_proc = 0
-            shots_fired_bns = 0
-    return shot_dmg_output, shots_fired_bns, bait_proc, bait_timer
+# 7 - Vorpal Weapon
+class VorpalWeapon(Perk):
+    """Flat damage increase of 10% to heavies, 15% to specials, and 20% to primaries."""
+    def __init__(self, isenhanced:bool, ammo_type, **args):
+        super().__init__(isenhanced)
+        self.ammo_type = ammo_type
 
-def BNSEnhanced(shots_fired_bns,shot_dmg_output,bait_timer,bait_proc,time_elapsed,bait_lockout): #dealing damage with all 3 weapons gives a 35% bonus for 10 seconds, 11 for enhanced
-    if bait_proc == 1:
-        if (time_elapsed - bait_timer) <= 11:
-            shot_dmg_output *= 1.35
-        elif (time_elapsed - bait_timer) > 11:
-            bait_proc = 2
-            shots_fired_bns = 0
-            bait_lockout = time_elapsed
-    if bait_proc == 0: #re-procing might be an editable value
-        if shots_fired_bns >= 1: #assuming that pre damage is done (i.e. shooting other weapons before damage phase)
-                shot_dmg_output *= 1.35 
-                bait_proc = 1
-                bait_timer = time_elapsed
-    if bait_proc == 2:
-        if (time_elapsed - bait_lockout) > 4.5: #this needs to be reviewed for a better system but
-            bait_proc = 0 #the 4.5 second lockout can be substituted for a handling combo adjustment
+        match self.ammo_type:
+            case 1: # Primary Ammo
+                self.damage_scalar = 1.2
+            case 2: # Special Ammo
+                self.damage_scalar = 1.15
+            case 3 | _: # Heavy Ammo
+                self.damage_scalar = 1.1
 
-    return shot_dmg_output, shots_fired_bns, bait_proc, bait_timer, bait_lockout
+    def output(self, dmg_output, **args):
+        dmg_output *= self.damage_scalar
+        return {'dmg_output': dmg_output}
+    
+# 8 - Target Lock
+class TargetLock(Perk):
+    def __init__(self, isenhanced:bool, **args):
+        super().__init__(isenhanced)
+        
+        if not isenhanced:
+            self.tl_bonus1 = 1.1673
+            self.tl_bonus2 = 1.4
+        elif isenhanced:
+            self.tl_bonus1 = 1.1882
+            self.tl_bonus2 = 1.45
+        
+    def output(self, dmg_output, ammo_fired, mag_cap, **args):
 
-def GHornBonus(): #rockets only but whatever
-    print("OOPS")
+        tl_scalar = (ammo_fired / mag_cap) / 1.105
+        if tl_scalar >= (0.125 / 1.105) and tl_scalar <= 1:
+            dmg_output = ((1 - tl_scalar) * (dmg_output * self.tl_bonus1)) + (tl_scalar * (dmg_output * self.tl_bonus2))
+        elif tl_scalar > 1:
+            dmg_output *= self.tl_bonus2
 
-#player buffs - armor mods will go here
-def WellofRadiance(well_locks,well_timer,time_elapsed,shot_dmg_output): #dmg booster ring super, lasts 25 seconds
-    if well_locks >= 1:
-        shot_dmg_output *= 1.25
-        if (time_elapsed - well_timer) >= 25:
-            well_timer = time_elapsed
-            well_locks -= 1
-    if well_locks == 0:
-        if (time_elapsed - well_timer) < 25:
-            shot_dmg_output *= 1.25
-    return shot_dmg_output, well_locks, well_timer
+        return {'dmg_output': dmg_output}
 
+# 9 - High Impact Reserves
+class HighImpactReserves(Perk):
+    """Linearly increases weapon damage from (12.1% - 25.6%) as magazine drops from 50% capacity to empty."""
+    def __init__(self, isenhanced:bool, mag_cap, **args):
+        super().__init__(isenhanced)
 
+        if not isenhanced:
+            self.hir_mag = (mag_cap/2)
+        elif isenhanced:
+            self.hir_mag = (mag_cap/(4/3))
 
+    def output(self, ammo_magazine, dmg_output, enhanced_perks, **args):
 
+        if ammo_magazine < self.hir_mag:
+            hir_scalar = ammo_magazine / self.hir_mag
+            dmg_output = (hir_scalar * (dmg_output * 1.125)) + ((1 - hir_scalar) * (dmg_output * 1.255))
 
+        return {'dmg_output': dmg_output}
+
+# 10 - Firing Line
+class FiringLine(Perk):
+    """Gain 20% increased precision damage when within 15 meters of 2 or more allies."""
+    def __init__(self, isenhanced:bool, **args):
+        super().__init__(isenhanced)
+        
+    def output(self, dmg_output, **args):
+        dmg_output *= 1.2
+        return {'dmg_output': dmg_output}
+
+# 11 - Explosive Light
+def ExplosiveLight(self):
+    pass
+
+# 12 - Cascade Point
+def CascadePoint(self):
+    pass
+
+# 13 - Explosive Payload
+class ExplosivePayload(Perk):
+    """Flat 20% damage increase"""
+    def __init__(self, isenhanced:bool, **args):
+        super().__init__(isenhanced)
+
+    def output(self, dmg_output):
+        dmg_output *= 1.2
+
+        return {'dmg_output': dmg_output}
+
+# 14 - Frenzy
+def Frenzy(self):
+    pass
+
+# 15 - Bait and Switch
+class BaitNSwitch(Perk):
+    """10 seconds of 35% increased damage upon dealing damage with all 3 weapons within 3 seconds."""
+    def __init__(self, isenhanced:bool, **args):
+        super().__init__(isenhanced)
+        self.bns_proc = 0
+        self.bns_timercheck = 0
+        self.ammo_fired_bns = 0
+
+        if not isenhanced:
+            self.bns_timer = 10
+        elif isenhanced:
+            self.bns_timer = 11
+
+    def output(self, ammo_fired, dmg_output, time_elapsed, **args):
+
+        if self.bns_proc == 0:
+            if (ammo_fired - self.ammo_fired_bns) >= 1:
+                dmg_output *= 1.35
+                self.bns_proc = 1
+                self.bns_timercheck = time_elapsed
+
+        elif self.bns_proc == 1:
+            if (time_elapsed - self.bns_timercheck) <= self.bns_timer:
+                dmg_output *= 1.35
+            elif (time_elapsed - self.bns_timercheck) > self.bns_timer:
+                self.bns_proc = 2
+                self.ammo_fired_bns = ammo_fired
+
+        elif self.bns_proc == 2:
+            pass
+        # NOTE I could easily add something else here to tie in how to re-proc, but to keep things real
+        # For single weapon, it will only be proc'd once
+        # Could add a bns_proc = 2 segment for handling lockouts if i ever figure out how that might work
+        
+        return {'dmg_output': dmg_output}
+
+PERKS_LIST = {
+    0: ('Null', 'No selection'),
+    1: ('Triple Tap', TripleTap.__doc__, TripleTap),
+    2: ('Fourth Times the Charm', FourthTimesTheCharm.__doc__, FourthTimesTheCharm),
+    3: ('Focused Fury', '', FocusedFury),
+    4: ('Clown Cartridge', ClownCartridge.__doc__, ClownCartridge),
+    5: ('Overflow', Overflow.__doc__, Overflow),
+    6: ('Rapid Hit', RapidHit.__doc__, RapidHit),
+    7: ('Vorpal Weapon', VorpalWeapon.__doc__, VorpalWeapon),
+    8: ('Target Lock', '', TargetLock),
+    9: ('High Impact Reserves', HighImpactReserves.__doc__, HighImpactReserves),
+    10: ('Firing Line', FiringLine.__doc__, FiringLine),
+    13: ('Explosive Payload', ExplosivePayload.__doc__, ExplosivePayload),
+    15: ('Bait and Switch', BaitNSwitch.__doc__, BaitNSwitch),
+}
