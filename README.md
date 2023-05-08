@@ -42,6 +42,7 @@ As of release 6.0, the code has been completely rewritten and overhauled to now 
 - A few months into our development of this project, [a reddit post appeared on r/DestinyTheGame](https://www.reddit.com/r/DestinyTheGame/comments/11d2f0g/i_created_a_new_dps_testing_tool/) which initially appeared to function similarly to the project we were programming. In some regards it is similar, but several parts of the logic as far as we can tell are very different, and so we produce different graphs. We still recommend  you check it out at https://www.hitthecrit.com/weapons.
 
 ## To-Do
+
 1. cleaning up comments
 2. finishing up GUI and backend
 3. create more graphs to use on the readme
@@ -56,3 +57,5 @@ As of release 6.0, the code has been completely rewritten and overhauled to now 
 ![Figure_1](https://media.discordapp.net/attachments/1099105715051823144/1104598617572003910/image.png)
 ### Options
 ![Figure_1](https://media.discordapp.net/attachments/1099105715051823144/1104598701000884244/image.png)
+
+
