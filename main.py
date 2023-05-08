@@ -6,6 +6,7 @@ import json
 import csv
 import time
 import tkinter as tk
+import tkcap
 from tkinter import messagebox
 from tkinter import ttk
 from tkinter.filedialog import asksaveasfile, askopenfilename
@@ -170,6 +171,9 @@ class GUI(tk.Frame):
             'width': 10,
             'exportselection': False
         }
+
+        if self.settings.debug_mode:
+            self.master.bind('<Control-s>', lambda e: self.options_debug_ssgui(e))
 
         backend.set_do_dmg_prints(self.settings.do_dmg_prints)
 
@@ -650,8 +654,8 @@ class GUI(tk.Frame):
                 'header': tk.Label(workingframe, text='Debug', **self.label_style),
                 'clearcache': (tk.Button(workingframe, text='Clear Graph Cache',
                                         command=self.options_debug_ccache, **self.button_style),
-                                tk.Button(workingframe, text='test_func :)',
-                                          command=self.test_func, **self.button_style))
+                                tk.Button(workingframe, text='testfunc :)',
+                                          command=self.options_debug_testfunc, **self.button_style))
             }
 
         # Default combobox vals
@@ -713,11 +717,6 @@ class GUI(tk.Frame):
             self.options_menu_widgets['impexp']['auto_save_path'][0].grid_forget()
             self.options_menu_widgets['impexp']['auto_save_path'][1].grid_forget()
         self.options_frame.pack_forget()
-
-    def test_func(self):
-        balls = [backend.weapons_list[dropdown.get()] for (_, dropdown) in self.graph_wep_widgets]
-        print(balls)
-        pass
 
     def options_set_auto_import_handler(self):
         exitcode = self.options_set_auto_import()
@@ -942,7 +941,15 @@ class GUI(tk.Frame):
                 if weapon.cached_graph_data:
                     weapon.cached_graph_data = None
                     print(f'Debug: Cached graph data cleared for: {weapon.name}')
+    
+    def options_debug_ssgui(self, *_):
+        fname = f'./{str(time.time())}.png'
+        cap = tkcap.CAP(self.master)
+        cap.capture(fname)
 
+    def options_debug_testfunc(self):
+        pass
+        
     def log_menu(self):
         self.log_frame = tk.Frame(self, **self.frame_style)
         self.log_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
