@@ -16,8 +16,6 @@ import matplotlib.pyplot as plt
 import backend as backend
 
 # TODO
-# 1. Default ini
-# 2. Make graph menu functional // 50% done
 # 3. Look into on-hover tooltips
 
 class Settings:
@@ -67,6 +65,20 @@ class Settings:
 
             with open(ini_path, 'w', encoding='utf-8') as f:
                 self.config.write(f)
+
+    def reset_settings_to_defaults(self):
+        self.interface_theme = 'Light'
+        self.log_mode = 'App'
+        self.do_dmg_prints = False
+        self.do_auto_save = False
+        self.auto_save_path = ''
+        self.graph_title = 'DPS Over Time'
+        self.graph_xlabel = 'Time (seconds)'
+        self.graph_xlim = 45
+        self.graph_ylabel = 'DPS'
+        self.graph_ylim = 300000
+
+        self.save_settings()
 
     def set_interface_theme(self, theme):
         self.interface_theme = theme
@@ -490,7 +502,7 @@ class GUI(tk.Frame):
         basestr = f'Weapon creation exited with code {exitcode}:'
         match exitcode:
             case 0:
-                # NOTE Having a popup for a success is kinda aids ill work on something else
+                # NOTE by all means if you are gonna change this do so
                 messagebox.showinfo('Success', 'Weapon created successfully')
                 print(f'{basestr} Success')
             case 1:
@@ -646,6 +658,7 @@ class GUI(tk.Frame):
                 'logmode': (tk.Label(workingframe, text='Log Mode', **self.label_style),
                             ttk.Combobox(workingframe, values=interface_logmode_choices, **self.combo_style)),
                 'testbut': tk.Button(workingframe, text='test_func :)', command=self.test_func, **self.button_style),
+                'options_reset': tk.Button(workingframe, text='Reset to Defaults', command=self.reset_settings, **self.button_style),
             },
         }
 
@@ -699,6 +712,10 @@ class GUI(tk.Frame):
                                                        command=self.options_apply_settings, **self.button_style)
         self.options_apply_settings_button.grid(row=ro+1, column=0, **self.default_padding)
 
+        # Reset Settings button
+        self.options_reset_settings_button = tk.Button(workingframe, text='Reset Settings', command=self.reset_settings, **self.button_style)
+        self.options_reset_settings_button.grid(row=ro+1, column=1, **self.default_padding)
+
         # Hide this menu on start
         if not self.settings.do_auto_save:
             self.options_menu_widgets['impexp']['auto_save_path'][0].grid_forget()
@@ -709,6 +726,10 @@ class GUI(tk.Frame):
         balls = self.options_menu_vars['graph_xlim'].get()
         print(balls)
         pass
+
+    def reset_settings(self):
+        self.settings.reset_settings_to_defaults()
+        self.settings.restart_gui(root)
 
     def options_set_auto_import_handler(self):
         exitcode = self.options_set_auto_import()
