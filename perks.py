@@ -164,7 +164,7 @@ class VorpalWeapon(Perk):
             case 3 | _: # Heavy Ammo
                 self.damage_scalar = 1.1
 
-    def output(self, dmg_output):
+    def output(self, dmg_output, **args):
         dmg_output *= self.damage_scalar
         return {'dmg_output': dmg_output}
     
@@ -201,7 +201,7 @@ class HighImpactReserves(Perk):
         elif isenhanced:
             self.hir_mag = (mag_cap/(4/3))
 
-    def output(self, ammo_magazine, dmg_output, enhanced_perks):
+    def output(self, ammo_magazine, dmg_output, enhanced_perks, **args):
 
         if ammo_magazine < self.hir_mag:
             hir_scalar = ammo_magazine / self.hir_mag
@@ -215,7 +215,7 @@ class FiringLine(Perk):
     def __init__(self, isenhanced:bool, **args):
         super().__init__(isenhanced)
         
-    def output(self, dmg_output):
+    def output(self, dmg_output, **args):
         dmg_output *= 1.2
         return {'dmg_output': dmg_output}
 

@@ -1,0 +1,61 @@
+[
+    {
+        "name": "cataclysmic fttc + bns",
+        "fire_rate": 120.0,
+        "reload_time": 1.63,
+        "damage_per_shot": 50000,
+        "mag_cap": 6,
+        "ammo_total": 20,
+        "ammo_type": 1,
+        "elemental_type": 1,
+        "fusion_weapon": true,
+        "perk_indices": [
+            2,
+            15
+        ]
+    },
+    {
+        "name": "taipan tt + fl",
+        "fire_rate": 120.0,
+        "reload_time": 1.63,
+        "damage_per_shot": 50000,
+        "mag_cap": 5,
+        "ammo_total": 21,
+        "ammo_type": 1,
+        "elemental_type": 1,
+        "fusion_weapon": true,
+        "perk_indices": [
+            1,
+            10
+        ]
+    },
+    {
+        "name": "retrofit escapade",
+        "fire_rate": 900.0,
+        "reload_time": 2.37,
+        "damage_per_shot": 5000,
+        "mag_cap": 93,
+        "ammo_total": 360,
+        "ammo_type": 1,
+        "elemental_type": 1,
+        "perk_indices": [
+            2,
+            8
+        ]
+    },
+    {
+        "name": "stormchaser cc + fl",
+        "fire_rate": 120.0,
+        "reload_time": 1.63,
+        "damage_per_shot": 24000,
+        "mag_cap": 15,
+        "ammo_total": 63,
+        "ammo_type": 1,
+        "elemental_type": 1,
+        "fusion_weapon": true,
+        "perk_indices": [
+            4,
+            10
+        ]
+    }
+]
