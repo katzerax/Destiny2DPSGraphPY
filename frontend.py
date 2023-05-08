@@ -319,7 +319,7 @@ class GUI(tk.Frame):
         self.ax.set_title(self.settings.graph_title)
 
         # Add legend and re-draw
-        self.ax.legend()
+        self.ax.legend(facecolor=self.navbar_bg)
         self.canvas.draw()
 
     def graph_save_graph(self):
