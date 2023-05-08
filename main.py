@@ -80,36 +80,6 @@ class Settings:
 
         self.save_settings()
 
-    def set_interface_theme(self, theme):
-        self.interface_theme = theme
-
-    def set_log_mode(self, value):
-        self.log_mode = value
-
-    def set_do_dmg_prints(self, value):
-        self.do_dmg_prints = value
-
-    def set_do_auto_save(self, value):
-        self.do_auto_save = value
-
-    def set_auto_save_path(self, value):
-        self.auto_save_path = value
-
-    def set_graph_title(self, value):
-        self.graph_title = value
-
-    def set_graph_xlabel(self, value):
-        self.graph_xlabel = value
-
-    def set_graph_xlim(self, value):
-        self.graph_xlim = value
-
-    def set_graph_ylabel(self, value):
-        self.graph_ylabel = value
-
-    def set_graph_ylim(self, value):
-        self.graph_ylim = value
-
     def save_settings(self):
         self.config.set('Interface', 'theme', self.interface_theme)
         self.config.set('Interface', 'log_mode', self.log_mode)
@@ -125,9 +95,6 @@ class Settings:
         with open('settings.ini', 'w') as f:
             self.config.write(f)
             f.close()
-
-    def reset_settings(self):
-        pass
 
     def restart_gui(self, root):
         # Close the tkinter window
@@ -298,7 +265,8 @@ class GUI(tk.Frame):
                 combo.grid_forget()
 
         # Generate graph button
-        self.graph_generate_button = tk.Button(self.graph_wep_frame, text="Generate Graph",
+        gen_but_enabled = 'normal' if existing_weapons else 'disabled'
+        self.graph_generate_button = tk.Button(self.graph_wep_frame, text="Generate Graph", state=gen_but_enabled,
                                                 command=self.graph_generate_graph, **self.button_style)
         self.graph_generate_button.grid(row=15, column=0, padx=8, pady=5, sticky=tk.W)
 
@@ -334,39 +302,34 @@ class GUI(tk.Frame):
         self.ax.clear()
         
         # Loop through weapon dropdowns
-        for (_, dropdown) in self.graph_wep_widgets:
-            # Check if dropdown is visible
-            if not dropdown.winfo_viewable():
-                continue
+        seleced_weps =\
+            [backend.weapons_list[dropdown.get()] for (_, dropdown) in self.graph_wep_widgets if dropdown.winfo_viewable() and dropdown.get() != '']
 
-            # Get selected weapon
-            selected_weapon = dropdown.get()
+        if seleced_weps:
+            try:
+                for weapon in seleced_weps:
+                    # Get damage values by for DamageCalculate
+                    x, y = weapon.DamageCalculate()
 
-            # Check if weapon is selected
-            if not selected_weapon:
-                continue
+                    # Plot the weapon damage
+                    self.ax.plot(x, y, label=f'{weapon.name}')
 
-            # Get weapon object
-            weapon = backend.weapons_list[selected_weapon]
+                # Set the axis labels and title
+                self.ax.set_xlabel(self.settings.graph_xlabel)
+                self.ax.set_xlim(0, self.settings.graph_xlim)
+                self.ax.set_ylabel(self.settings.graph_ylabel)
+                self.ax.set_ylim(0, self.settings.graph_ylim)
+                self.ax.set_title(self.settings.graph_title)
 
-            # Get damage values by calling the Damage class with the weapon object
-            damage = backend.Damage(weapon)
-            dps = damage.DamageCalculate()
-            # del damage.x[-1]
-
-            # Plot the weapon damage
-            self.ax.plot(damage.x, dps, label=f'{selected_weapon}')
-
-        # Set the axis labels and title
-        self.ax.set_xlabel(self.settings.graph_xlabel)
-        self.ax.set_xlim(0, self.settings.graph_xlim)
-        self.ax.set_ylabel(self.settings.graph_ylabel)
-        self.ax.set_ylim(0, self.settings.graph_ylim)
-        self.ax.set_title(self.settings.graph_title)
-
-        # Add legend and re-draw
-        self.ax.legend(facecolor=self.navbar_bg)
-        self.canvas.draw()
+                # Add legend and re-draw
+                self.ax.legend(facecolor=self.navbar_bg)
+                self.canvas.draw()
+                print('Graph Generation exited with code 0: Success')
+            except Exception as e:
+                print('Error Occured during Graph Generation:')
+                print(e)
+        else:
+            print('Graph Generation exited with code 1: No Selected Weapons')
 
     def graph_save_graph(self):
         file_path = asksaveasfile(defaultextension='.png', filetypes=[('All Files', '*.*')], initialdir='./', initialfile='dps_graph.png')
@@ -379,6 +342,8 @@ class GUI(tk.Frame):
         wep_names = list(backend.weapons_list.keys())
         for (_, dropdown) in self.graph_wep_widgets:
             dropdown.config(values=wep_names)
+        gen_but_enabled = 'normal' if wep_names else 'disabled'
+        self.graph_generate_button.config(state=gen_but_enabled)
 
     def graph_numweapons(self, evt):
         # Get ammount of weps requested
@@ -722,7 +687,7 @@ class GUI(tk.Frame):
         self.options_frame.pack_forget()
 
     def test_func(self):
-        balls = self.options_menu_vars['graph_xlim'].get()
+        balls = [backend.weapons_list[dropdown.get()] for (_, dropdown) in self.graph_wep_widgets]
         print(balls)
         pass
 
@@ -929,15 +894,15 @@ class GUI(tk.Frame):
             print()
 
     def options_apply_settings(self):
-        self.settings.set_interface_theme(self.options_menu_widgets['interface']['theme'][1].get())
-        self.settings.set_log_mode(self.options_menu_widgets['interface']['logmode'][1].get())
-        self.settings.set_do_auto_save(self.options_menu_vars['autosave'].get())
-        self.settings.set_auto_save_path(self.options_menu_vars['autosave_path'].get())
-        self.settings.set_graph_title(self.options_menu_vars['graph_title'].get())
-        self.settings.set_graph_xlabel(self.options_menu_vars['graph_xlabel'].get())
-        self.settings.set_graph_xlim(self.options_menu_vars['graph_xlim'].get())
-        self.settings.set_graph_ylabel(self.options_menu_vars['graph_ylabel'].get())
-        self.settings.set_graph_ylim(self.options_menu_vars['graph_ylim'].get())
+        self.settings.interface_theme = self.options_menu_widgets['interface']['theme'][1].get()
+        self.settings.log_mode = self.options_menu_widgets['interface']['logmode'][1].get()
+        self.settings.do_auto_save = self.options_menu_vars['autosave'].get()
+        self.settings.auto_save_path = self.options_menu_vars['autosave_path'].get()
+        self.settings.graph_title = self.options_menu_vars['graph_title'].get()
+        self.settings.graph_xlabel = self.options_menu_vars['graph_xlabel'].get()
+        self.settings.graph_xlim = self.options_menu_vars['graph_xlim'].get()
+        self.settings.graph_ylabel = self.options_menu_vars['graph_ylabel'].get()
+        self.settings.graph_ylim = self.options_menu_vars['graph_ylim'].get()
         self.settings.save_settings()
         self.settings.restart_gui(root)
 

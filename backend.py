@@ -19,8 +19,8 @@ class Weapon:
     def __init__(self, name:str, fire_rate:float, reload_time:float, damage_per_shot:int, 
                  mag_cap:int, ammo_total:int, ammo_type:int=1, elemental_type:int=1, 
                  enhance1:bool=False, enhance2:bool=False, fusion_weapon:bool=False, burst_weapon:bool=False, 
-                 burst_bullets:int=0, swap_group:int=0, swap_time:float=0, perk_indices:list=[], buff_indices:list=[]):
-        # Set positional args
+                 burst_bullets:int=0, perk_indices:list=[], buff_indices:list=[]):
+        # Positional args
         self.name = name
         self.fire_rate = fire_rate
         self.reload_time = reload_time
@@ -28,13 +28,12 @@ class Weapon:
         self.mag_cap = mag_cap
         self.ammo_total = ammo_total
 
-        self.enhance1 = enhance1
-        self.enhance2 = enhance2
-
-        # Set variadic args
+        # Variadic args
         # Still will need to figure which type is what, but figuring 1 - Kinetic, 2 - Solar, 3 - Arc, etc..
         self.ammo_type = ammo_type
         self.elemental_type = elemental_type
+        self.enhance1 = enhance1
+        self.enhance2 = enhance2
 
         # This input validation for burst and swap may be redundant
         # because we will need to validate in the frontend anyway
@@ -49,17 +48,7 @@ class Weapon:
                 self.burst_weapon = burst_weapon
                 self.burst_bullets = burst_bullets
 
-        if swap_time <= 0:
-            self.swap_group = 0
-            self.swap_time = 0
-        else:
-            self.swap_group = swap_group
-            self.swap_time = swap_time
-
-        if fusion_weapon is None:
-            self.fusion_weapon = 0
-        else:
-            self.fusion_weapon = fusion_weapon
+        self.fusion_weapon = True if fusion_weapon else False
 
         self.perk_indices = perk_indices
         self.has_perks = True if self.perk_indices else False
@@ -98,77 +87,72 @@ class Weapon:
             if value == False or 0 or not bool(value):
                 del settings[key]
         return settings
-
-class Damage:
-    def __init__(self, weapon_instance: Weapon):
-        self.weapon = copy.deepcopy(weapon_instance)
-        
-        # Graph config
-        self.ticks = 4500
-        self.x_increments = 0.01
-        self.x = [round(i * self.x_increments, 5) for i in range(self.ticks)]
-        self.round_coeff = len(str(self.x_increments).split(".")[1])
-
+    
     def DamageCalculate(self):
-        # General Variables
-        #   Create a shallow copy of weapon instance so we don't end up changing
-        #   any instance variables of Weapon or Perk
-        weapon = self.weapon
+        # perk bug !!!
+        perks = copy.deepcopy(self.perk_literals) if self.has_perks else None
+
+        # Graph config
+        ticks = 4500
+        x_increments = 0.01
+        x = [round(i * x_increments, 5) for i in range(ticks)]
+        round_coeff = len(str(x_increments).split(".")[1])
+    
         t_dmg = []
 
-        if not weapon.burst_weapon:
-            fire_delay = round(60/weapon.fire_rate, self.round_coeff)
+        if not self.burst_weapon:
+            fire_delay = round(60/self.fire_rate, round_coeff)
         else:
             #this rate of fire calculation may need some looking at :P, but basically it takes a rate of fire and then
             #just cuts it in half, half to shoot in a burst, the other to pause between shots..
             #for delay first shot, might just have it be equal to the normal fire delay? who knows. <--- this is what i did
             #5 minutes later rox here: i made DFS burst weapons have to complete a full charge sequence despite '120 RPM' not actually meaning 120 rpm... it just means 500ms charge time (since 500ms = 2 shots/second = 120rpm? idfk)
-            fire_delay = round((60/weapon.fire_rate)/2, self.round_coeff)
-            burst_delay = round(((60/weapon.fire_rate)/2)/weapon.burst_bullets, self.round_coeff)
+            fire_delay = round((60/self.fire_rate)/2, round_coeff)
+            burst_delay = round(((60/self.fire_rate)/2)/self.burst_bullets, round_coeff)
 
-        fusion_delay = round(60/weapon.fire_rate, self.round_coeff)
-        fire_timer = fusion_delay if weapon.fusion_weapon else 0
+        fusion_delay = round(60/self.fire_rate, round_coeff)
+        fire_timer = fusion_delay if self.fusion_weapon else 0
 
         # Init defaults
         # Any given value in ti may be passed to or returned by a perk class
         ti = {
             # Current mag
-            'ammo_magazine': weapon.mag_cap,
+            'ammo_magazine': self.mag_cap,
             # All available ammo
-            'ammo_total': weapon.ammo_total,
+            'ammo_total': self.ammo_total,
             # Heavy, special, kinetic
-            'ammo_type': weapon.ammo_type,
+            'ammo_type': self.ammo_type,
             # Ammo expended
             'ammo_fired': 0,
             'burst_shot': 0,
             # Mag size
-            'mag_cap': weapon.mag_cap,
+            'mag_cap': self.mag_cap,
             # Reload time
-            'reload_time': weapon.reload_time,
+            'reload_time': self.reload_time,
             # Damage output
-            'dmg_output': weapon.damage_per_shot,
+            'dmg_output': self.damage_per_shot,
             # Running totals
             'time_elapsed': 0,
             'total_dmg': 0,
             # Some perks require round coeff
-            'round_coeff': self.round_coeff,
+            'round_coeff': round_coeff,
         }
 
         # Log damage mid-calc
         if do_cmd_prints:
-            print(f'Starting damage calculation for weapon: {weapon.name}')
+            print(f'Starting damage calculation for weapon: {self.name}')
             stale_dmg = 0
         
         # Start main sim loop
-        for tick in range(self.ticks):
+        for tick in range(ticks):
             # No more e+17 pls!!!
-            ti['dmg_output'] = weapon.damage_per_shot
+            ti['dmg_output'] = self.damage_per_shot
 
             # Perks
             # NOTE Im sure I can do this in a nasty list comp but I really dont want to
-            if weapon.has_perks:
+            if self.has_perks:
                 # On each perk
-                for perk in weapon.perk_literals:
+                for perk in perks:
                     # If enabled
                     if perk.enabled:
                         # Run perk output
@@ -178,79 +162,80 @@ class Damage:
                             ti[key] = value
 
             # Standard Weapon
-            if not weapon.burst_weapon:
+            if not self.burst_weapon:
                 # Checks to make sure there is still ammo left
                 if ti['ammo_total'] == 0:
                     ti['total_dmg'] = ti['total_dmg']
                 # Checks to see if weapon needs a reload
                 elif ti['ammo_magazine'] == 0:
                     fire_timer += ti['reload_time']
-                    fire_timer -= fire_delay if weapon.fusion_weapon == True else 0
-                    fire_timer = round(fire_timer, self.round_coeff)
+                    fire_timer -= fire_delay if self.fusion_weapon == True else 0
+                    fire_timer = round(fire_timer, round_coeff)
                     ti['ammo_fired'] = 0
                     ti['ammo_magazine'] = ti['mag_cap']
                 # Checks to fire
                 elif ti['time_elapsed'] >= fire_timer:
                     ti['total_dmg'] += ti['dmg_output']
                     fire_timer += fire_delay
-                    fire_timer = round(fire_timer, self.round_coeff)
+                    fire_timer = round(fire_timer, round_coeff)
                     ti['ammo_fired'] += 1
                     ti['ammo_magazine'] -= 1
                     ti['ammo_total'] -= 1
 
                 # Increments time value and appends total damage to a list to calculate over the index points later                        
-                ti['time_elapsed'] = round(ti['time_elapsed'] + self.x_increments, 5)
+                ti['time_elapsed'] = round(ti['time_elapsed'] + x_increments, 5)
                 t_dmg.append(ti['total_dmg'])
                 # Logging
                 if do_cmd_prints:
                     if stale_dmg != t_dmg[tick]:
                         if tick != 0:
-                            print(f'Weapon: {weapon.name} | Damage at {tick/100} secs: {t_dmg[tick]} | DPS: [{round(t_dmg[tick]/(tick/100), 1)}] | Per Shot: <{ti["dmg_output"]}> ')
+                            print(f'Weapon: {self.name} | Damage at {tick/100} secs: {t_dmg[tick]} | DPS: [{round(t_dmg[tick]/(tick/100), 1)}] | Per Shot: <{ti["dmg_output"]}> ')
                             #print("mysto debug:", weapon.get_full_settings())
                             stale_dmg = t_dmg[tick]
 
             # Burst type weapon
-            elif weapon.burst_weapon:
+            elif self.burst_weapon:
                 # Checks to make sure there is still ammo left
                 if ti['ammo_total'] == 0:
                     total_damage = total_damage
                 # Checks to see if weapon needs a reload
                 elif ti['ammo_magazine'] == 0:
                     fire_timer += ti['reload_time']
-                    fire_timer -= fire_delay if weapon.fusion_weapon else 0
-                    fire_timer = round(fire_timer, self.round_coeff)
+                    fire_timer -= fire_delay if self.fusion_weapon else 0
+                    fire_timer = round(fire_timer, round_coeff)
                     # Rox: I want to test how things function without this 'ammo_fired' reset, as it may prove to be more beneficial to track specific needs within specific perks
                     #ammo_fired = 0
                     ti['ammo_magazine'] = ti['mag_cap']
 
                 elif ti['time_elapsed'] >= fire_timer:
                     # Checks to ensure that weapon is still within burst timing/bullet ammount
-                    if ti['burst_shot'] >= 0 and ti['burst_shot'] < weapon.burst_bullets:
+                    if ti['burst_shot'] >= 0 and ti['burst_shot'] < self.burst_bullets:
                         fire_timer += burst_delay
-                        fire_timer = round(fire_timer, self.round_coeff)
+                        fire_timer = round(fire_timer, round_coeff)
                         ti['total_dmg'] += ti['dmg_output']
                         ti['burst_shot'] += 1
                         ti['ammo_fired'] += 1
                         ti['ammo_magazine'] -= 1
                         ti['ammo_total'] -= 1
                     # Once weapon passes this, it gets the rest of the standard fire delay
-                    elif ti['burst_shot'] >= weapon.burst_bullets:
+                    elif ti['burst_shot'] >= self.burst_bullets:
                         ti['burst_shot'] = 0
-                        fire_timer += (fusion_delay - burst_delay) if weapon.fusion_weapon else fire_delay
-                        fire_timer = round(fire_timer, self.round_coeff)
+                        fire_timer += (fusion_delay - burst_delay) if self.fusion_weapon else fire_delay
+                        fire_timer = round(fire_timer, round_coeff)
             
-                ti['time_elapsed'] = round(ti['time_elapsed'] + self.x_increments, 5)
+                ti['time_elapsed'] = round(ti['time_elapsed'] + x_increments, 5)
                 t_dmg.append(total_damage)
                 if do_cmd_prints:
                     if stale_dmg != t_dmg[tick]:
                         if tick != 0:
-                            print(f'Weapon: {weapon.name} | Damage at {tick/100} secs: {t_dmg[tick]} | DPS: [{round(t_dmg[tick]/(tick/100), 1)}] | Per Shot: < {ti["dmg_output"]} > ')
+                            print(f'Weapon: {self.name} | Damage at {tick/100} secs: {t_dmg[tick]} | DPS: [{round(t_dmg[tick]/(tick/100), 1)}] | Per Shot: < {ti["dmg_output"]} > ')
                             stale_dmg = t_dmg[tick]
 
-        dps = [(t_dmg[i] / self.x[i]) for i in range(self.ticks) if not i == 0]
+        dps = [(t_dmg[i] / x[i]) for i in range(ticks) if not i == 0]
         # tick bug !!!
         dps.insert(0, 0)
-        return(dps)
+        # Return graph data
+        return x, dps
     
 def set_do_dmg_prints(value:bool):
     global do_cmd_prints 
