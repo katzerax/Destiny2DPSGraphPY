@@ -19,13 +19,13 @@ Install [Python 3.11.0](https://www.python.org/downloads/release/python-3110/). 
 Download the [latest release](https://github.com/katzerax/Destiny2DPSGraphPY/releases/latest) in the [releases](https://github.com/katzerax/Destiny2DPSGraphPY/releases) tab (this is considered the stable release)
 Unzip the file to a folder, then open a command prompt to the project directory and run:
 ```
-$ pip install requirements.txt
+pip install requirements.txt
 ```
 Alternatively, download from the main github repo directly (this is considered the development release, which may not be stable).
 ```
-$ git clone https://github.com/katzerax/Destiny2DPSGraphPY.git
-$ cd Destiny2DPSGraphPY
-$ pip install requirements.txt
+git clone https://github.com/katzerax/Destiny2DPSGraphPY.git
+cd Destiny2DPSGraphPY
+pip install requirements.txt
 ```
 6.0 and greater will be packaged into a zip file. Unzip the contents to a directory that works well. There should be several python files including main, perks, backend, etc. There should also be a settings.ini file, and if not it will generate one for you.
 
@@ -33,7 +33,7 @@ $ pip install requirements.txt
 As of release 6.0, the code has been completely rewritten and overhauled to now utilize a GUI. See the instructions below.
 To start the gui, open a command prompt to the project directory and run:
 ```
-$ python main.py
+python main.py
 ```
 
 ### Graph Menu 
