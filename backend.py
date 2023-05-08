@@ -1,5 +1,6 @@
 from perks import *
 from buffs import *
+import copy
 
 weapons_list = {
 
@@ -100,8 +101,8 @@ class Weapon:
 
 class Damage:
     def __init__(self, weapon_instance: Weapon):
-        self.weapon = weapon_instance
-
+        self.weapon = copy.deepcopy(weapon_instance)
+        
         # Graph config
         self.ticks = 4500
         self.x_increments = 0.01
@@ -246,7 +247,9 @@ class Damage:
                             print(f'Weapon: {weapon.name} | Damage at {tick/100} secs: {t_dmg[tick]} | DPS: [{round(t_dmg[tick]/(tick/100), 1)}] | Per Shot: < {ti["dmg_output"]} > ')
                             stale_dmg = t_dmg[tick]
 
-        dps = [t_dmg[i] / self.x[i] for i in range(self.ticks) if i != 0]
+        dps = [(t_dmg[i] / self.x[i]) for i in range(self.ticks) if not i == 0]
+        # tick bug !!!
+        dps.insert(0, 0)
         return(dps)
     
 def set_do_dmg_prints(value:bool):

@@ -155,6 +155,8 @@ class GUI(tk.Frame):
             'exportselection': False
         }
 
+        backend.set_do_dmg_prints(self.settings.do_dmg_prints)
+
     def initGUI(self):
         self.load_settings()
         self.navbar()
@@ -162,8 +164,10 @@ class GUI(tk.Frame):
         self.weapons_menu()
         self.options_menu()
         self.log_menu()
+
         redirect_logs(self.log_text, self.settings.log_mode)
-        backend.set_do_dmg_prints(self.settings.do_dmg_prints)
+        if self.settings.do_auto_save:
+            self.options_import_weps_handler(self.settings.auto_save_path)
 
     def navbar(self):
         # Root frame
@@ -306,7 +310,7 @@ class GUI(tk.Frame):
             # Get damage values by calling the Damage class with the weapon object
             damage = backend.Damage(weapon)
             dps = damage.DamageCalculate()
-            del damage.x[-1]
+            # del damage.x[-1]
 
             # Plot the weapon damage
             self.ax.plot(damage.x, dps, label=f'{selected_weapon}')
@@ -329,7 +333,8 @@ class GUI(tk.Frame):
         self.fig.savefig(file_path.name)
         print(f'Saved graph as "{file_path.name}"')
 
-    def graph_update_weapons(self, wep_names):
+    def graph_update_weapons(self):
+        wep_names = list(backend.weapons_list.keys())
         for (_, dropdown) in self.graph_wep_widgets:
             dropdown.config(values=wep_names)
 
@@ -536,10 +541,12 @@ class GUI(tk.Frame):
         'perk_indices': perk_indices
         }
         print('Attempting to create weapon with options:')
-        print("\n".join("{}\t{}".format(k, v) for k, v in weapon_options.items()))
+        pprint(weapon_options, sort_dicts=False)
 
         if backend.create_weapon(weapon_options):
-            self.graph_update_weapons(list(backend.weapons_list.keys()))
+            self.graph_update_weapons()
+            if self.settings.do_auto_save and self.settings.auto_save_path:
+                self.options_export_weps_handler(self.settings.auto_save_path)
             return 0
         else:
             return 4
@@ -597,8 +604,9 @@ class GUI(tk.Frame):
                                       command=self.options_import_weps_handler, **self.button_style)),
                 'auto_save_toggle': tk.Checkbutton(workingframe, text='Auto Save / Load', variable=self.options_menu_vars['autosave'], 
                                                    command=self.options_toggle_autosave, **self.check_button_style),
-                'auto_save_path': (tk.Button(workingframe, text='Auto-Save Path', **self.button_style),
-                                  tk.Entry(workingframe, state='disabled', **self.label_style))
+                'auto_save_path': (tk.Button(workingframe, text='Auto-Save Path',
+                                             command=self.options_set_auto_import_handler, **self.button_style),
+                                  tk.Entry(workingframe, textvariable=self.options_menu_vars['autosave_path'], state='readonly'))
             },
             # GUI
             'interface': {
@@ -668,15 +676,55 @@ class GUI(tk.Frame):
         self.options_frame.pack_forget()
 
     def test_func(self):
-        print('balls\n')
+        balls = self.options_menu_vars['graph_xlim'].get()
+        print(balls)
         pass
 
-    def options_import_weps_handler(self):
-        exitcode = self.options_import_weps()
+    def options_set_auto_import_handler(self):
+        exitcode = self.options_set_auto_import()
+        basestr = f'Set Auto Save exited with code {exitcode}:'
+        match exitcode:
+            case 0:
+                messagebox.showinfo('Success', 'Auto Save Path set successfully\nMake sure to apply settings when finished.')
+                print(f'{basestr} Success')
+            case 1:
+                print(f'{basestr} Operation Canceled')
+            case 2:
+                print(f'{basestr} No Path Selected')
+            case 3:
+                messagebox.showerror('Invalid File Type', 'Selected file must be of type: .pickle')
+                print(f'{basestr} Invalid File Type')
+            case 4:
+                messagebox.showerror('Invalid Pickle Data', 'Pickle data selected for import is invalid.')
+                print(f'{basestr} Invalid Pickle Data')
+        return exitcode
+
+    def options_set_auto_import(self):
+        confirm = messagebox.askokcancel('Import Warning', 'Setting auto import path will clear your current list and import from the selected file' +
+                                        '\nDoing so will irreversably clear your current list. Make sure to export if you would like to keep your current list.',)
+        if not confirm:
+            return 1
+        # File dialogue
+        file_path = askopenfilename(
+            filetypes=(('Pickle Files', '*.pickle'), ('All Files', '*.*')),
+            initialdir='./')
+        if file_path is None:
+            return 2
+        if not file_path.endswith('.pickle'):
+            return 3
+        exitcode = self.options_import_weps_handler(file_path)
+        if not exitcode == 0:
+            return 4
+        self.options_menu_vars['autosave_path'].set(file_path)
+        return 0
+
+    def options_import_weps_handler(self, path=None):
+        exitcode = self.options_import_weps(path)
         basestr = f'Weapon Import exited with code {exitcode}:'
         match exitcode:
             case 0:
-                messagebox.showinfo('Success', 'Weapon list imported successfully.')
+                if path is None:
+                    messagebox.showinfo('Success', 'Weapon list imported successfully.')
                 print(f'{basestr} Success')
             case 1:
                 print(f'{basestr} Operation Canceled')
@@ -698,22 +746,25 @@ class GUI(tk.Frame):
                 messagebox.showerror('Import Error', 'An error occured while importing your weapons. Check log for more info.')
                 print(f'An exception occured during Weapon Import:')
                 pprint(exitcode)
+        return exitcode
 
-    def options_import_weps(self):
+    def options_import_weps(self, path=None):
         # Warn about current list deletion
-        confirm = messagebox.askokcancel('Import Warning', 'Are you sure you want to import a list of weapons?' +
-                                         '\nDoing so will irreversably clear your current list. Make sure to export if you would like to keep your current list.',)
-        if not confirm:
-            return 1
-        # File dialogue
-        file_path = askopenfilename(
-            filetypes=(('JSON Files', '*.json'), ('Pickle Files', '*.pickle'), ('All Files', '*.*')),
-            initialdir='./'
-            )
-        if file_path is None:
-            return 2
-        if not file_path.endswith(('.json','.pickle')):
-            return 3
+        if path is None:
+            confirm = messagebox.askokcancel('Import Warning', 'Are you sure you want to import a list of weapons?' +
+                                            '\nDoing so will irreversably clear your current list. Make sure to export if you would like to keep your current list.',)
+            if not confirm:
+                return 1
+            # File dialogue
+            file_path = askopenfilename(
+                filetypes=(('JSON Files', '*.json'), ('Pickle Files', '*.pickle'), ('All Files', '*.*')),
+                initialdir='./')
+            if file_path is None:
+                return 2
+            if not file_path.endswith(('.json','.pickle')):
+                return 3
+        else:
+            file_path = path
         
         # Load backup back into memory on import fail
         def reclaim(backup):
@@ -734,7 +785,7 @@ class GUI(tk.Frame):
                         if not success:
                             reclaim(temp_bak)
                             return 4
-                    self.graph_update_weapons(list(backend.weapons_list.keys()))
+                    self.graph_update_weapons()
                     return 0
             # Import pickle
             elif file_path.endswith('.pickle'):
@@ -746,7 +797,7 @@ class GUI(tk.Frame):
                             reclaim(temp_bak)
                             return 5
                     backend.weapons_list = data
-                    self.graph_update_weapons(list(backend.weapons_list.keys()))
+                    self.graph_update_weapons()
                     return 0
             else:
                 return 6
@@ -754,8 +805,8 @@ class GUI(tk.Frame):
             reclaim(temp_bak)
             return e
     
-    def options_export_weps_handler(self):
-        exitcode = self.options_export_weps()
+    def options_export_weps_handler(self, path=None):
+        exitcode = self.options_export_weps(path)
         basestr = f'Weapon Export exited with code {exitcode}:'
         match exitcode:
             case 0:
@@ -772,25 +823,30 @@ class GUI(tk.Frame):
                 print(f'An exception occured during Weapon Export:')
                 pprint(exitcode)
 
-    def options_export_weps(self):
-        if len(backend.weapons_list) < 0:
-            return 1
-        ext = self.options_menu_widgets['impexp']['export'][1].get()
-        file_path = asksaveasfile(defaultextension=f'.{ext}', filetypes=[('All Files', '*.*')], initialdir='./', initialfile=f'saved_weapons.{ext}')
-        if file_path is None:
-            return 2
+    def options_export_weps(self, path=None):
+        if path is None:
+            if len(backend.weapons_list) < 0:
+                return 1
+            ext = self.options_menu_widgets['impexp']['export'][1].get()
+            file_path = asksaveasfile(defaultextension=f'.{ext}', filetypes=[('All Files', '*.*')], initialdir='./', initialfile=f'saved_weapons.{ext}')
+            if file_path is None:
+                return 2
+            fpathname = file_path.name
+        else:
+            ext = 'pickle'
+            fpathname = path
         try:
             match ext:
                 case 'json':
                     d = [weapon.get_pruned_settings() for weapon in backend.weapons_list.values()]
-                    with open(file_path.name, file_path.mode) as f:
+                    with open(fpathname, file_path.mode) as f:
                         json.dump(d, fp=f, indent=4)
                         f.close()
                     return 0
                 case 'csv':
                     d = [weapon.get_full_settings() for weapon in backend.weapons_list.values()]
                     d_names = d[0].keys()
-                    with open(file_path.name, file_path.mode) as f:
+                    with open(fpathname, file_path.mode) as f:
                         writer = csv.DictWriter(f, fieldnames=d_names)
                         writer.writeheader()
                         writer.writerows(d)
@@ -798,7 +854,7 @@ class GUI(tk.Frame):
                     return 0
                 case 'pickle' | _:
                     d = backend.weapons_list
-                    with open(file_path.name, 'wb') as f:
+                    with open(fpathname, 'wb') as f:
                         pickle.dump(d, f, protocol=pickle.HIGHEST_PROTOCOL)
                         f.close()
                     return 0
@@ -826,12 +882,12 @@ class GUI(tk.Frame):
         self.settings.set_interface_theme(self.options_menu_widgets['interface']['theme'][1].get())
         self.settings.set_log_mode(self.options_menu_widgets['interface']['logmode'][1].get())
         self.settings.set_do_auto_save(self.options_menu_vars['autosave'].get())
-        self.settings.set_auto_save_path(self.options_menu_widgets['impexp']['auto_save_path'][1].get())
-        self.settings.set_graph_title(self.options_menu_widgets['graph']['title'][1].get())
-        self.settings.set_graph_xlabel(self.options_menu_widgets['graph']['xlabel'][1].get())
-        self.settings.set_graph_xlim(self.options_menu_widgets['graph']['xlim'][1].get())
-        self.settings.set_graph_ylabel(self.options_menu_widgets['graph']['ylabel'][1].get())
-        self.settings.set_graph_ylim(self.options_menu_widgets['graph']['ylim'][1].get())
+        self.settings.set_auto_save_path(self.options_menu_vars['autosave_path'].get())
+        self.settings.set_graph_title(self.options_menu_vars['graph_title'].get())
+        self.settings.set_graph_xlabel(self.options_menu_vars['graph_xlabel'].get())
+        self.settings.set_graph_xlim(self.options_menu_vars['graph_xlim'].get())
+        self.settings.set_graph_ylabel(self.options_menu_vars['graph_ylabel'].get())
+        self.settings.set_graph_ylim(self.options_menu_vars['graph_ylim'].get())
         self.settings.save_settings()
         self.settings.restart_gui(root)
 
@@ -898,7 +954,6 @@ def redirect_logs(text_widget: tk.Widget, log_mode: str):
         sys.stdout.write = decorator(stdoutwrite)
     else:
         sys.stdout.write = write_to_app
-
 
 def global_start_gui():
     global root

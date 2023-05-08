@@ -90,8 +90,8 @@ class ClownCartridge(Perk):
         super().__init__(isenhanced)
         self.clown_coeff = 0
 
-    def output(self, mag_cap, ammo_magazine, ammo_fired, total_damage, **args):
-        if not ammo_fired and total_damage: # < --- could remove in order to 'prepare' clown cart for dps, if runs itself seven million times, just add an initial check
+    def output(self, mag_cap, ammo_magazine, ammo_fired, total_dmg, **args):
+        if not ammo_fired and total_dmg: # < --- could remove in order to 'prepare' clown cart for dps, if runs itself seven million times, just add an initial check
             self.clown_coeff = round(random.randrange(1,100))
             if self.clown_coeff <= 25:
                 ammo_magazine = math.ceil(mag_cap * 1.1)
