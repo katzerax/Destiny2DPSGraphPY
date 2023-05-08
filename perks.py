@@ -11,12 +11,12 @@ class Perk():
 # 1 - Triple Tap
 class TripleTap(Perk):
     """Landing 3 precision hits refunds 1 ammo back to the magazine."""
-    def __init__(self, isenhanced:bool, **args):
+    def __init__(self, isenhanced:bool, **_):
         super().__init__(isenhanced)
         self.tt_addcheck = 0
         self.tt_ammocheck = 0
 
-    def output(self, ammo_magazine, ammo_total, ammo_fired, **args):
+    def output(self, ammo_magazine, ammo_total, ammo_fired, **_):
         if ammo_fired != 0:
             if self.tt_addcheck == 0:
                 if ammo_fired % 3 == 0:
@@ -33,12 +33,12 @@ class TripleTap(Perk):
 # 2 - Fourth Times the Charm
 class FourthTimesTheCharm(Perk):
     """Landing 4 precision hits refunds 2 ammo back to the magazine."""
-    def __init__(self, isenhanced:bool, **args):
+    def __init__(self, isenhanced:bool, **_):
         super().__init__(isenhanced)
         self.fttc_addcheck = 0
         self.fttc_ammocheck = 0
 
-    def output(self, ammo_magazine, ammo_total, ammo_fired, **args):
+    def output(self, ammo_magazine, ammo_total, ammo_fired, **_):
         if not ammo_fired:
             if self.fttc_addcheck == 0:
                 if ammo_fired % 4 == 0:
@@ -55,7 +55,7 @@ class FourthTimesTheCharm(Perk):
 # 3 - Focused Fury
 class FocusedFury(Perk):
     """Gain 20% increased damage for 12 seconds upon landing 50% of magazine as precision hits"""
-    def __init__(self, isenhanced:bool, **args):
+    def __init__(self, isenhanced:bool, **_):
         super().__init__(isenhanced)
         self.ff_timecheck = 0
         self.ff_ammo = 0
@@ -66,7 +66,7 @@ class FocusedFury(Perk):
         elif isenhanced:
             self.ff_timer = 11
     
-    def output(self, ammo_fired, mag_cap, dmg_output, time_elapsed, **args):
+    def output(self, ammo_fired, mag_cap, dmg_output, time_elapsed, **_):
 
         if not self.ff_active:
             if (ammo_fired - self.ff_ammo) >= math.ceil(mag_cap/2):
@@ -86,11 +86,11 @@ class FocusedFury(Perk):
 # 4 - Clown Cartridge
 class ClownCartridge(Perk):
     """Randomly grants 10-50% increased mag capacity on reload."""
-    def __init__(self, isenhanced:bool, **args):
+    def __init__(self, isenhanced:bool, **_):
         super().__init__(isenhanced)
         self.clown_coeff = 0
 
-    def output(self, mag_cap, ammo_magazine, ammo_fired, total_dmg, **args):
+    def output(self, mag_cap, ammo_magazine, ammo_fired, total_dmg, **_):
         if not ammo_fired and total_dmg: # < --- could remove in order to 'prepare' clown cart for dps, if runs itself seven million times, just add an initial check
             self.clown_coeff = round(random.randrange(1,100))
             if self.clown_coeff <= 25:
@@ -107,10 +107,10 @@ class ClownCartridge(Perk):
 # 5 - Overflow
 class Overflow(Perk):
     """Upon picking up special or heavy ammo magazine gets overflowed to 200% of its regular capacity from reserves."""
-    def __init__(self, isenhanced:bool, **args):
+    def __init__(self, isenhanced:bool, **_):
         super().__init__(isenhanced)
     
-    def output(self, mag_cap, ammo_magazine, **args):
+    def output(self, mag_cap, ammo_magazine, **_):
 
         if not self.overflow_check and not self.isenhanced:
             ammo_magazine = math.floor(mag_cap * 2)
@@ -125,11 +125,11 @@ class Overflow(Perk):
 # 6 - Rapid Hit
 class RapidHit(Perk):
     """Gain 1 stack up to 5 for every precision hit. Scales at (5 | 30 | 35 | 42 | 60) reload speed for 2 seconds."""
-    def __init__(self, isenhanced:bool, **args):
+    def __init__(self, isenhanced:bool, **_):
         super().__init__(isenhanced)
         self.rapid_hit_stacks = 0
         
-    def output(self, ammo_fired, reload_time, round_coeff, **args):
+    def output(self, ammo_fired, reload_time, round_coeff, **_):
         
         self.rapid_hit_stacks = math.floor(ammo_fired)
         
@@ -152,7 +152,7 @@ class RapidHit(Perk):
 # 7 - Vorpal Weapon
 class VorpalWeapon(Perk):
     """Flat damage increase of 10% to heavies, 15% to specials, and 20% to primaries."""
-    def __init__(self, isenhanced:bool, ammo_type, **args):
+    def __init__(self, isenhanced:bool, ammo_type, **_):
         super().__init__(isenhanced)
         self.ammo_type = ammo_type
 
@@ -164,13 +164,13 @@ class VorpalWeapon(Perk):
             case 3 | _: # Heavy Ammo
                 self.damage_scalar = 1.1
 
-    def output(self, dmg_output, **args):
+    def output(self, dmg_output, **_):
         dmg_output *= self.damage_scalar
         return {'dmg_output': dmg_output}
     
 # 8 - Target Lock
 class TargetLock(Perk):
-    def __init__(self, isenhanced:bool, **args):
+    def __init__(self, isenhanced:bool, **_):
         super().__init__(isenhanced)
         
         if not isenhanced:
@@ -180,7 +180,7 @@ class TargetLock(Perk):
             self.tl_bonus1 = 1.1882
             self.tl_bonus2 = 1.45
         
-    def output(self, dmg_output, ammo_fired, mag_cap, **args):
+    def output(self, dmg_output, ammo_fired, mag_cap, **_):
 
         tl_scalar = (ammo_fired / mag_cap) / 1.105
         if tl_scalar >= (0.125 / 1.105) and tl_scalar <= 1:
@@ -193,7 +193,7 @@ class TargetLock(Perk):
 # 9 - High Impact Reserves
 class HighImpactReserves(Perk):
     """Linearly increases weapon damage from (12.1% - 25.6%) as magazine drops from 50% capacity to empty."""
-    def __init__(self, isenhanced:bool, mag_cap, **args):
+    def __init__(self, isenhanced:bool, mag_cap, **_):
         super().__init__(isenhanced)
 
         if not isenhanced:
@@ -201,7 +201,7 @@ class HighImpactReserves(Perk):
         elif isenhanced:
             self.hir_mag = (mag_cap/(4/3))
 
-    def output(self, ammo_magazine, dmg_output, enhanced_perks, **args):
+    def output(self, ammo_magazine, dmg_output, enhanced_perks, **_):
 
         if ammo_magazine < self.hir_mag:
             hir_scalar = ammo_magazine / self.hir_mag
@@ -212,10 +212,10 @@ class HighImpactReserves(Perk):
 # 10 - Firing Line
 class FiringLine(Perk):
     """Gain 20% increased precision damage when within 15 meters of 2 or more allies."""
-    def __init__(self, isenhanced:bool, **args):
+    def __init__(self, isenhanced:bool, **_):
         super().__init__(isenhanced)
         
-    def output(self, dmg_output, **args):
+    def output(self, dmg_output, **_):
         dmg_output *= 1.2
         return {'dmg_output': dmg_output}
 
@@ -230,7 +230,7 @@ def CascadePoint(self):
 # 13 - Explosive Payload
 class ExplosivePayload(Perk):
     """Flat 20% damage increase"""
-    def __init__(self, isenhanced:bool, **args):
+    def __init__(self, isenhanced:bool, **_):
         super().__init__(isenhanced)
 
     def output(self, dmg_output):
@@ -245,7 +245,7 @@ def Frenzy(self):
 # 15 - Bait and Switch
 class BaitNSwitch(Perk):
     """10 seconds of 35% increased damage upon dealing damage with all 3 weapons within 3 seconds."""
-    def __init__(self, isenhanced:bool, **args):
+    def __init__(self, isenhanced:bool, **_):
         super().__init__(isenhanced)
         self.bns_proc = 0
         self.bns_timercheck = 0
@@ -256,7 +256,7 @@ class BaitNSwitch(Perk):
         elif isenhanced:
             self.bns_timer = 11
 
-    def output(self, ammo_fired, dmg_output, time_elapsed, **args):
+    def output(self, ammo_fired, dmg_output, time_elapsed, **_):
 
         if self.bns_proc == 0:
             if (ammo_fired - self.ammo_fired_bns) >= 1:
