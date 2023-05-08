@@ -705,7 +705,7 @@ class GUI(tk.Frame):
         self.options_apply_settings_button.grid(row=ro+1, column=0, **self.default_padding)
 
         # Reset Settings button
-        self.options_reset_settings_button = tk.Button(workingframe, text='Reset Settings', command=self.reset_settings, **self.button_style)
+        self.options_reset_settings_button = tk.Button(workingframe, text='Reset Settings', command=self.options_reset_settings, **self.button_style)
         self.options_reset_settings_button.grid(row=ro+1, column=1, **self.default_padding)
 
         # Hide this menu on start
@@ -718,10 +718,6 @@ class GUI(tk.Frame):
         balls = [backend.weapons_list[dropdown.get()] for (_, dropdown) in self.graph_wep_widgets]
         print(balls)
         pass
-
-    def reset_settings(self):
-        self.settings.reset_settings_to_defaults()
-        self.settings.restart_gui(root)
 
     def options_set_auto_import_handler(self):
         exitcode = self.options_set_auto_import()
@@ -934,6 +930,10 @@ class GUI(tk.Frame):
         self.settings.graph_ylabel = self.options_menu_vars['graph_ylabel'].get()
         self.settings.graph_ylim = self.options_menu_vars['graph_ylim'].get()
         self.settings.save_settings()
+        self.settings.restart_gui(root)
+
+    def options_reset_settings(self):
+        self.settings.reset_settings_to_defaults()
         self.settings.restart_gui(root)
 
     def options_debug_ccache(self):
