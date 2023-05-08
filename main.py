@@ -658,7 +658,6 @@ class GUI(tk.Frame):
                 'logmode': (tk.Label(workingframe, text='Log Mode', **self.label_style),
                             ttk.Combobox(workingframe, values=interface_logmode_choices, **self.combo_style)),
                 'testbut': tk.Button(workingframe, text='test_func :)', command=self.test_func, **self.button_style),
-                'options_reset': tk.Button(workingframe, text='Reset to Defaults', command=self.reset_settings, **self.button_style),
             },
         }
 
