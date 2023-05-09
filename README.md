@@ -50,9 +50,46 @@ stat + how to find
 Check the applicable checkboxes at the bottom, if it is a burst weapon fill in the bullets per burst additionally, and then click create weapon. If all went well, the log should say weapon created with code 0. If there was an error, it will tell you what it thinks the issue is.
 
 ### Options Menu
-[new image for the options menu AFTER the removal of the test_func button]
+![figure_1](https://media.discordapp.net/attachments/1103555681635799102/1105291440139030538/1683592404.3157408.png)
 
-Here is where you can configure the program options. The graph elements are configurable, as well as the app theme and how it handles logs. This is also the menu where you would handle importing and exporting. If you export your weapons as a json, it makes for easily shareable files with other people. If you export as pickle, you can enable auto saving and loading by setting the auto save path to the directory of said pickle file. Once you have selected the settings that you wish to apply, press Apply Settings. This will restart the application with the settings you have enabled. If you want to reset settings, there is a Reset Settings button also. 
+#### Graph
+- Graph Title
+- X Axis Name
+- X Axis Upper Limit
+    - X Axis on the graph will always represent simulated time elapsed
+- Y Axis Name
+- Y Axis Upper Limit
+    - Y Axis on the graph will always represent total damage dealt
+
+#### Import / Export
+- Export As
+    - Exporting currently supports: (.json, .pickle, .csv)
+- Log Current Weapons
+    - Prints out all current weapon settings to log
+- Import From File
+    - Importing currently supports: (.json, .pickle)
+- Auto Save / Load
+    - Enabling this will allow you to chose an exported weapon list that will automatically load on open, and save whenever changes are made to your weapon list
+    - Selecting a path for Auto Save / Load will automatically import whichever list is selected, so make sure to back up any unsaved changes before doing so
+    - Importing a new list while this option is enabled will overwrite your current list, but *not* your backup that is selected for Auto Save / Load
+
+⚠️ **NOTE**: Importing and Exporting from pickle is considered an **experimental feature!** Pickle exports from any version are subject to break in any subsequent release, and as such should only be used if you believe that the benefits are worth it. If your backup is unsupported in future releases, the program will refuse to load it. You can fix this by importing it in the version it was created in, exporting it to JSON, and importing it back into the latest version to recover the list.
+
+Benefits of pickle backups currently include:
+- Faster import / export times
+- Persisting any cached weapon data through restarts
+    - Graph data
+
+#### Interface
+- Theme
+    - Light or Dark
+- Log Mode
+    - App, Console, or Both
+    - If you choose your log mode to be in app or both, console output will be directed to the Log Menu
+- Debug Mode
+    - Enabling this will enable the Debug section of the settings menu and a few other developer functions
+- Print Dmg Steps
+    - Enabling this will print damage information to the console every time a shot is fired during damage calculation
 
 ### Log menu 
 ![image](https://user-images.githubusercontent.com/65287118/236922026-34ed8448-1dc2-41e6-8b40-ff1c941e9812.png)
