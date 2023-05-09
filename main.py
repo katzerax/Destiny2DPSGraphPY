@@ -100,7 +100,7 @@ class Settings:
         self.config.set('Graph', 'ylabel', self.graph_ylabel)
         self.config.set('Graph', 'ylim', str(self.graph_ylim))
 
-        with open('settings.ini', 'w') as f:
+        with open('backend/settings.ini', 'w') as f:
             self.config.write(f)
             f.close()
 
