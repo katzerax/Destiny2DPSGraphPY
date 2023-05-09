@@ -42,12 +42,39 @@ python main.py
 This is the menu you will be utilizing to create and export graphs. At the top there is a dropdown for the number of weapons to compare, and the number of weapons you select there will indicate how many weapon dropdowns there will be. Select which weapons you have already generated, up to 10, and hit generate graph. It will take a moment to calculate for every weapon, and then display a graph like the one pictured above. You can make weapons in the weapons menu.
 
 ### Weapons Creation Menu 
-The weapons creation menu allows you to well, create weapons. You will need to find the following stats:
-stat + how to find
-stat + how to find
-stat + how to find
-stat + how to find
-Check the applicable checkboxes at the bottom, if it is a burst weapon fill in the bullets per burst additionally, and then click create weapon. If all went well, the log should say weapon created with code 0. If there was an error, it will tell you what it thinks the issue is.
+![figure_1](https://media.discordapp.net/attachments/1103555681635799102/1105293082028691529/1683592782.8141556.png)
+The weapons creation menu allows you to well, create weapons. As mentioned in the top of the readme, damage calculations assume "best case scenario" for every possible situation. It also is, at its core, a single target sustained damage calculator. This forces us to assume some unrealistic scenarios (that aren't *that* far off from in game). It means buff perks like Frenzy, One for All, and Kill Clip will assume that you are starting your 'DPS Phase' immediately with a full buff timer even if in game you would likely lose a second or so. Perks like Killing Tally will be assumed to have a full stack count *and* a full magazine even if that is not possible in game.
+
+#### Required stats:
+- Name
+    - Doesn't literally have to be the name of the weapon, but this is what will show up in the graph legend
+- Fire Rate
+    - In rounds per minute
+- Reload Time
+    - The literal ammount of time it takes to reload the weapon in seconds
+- Damage per Shot
+    - Base damage per shot of the weapon. Go shoot Gary!
+    - All calculations asume precision hits, so this should be the precision damage value for weapons that can
+- Magazine Capacity
+    - Base ammo available in one mag
+    - DO NOT account for mag augment perks like overflow and clown cartridge, the program will do this automatically
+    - DO account for mag perks like enhanced battery and extended mag, the program will not assume these
+- Ammo total
+    - Total reserve ammo + the current mag
+    - Easiest way to get this is to look at the weapons ammo when stowed, as that is the number you are looking for
+
+#### Non-required stats:
+- Perks
+- Enhanced Perks
+    - Self explanatory, check these boxes if the corresponding perks are enhanced
+    - For enhanced perks that do not augment a relevant stat, these checks will be ignored
+- Burst Weapon
+    - Enable this for any burst type weapon (ie Pulse Rifles, Aggressive Frame LFRs, etc)
+    - Enabling this will create a box to enter how many bullets are fired in each burst
+- Fusion Weapon
+    - This is a catch all for any weapon that has a wind up before shooting (ie Bows, Fusion Rifles, LFRs)
+
+Once you fill in all relavent information for the weapon you want, click the 'Create Weapon' button. If any required information is left out or invalid, the program will throw you an error. After a weapon is successfully created it is available for selection in the Graph Menu.
 
 ### Options Menu
 ![figure_1](https://media.discordapp.net/attachments/1103555681635799102/1105291440139030538/1683592404.3157408.png)
