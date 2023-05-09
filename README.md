@@ -43,6 +43,7 @@ This is the menu you will be utilizing to create and export graphs. At the top t
 
 ### Weapons Creation Menu 
 ![figure_1](https://media.discordapp.net/attachments/1103555681635799102/1105293082028691529/1683592782.8141556.png)
+
 The weapons creation menu allows you to well, create weapons. As mentioned in the top of the readme, damage calculations assume "best case scenario" for every possible situation. It also is, at its core, a single target sustained damage calculator. This forces us to assume some unrealistic scenarios (that aren't *that* far off from in game). It means buff perks like Frenzy, One for All, and Kill Clip will assume that you are starting your 'DPS Phase' immediately with a full buff timer even if in game you would likely lose a second or so. Perks like Killing Tally will be assumed to have a full stack count *and* a full magazine even if that is not possible in game.
 
 #### Required stats:
