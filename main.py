@@ -14,7 +14,7 @@ from pprint import pprint
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 import matplotlib as mpl
-import backend as backend
+import backend.backend as backend
 
 # TODO
 # 3. Look into on-hover tooltips
@@ -22,7 +22,7 @@ import backend as backend
 class Settings:
     def __init__(self):
         self.config = configparser.ConfigParser()
-        ini_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'settings.ini')
+        ini_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'backend/settings.ini')
         self.check_and_create_settings_file(ini_path)
         with open(ini_path, 'r', encoding='utf-8') as f:
             self.config.read_file(f)
@@ -48,7 +48,7 @@ class Settings:
                 'Interface': {
                     'theme': 'Dark',
                     'log_mode': 'App',
-                    'dmg_steps': 'True',
+                    'dmg_steps': 'False',
                     'debug_mode': 'False'
                 },
                 'AutoSave': {

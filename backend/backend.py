@@ -1,5 +1,5 @@
-from perks import *
-from buffs import *
+from backend.perks import *
+from backend.buffs import *
 import time
 import copy
 
