@@ -26,7 +26,6 @@ class Settings:
         self.check_and_create_settings_file(ini_path)
         with open(ini_path, 'r', encoding='utf-8') as f:
             self.config.read_file(f)
-            self.config.read_file(f)
         self.interface_theme = self.config.get('Interface', 'theme')
         self.log_mode = self.config.get('Interface', 'log_mode')
         self.do_dmg_prints = self.config.getboolean('Interface', 'dmg_prints')
@@ -174,6 +173,7 @@ class GUI(tk.Frame):
             'exportselection': False
         }
 
+        # Enable window screenshots in debug mode
         if self.settings.debug_mode:
             self.master.bind('<Control-s>', lambda e: self.options_debug_ssgui(e))
 
@@ -187,10 +187,15 @@ class GUI(tk.Frame):
         self.options_menu()
         self.log_menu()
 
+        # Log mode
         redirect_logs(self.log_text, self.settings.log_mode)
+        # Auto import
         if firstrun:
             if self.settings.do_auto_save:
-                self.options_import_weps_handler(self.settings.auto_save_path)
+                if os.path.exists(self.settings.auto_save_path):
+                    self.options_import_weps_handler(self.settings.auto_save_path)
+                else:
+                    print(f'Auto Import Error: Expected file at `{self.settings.auto_save_path}` and none existed')
 
     def navbar(self):
         # Root frame
@@ -866,6 +871,8 @@ class GUI(tk.Frame):
                 print(f'{basestr} Empty Weapon List')
             case 2:
                 print(f'{basestr} No Path Selected')
+            case 3:
+                print(f'{basestr} Expected file at {self.settings.auto_save_path} that did not exist')
             case _:
                 messagebox.showerror('Export Error', 'An error occured while exporting weapons. Check log for more info.')
                 print(f'An exception occured during Weapon Export:')
@@ -881,6 +888,8 @@ class GUI(tk.Frame):
                 return 2
             fpathname, ext = os.path.splitext(file_path.name) 
         else:
+            if not os.path.exists(path):
+                return 3
             fpathname, ext = os.path.splitext(path)
         try:
             match ext:
