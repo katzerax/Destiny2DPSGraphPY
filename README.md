@@ -147,13 +147,3 @@ If you choose your log mode to be in app, or both, the console output will be lo
     - ongoing but done for now
 5. ~~create instructions for how to obtain every stat to use for the program~~
 6. QA test the whole program before a public announcement
-
-## UI Images
-### Main Screen
-![Figure_1](https://media.discordapp.net/attachments/1099105715051823144/1104598556788142110/image.png)
-### Weapons Menu
-![Figure_1](https://media.discordapp.net/attachments/1099105715051823144/1104598617572003910/image.png)
-### Options
-![Figure_1](https://media.discordapp.net/attachments/1099105715051823144/1104598701000884244/image.png)
-
-
