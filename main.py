@@ -106,6 +106,8 @@ class Settings:
 
     def restart_gui(self, root):
         # Close the tkinter window
+        global firstrun
+        firstrun = False
         root.destroy()
         # Restart gui
         global_start_gui()
@@ -743,12 +745,10 @@ class GUI(tk.Frame):
         if not confirm:
             return 1
         # File dialogue
-        file_path = askopenfilename(
-            filetypes=(('Pickle Files', '*.pickle'), ('All Files', '*.*')),
-            initialdir='./')
+        file_path = askopenfilename(filetypes=(('JSON Files', '*.json'), ('Pickle Files', '*.pickle'), ('All Files', '*.*')))
         if file_path is None:
             return 2
-        if not file_path.endswith('.pickle'):
+        if not file_path.endswith(('.pickle', '.json')):
             return 3
         exitcode = self.options_import_weps_handler(file_path)
         if not exitcode == 0:
@@ -757,7 +757,11 @@ class GUI(tk.Frame):
         return 0
 
     def options_import_weps_handler(self, path=None):
-        exitcode = self.options_import_weps(path)
+        data = self.options_import_weps(path)
+        if type(data) is tuple:
+            exitcode, version = data
+        else:
+            exitcode = data
         basestr = f'Weapon Import exited with code {exitcode}:'
         match exitcode:
             case 0:
@@ -778,6 +782,11 @@ class GUI(tk.Frame):
                 messagebox.showerror('Invalid Pickle Data', 'Pickle data selected for import is invalid.')
                 print(f'{basestr} Invalid Pickle Data')
             case 6:
+                messagebox.showerror('Pickle Version Mismatch', f'Pickle data was created with an outdated version of the program\n\
+                                     You can fix this by importing this backup in version {version}, and exporting it to JSON. \
+                                     This will result in an unavoidable loss of any cached weapon data')
+                print(f'{basestr} Pickle Version Mismatch')
+            case 7:
                 messagebox.showerror('Import Error', 'An unknown error occured while importing your weapons. Check log for more info.')
                 print(f'{basestr} How did you get here?')
             case _:
@@ -789,17 +798,15 @@ class GUI(tk.Frame):
     def options_import_weps(self, path=None):
         # Warn about current list deletion
         if path is None:
-            confirm = messagebox.askokcancel('Import Warning', 'Are you sure you want to import a list of weapons?' +
-                                            '\nDoing so will irreversably clear your current list. Make sure to export if you would like to keep your current list.',)
+            confirm = messagebox.askokcancel('Import Warning', 'Are you sure you want to import a list of weapons? \
+                                            Doing so will irreversably clear your current list. Make sure to export if you would like to keep your current list.',)
             if not confirm:
                 return 1
             # File dialogue
-            file_path = askopenfilename(
-                filetypes=(('JSON Files', '*.json'), ('Pickle Files', '*.pickle'), ('All Files', '*.*')),
-                initialdir='./')
+            file_path = askopenfilename(filetypes=(('JSON Files', '*.json'), ('Pickle Files', '*.pickle'), ('All Files', '*.*')))
             if file_path is None:
                 return 2
-            if not file_path.endswith(('.json','.pickle')):
+            if not file_path.endswith(('.json', '.pickle')):
                 return 3
         else:
             file_path = path
@@ -834,11 +841,14 @@ class GUI(tk.Frame):
                         if not isinstance(wep, backend.Weapon):
                             reclaim(temp_bak)
                             return 5
+                        if not wep.backend_version == backend.VERSION:
+                            reclaim(temp_bak)
+                            return (6, wep.backend_version)
                     backend.weapons_list = data
                     self.graph_update_weapons()
                     return 0
             else:
-                return 6
+                return 7
         except Exception as e:
             reclaim(temp_bak)
             return e
@@ -852,12 +862,12 @@ class GUI(tk.Frame):
                 messagebox.showinfo('Success', 'Weapon list exported successfully')
                 print(f'{basestr} Success')
             case 1:
-                messagebox.showerror('Empty Weapon List', 'There are no weapons currently available to export')
+                messagebox.showerror('Empty Weapon List', 'There are no weapons currently available to export.')
                 print(f'{basestr} Empty Weapon List')
             case 2:
                 print(f'{basestr} No Path Selected')
             case _:
-                messagebox.showerror('Creation Error', 'There was an error creating your weapon')
+                messagebox.showerror('Export Error', 'An error occured while exporting weapons. Check log for more info.')
                 print(f'An exception occured during Weapon Export:')
                 pprint(exitcode)
 
@@ -869,22 +879,21 @@ class GUI(tk.Frame):
             file_path = asksaveasfile(defaultextension=f'.{ext}', filetypes=[('All Files', '*.*')], initialdir='./', initialfile=f'saved_weapons.{ext}')
             if file_path is None:
                 return 2
-            fpathname = file_path.name
+            fpathname, ext = os.path.splitext(file_path.name) 
         else:
-            ext = 'pickle'
-            fpathname = path
+            fpathname, ext = os.path.splitext(path)
         try:
             match ext:
                 case 'json':
                     d = [weapon.get_pruned_settings() for weapon in backend.weapons_list.values()]
-                    with open(fpathname, file_path.mode) as f:
+                    with open(fpathname+ext, 'w') as f:
                         json.dump(d, fp=f, indent=4)
                         f.close()
                     return 0
                 case 'csv':
                     d = [weapon.get_full_settings() for weapon in backend.weapons_list.values()]
                     d_names = d[0].keys()
-                    with open(fpathname, file_path.mode) as f:
+                    with open(fpathname+ext, 'w') as f:
                         writer = csv.DictWriter(f, fieldnames=d_names)
                         writer.writeheader()
                         writer.writerows(d)
@@ -892,7 +901,7 @@ class GUI(tk.Frame):
                     return 0
                 case 'pickle' | _:
                     d = backend.weapons_list
-                    with open(fpathname, 'wb') as f:
+                    with open(fpathname+ext, 'wb') as f:
                         pickle.dump(d, f, protocol=pickle.HIGHEST_PROTOCOL)
                         f.close()
                     return 0
@@ -948,7 +957,7 @@ class GUI(tk.Frame):
         cap.capture(fname)
 
     def options_debug_testfunc(self):
-        pass
+        print(firstrun)
         
     def log_menu(self):
         self.log_frame = tk.Frame(self, **self.frame_style)
@@ -1020,7 +1029,7 @@ def global_start_gui():
     app = GUI(master=root)
     app.mainloop()
 
+global firstrun
 firstrun = True
 stdoutwrite = sys.stdout.write
 global_start_gui()
-firstrun = False

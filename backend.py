@@ -3,6 +3,8 @@ from buffs import *
 import time
 import copy
 
+VERSION = 6
+
 weapons_list = {
 
 }
@@ -28,6 +30,7 @@ class Weapon:
         self.damage_per_shot = damage_per_shot
         self.mag_cap = mag_cap
         self.ammo_total = ammo_total
+        self.backend_version = VERSION
 
         # Variadic args
         # Still will need to figure which type is what, but figuring 1 - Kinetic, 2 - Solar, 3 - Arc, etc..
