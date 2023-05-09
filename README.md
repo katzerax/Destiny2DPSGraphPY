@@ -77,6 +77,8 @@ The weapons creation menu allows you to well, create weapons. As mentioned in th
 
 Once you fill in all relavent information for the weapon you want, click the 'Create Weapon' button. If any required information is left out or invalid, the program will throw you an error. After a weapon is successfully created it is available for selection in the Graph Menu.
 
+⚠️ **NOTE**: Currently Aggressive Frame LFRs are to be treated as both 'burst weapons' and 'fusion weapons'. So the damage per shot should be entered as damage per bolt, and the magazine capacity and ammo total should be multiplied by 3. There will be further logic addressing this implemented in the future :D
+
 ### Options Menu
 ![figure_1](https://media.discordapp.net/attachments/1103555681635799102/1105291440139030538/1683592404.3157408.png)
 
@@ -118,6 +120,7 @@ Benefits of pickle backups currently include:
     - Enabling this will enable the Debug section of the settings menu and a few other developer functions
 - Print Dmg Steps
     - Enabling this will print damage information to the console every time a shot is fired during damage calculation
+    - This option affects the speed at which calculations are performed because the program will hang while printing to the console. Normally this would be left off by default, but even with this option enabled calculations are still *incredibly fast*
 
 ### Log menu 
 ![image](https://user-images.githubusercontent.com/65287118/236922026-34ed8448-1dc2-41e6-8b40-ff1c941e9812.png)
@@ -139,8 +142,9 @@ If you choose your log mode to be in app, or both, the console output will be lo
 1. cleaning up comments
 2. finishing up GUI and backend
 3. create more graphs to use on the readme
-4. update the readme
-5. create instructions for how to obtain every stat to use for the program
+4. ~~update the readme~~
+    - ongoing but done for now
+5. ~~create instructions for how to obtain every stat to use for the program~~
 6. QA test the whole program before a public announcement
 
 ## UI Images
