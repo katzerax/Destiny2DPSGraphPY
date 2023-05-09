@@ -82,6 +82,7 @@ Once you fill in all relavent information for the weapon you want, click the 'Cr
 ### Options Menu
 ![figure_1](https://media.discordapp.net/attachments/1103555681635799102/1105291440139030538/1683592404.3157408.png)
 
+(side note, settings.ini is stored in backend/ and is directly modifiable through there)
 #### Graph
 - Graph Title
 - X Axis Name
