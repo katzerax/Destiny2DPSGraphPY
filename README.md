@@ -77,7 +77,12 @@ The weapons creation menu allows you to well, create weapons. As mentioned in th
 
 Once you fill in all relavent information for the weapon you want, click the 'Create Weapon' button. If any required information is left out or invalid, the program will throw you an error. After a weapon is successfully created it is available for selection in the Graph Menu.
 
-⚠️ **NOTE**: Currently Aggressive Frame LFRs are to be treated as both 'burst weapons' and 'fusion weapons'. So the damage per shot should be entered as damage per bolt, and the magazine capacity and ammo total should be multiplied by 3. There will be further logic addressing this implemented in the future :D
+#### Edge Cases / Odd Behavior
+Currently Aggressive Frame LFRs are to be treated as both 'burst weapons' and 'fusion weapons'. So the damage per shot should be entered as damage per bolt, and the magazine capacity and ammo total should be multiplied by 3. There will be further logic addressing this implemented in the future :D
+
+Obviously kinetic / stasis / strand weapons now have infinite reserves. You can set an arbitrary ammount of ammo in the ammo total field and the calculation will calculate damage for the weapon until the theoretical reserves are empty
+
+For cases such as Touch of Malice where there is a bottomless mag, the same logic as above is applied, except you would also use the same value for magazine size as you used for ammo total, effectively creating a bottomless mag for a given ammount of shots
 
 ### Options Menu
 ![figure_1](https://media.discordapp.net/attachments/1103555681635799102/1105291440139030538/1683592404.3157408.png)
