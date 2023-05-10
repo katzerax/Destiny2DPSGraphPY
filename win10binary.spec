@@ -8,7 +8,10 @@ a = Analysis(
     ['main.py'],
     pathex=['.'],
     binaries=[],
-    datas=[('backend/*', 'backend')],
+    datas=[
+    ('backend/*', 'backend'),
+    ('frontend/*', 'frontend')
+    ],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
