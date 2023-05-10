@@ -670,10 +670,12 @@ class GUI(tk.Frame):
         self.options_menu_widgets['interface']['theme'][1].set(self.settings.interface_theme)
         self.options_menu_widgets['interface']['logmode'][1].set(self.settings.log_mode)
 
+        # Bind any extra functions
+        self.options_menu_widgets['impexp']['auto_save_path'][0].bind('<Button-3>', self.options_clear_auto_import)
+
         # Grid placement
         max_outer_column = 2
         chunks = [list(self.options_menu_widgets.copy().items())[x:x+max_outer_column] for x in range(0, len(self.options_menu_widgets), max_outer_column)]
-        # Assuming 2: [ [ ( name1, { group1 } ), ( name2, { group2 } ) ], ... ]
         ro = 0
         for chunk in chunks:
             # Store current offset, add to total. This assures sections are alligned vertically
@@ -706,10 +708,11 @@ class GUI(tk.Frame):
                     # Bind defocus to combos
                     if isinstance(usrinput, ttk.Combobox):
                         usrinput.bind("<<ComboboxSelected>>",lambda e: self.options_frame.focus())
+            if chunk == chunks[-1]:
+                # Final Spacer
+                spacer = tk.Label(workingframe, text=' ', **self.label_style)
+                spacer.grid(row=ro, column=0, **self.default_padding)
 
-        # Final Spacer
-        spacer = tk.Label(workingframe, text=' ', **self.label_style)
-        spacer.grid(row=ro, column=0, **self.default_padding)
         # Apply settings button (Always oriented bottom left)
         self.options_apply_settings_button = tk.Button(workingframe, text='Apply Settings', 
                                                        command=self.options_apply_settings, **self.button_style)
@@ -725,6 +728,13 @@ class GUI(tk.Frame):
             self.options_menu_widgets['impexp']['auto_save_path'][1].grid_forget()
         self.options_frame.pack_forget()
 
+    def options_clear_auto_import(self, *_):
+        confirm = messagebox.askokcancel('Auto Save / Load Warning', 'Are you sure you want to clear your Auto Save / Load path?')
+        if not confirm:
+            return
+        self.options_menu_vars['autosave_path'].set('')
+        print('Auto Import path successfully cleared')
+
     def options_set_auto_import_handler(self):
         exitcode = self.options_set_auto_import()
         basestr = f'Set Auto Save exited with code {exitcode}:'
@@ -737,7 +747,7 @@ class GUI(tk.Frame):
             case 2:
                 print(f'{basestr} No Path Selected')
             case 3:
-                messagebox.showerror('Invalid File Type', 'Selected file must be of type: .pickle')
+                messagebox.showerror('Invalid File Type', 'Selected file must be of types: (.pickle, .json)')
                 print(f'{basestr} Invalid File Type')
             case 4:
                 messagebox.showerror('Invalid Pickle Data', 'Pickle data selected for import is invalid.')
@@ -751,7 +761,7 @@ class GUI(tk.Frame):
             return 1
         # File dialogue
         file_path = askopenfilename(filetypes=(('JSON Files', '*.json'), ('Pickle Files', '*.pickle'), ('All Files', '*.*')))
-        if file_path is None:
+        if file_path == '':
             return 2
         if not file_path.endswith(('.pickle', '.json')):
             return 3
@@ -761,7 +771,7 @@ class GUI(tk.Frame):
         self.options_menu_vars['autosave_path'].set(file_path)
         return 0
 
-    def options_import_weps_handler(self, path=None):
+    def options_import_weps_handler(self, path:str=None):
         data = self.options_import_weps(path)
         if type(data) is tuple:
             exitcode, version = data
@@ -800,7 +810,7 @@ class GUI(tk.Frame):
                 pprint(exitcode)
         return exitcode
 
-    def options_import_weps(self, path=None):
+    def options_import_weps(self, path:str=None):
         # Warn about current list deletion
         if path is None:
             confirm = messagebox.askokcancel('Import Warning', 'Are you sure you want to import a list of weapons? \
@@ -858,7 +868,7 @@ class GUI(tk.Frame):
             reclaim(temp_bak)
             return e
     
-    def options_export_weps_handler(self, path=None):
+    def options_export_weps_handler(self, path:str=None):
         exitcode = self.options_export_weps(path)
         basestr = f'Weapon Export exited with code {exitcode}:'
         match exitcode:
@@ -878,7 +888,7 @@ class GUI(tk.Frame):
                 print(f'An exception occured during Weapon Export:')
                 pprint(exitcode)
 
-    def options_export_weps(self, path=None):
+    def options_export_weps(self, path:str=None):
         if path is None:
             if len(backend.weapons_list) < 0:
                 return 1
