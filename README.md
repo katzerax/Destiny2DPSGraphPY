@@ -126,7 +126,7 @@ Benefits of pickle backups currently include:
     - Enabling this will enable the Debug section of the settings menu and a few other developer functions
 - Print Dmg Steps
     - Enabling this will print damage information to the console every time a shot is fired during damage calculation
-    - This option affects the speed at which calculations are performed because the program will hang while printing to the console. Normally this would be left off by default, but even with this option enabled calculations are still *incredibly fast*
+    - This option affects the speed at which calculations are performed because the program will hang while printing to the console. **This is entirely dependant on what terminal you use!** See: [Why is printing so slow?](https://stackoverflow.com/a/3860319/14132711) This is left off by default, but even with this option enabled calculations are still *incredibly fast*. If you would still like to enable this option, **it is recommended you use App only logs** unless you understand how your terminal handles stdout. This is technically considered to be a dubug setting, but it will be left in because it looks cool :D
 
 ### Log menu 
 ![image](https://user-images.githubusercontent.com/65287118/236922026-34ed8448-1dc2-41e6-8b40-ff1c941e9812.png)
