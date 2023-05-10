@@ -893,26 +893,23 @@ class GUI(tk.Frame):
             fpathname, ext = os.path.splitext(path)
         try:
             match ext:
-                case 'json':
+                case '.json':
                     d = [weapon.get_pruned_settings() for weapon in backend.weapons_list.values()]
                     with open(fpathname+ext, 'w') as f:
-                        json.dump(d, fp=f, indent=4)
-                        f.close()
+                        json.dump(d, f, indent=4)
                     return 0
-                case 'csv':
+                case '.csv':
                     d = [weapon.get_full_settings() for weapon in backend.weapons_list.values()]
                     d_names = d[0].keys()
-                    with open(fpathname+ext, 'w') as f:
+                    with open(fpathname+ext, 'w', newline='') as f:  # 'newline=""' is often used to avoid extra newline on Windows
                         writer = csv.DictWriter(f, fieldnames=d_names)
                         writer.writeheader()
                         writer.writerows(d)
-                        f.close()
                     return 0
-                case 'pickle' | _:
+                case '.pickle' | _:
                     d = backend.weapons_list
                     with open(fpathname+ext, 'wb') as f:
                         pickle.dump(d, f, protocol=pickle.HIGHEST_PROTOCOL)
-                        f.close()
                     return 0
         except Exception as e:
             return e
