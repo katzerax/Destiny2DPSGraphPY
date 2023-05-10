@@ -135,7 +135,7 @@ If you choose your log mode to be in app, or both, the console output will be lo
 
 ## Credits
 - [K](https://github.com/katzerax) (repo owner and initial programmer, code contributor)
-- [vcat](https://github.com/vixicat) (initial math and calculation logic, code contributor)
+- [vcat](https://github.com/vixicat) (initial math and calculation logic, graphic designer, code contributor)
 - [snark](https://github.com/rare-snark) (early iteration code contributor)
 - [myssto](https://github.com/myssto) (later iteration code contributor)
 - [jade](https://twitter.com/iamjade4_) (code logic fix suggestions)

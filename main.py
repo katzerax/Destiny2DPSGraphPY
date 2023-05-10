@@ -104,6 +104,7 @@ class GUI(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
         self.master = master
+        #self.master.iconbitmap("icon_transparent-01.ico")
         self.master.title('Destiny2DPSGraphPY')
         self.master.resizable(False, False)
         self.pack()
@@ -245,6 +246,11 @@ def redirect_logs(text_widget: tk.Widget, log_mode: str):
 def global_start_gui():
     global root
     root = tk.Tk()
+    # Use PhotoImage to open the PNG file
+    img = tk.PhotoImage(file='images/simpleicon-notext.png')
+    # Set the window icon
+    root.iconphoto(False, img)
+    #root.iconbitmap("icon_transparent-01.ico")
     app = GUI(master=root)
     app.mainloop()
 
