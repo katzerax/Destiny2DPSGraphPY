@@ -1,5 +1,7 @@
 import time
 import tkinter as tk
+import tkinter.colorchooser
+import random
 from tkinter import ttk
 from tkinter.filedialog import asksaveasfile
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -24,6 +26,7 @@ class GraphMenu(tk.Frame):
     def init_menu(self):
         self.wep_select_ui()
         self.graph_ui()
+        self.set_numweapons()
         self.pack_forget()
 
     def wep_select_ui(self):
@@ -39,6 +42,27 @@ class GraphMenu(tk.Frame):
         self.num_weps_combo.grid(row=0, column=1, **self.master.default_padding)
         self.num_weps_combo.set(wep_count[0]) # Changed it to one wep by default
         self.num_weps_combo.bind("<<ComboboxSelected>>", self.set_numweapons)
+
+        def random_color():
+            r = random.randint(0, 255)
+            g = random.randint(0, 255)
+            b = random.randint(0, 255)
+            return '#{:02x}{:02x}{:02x}'.format(r,g,b)
+
+        # Save the colors in an array with random default colors
+        self.colors = [random_color() for _ in range(10)]
+
+        # Create square color picker buttons with a Label inside
+        self.color_buttons = [
+            tk.Button(
+                self.config_frame,
+                command=lambda i=i: self.get_color(i),
+                width=2,
+                bg=self.colors[i],
+                **{k: v for k, v in self.master.button_style.items() if k not in ('bg', 'width')}
+            ) 
+            for i in range(10)
+        ]
 
         # Build weapon select widgets
         self.wep_widgets = [
@@ -68,6 +92,12 @@ class GraphMenu(tk.Frame):
         self.save_button = tk.Button(self.config_frame, text="Save Graph", 
                                            command=self.save_graph, **self.master.button_style)
         self.save_button.grid(row=15, column=1, padx=8, pady=5, sticky=tk.W)
+
+    def get_color(self, index):
+        color = tkinter.colorchooser.askcolor()[1]
+        if color is not None:
+            self.colors[index] = color
+            self.color_buttons[index].config(bg=color)
 
     def graph_ui(self):
         self.graph_frame = tk.Frame(self, **self.frame_style)
@@ -100,19 +130,22 @@ class GraphMenu(tk.Frame):
         self.ax.clear()
         
         # Loop through weapon dropdowns
-        seleced_weps =\
-            [backend.weapons_list[dropdown.get()] for (_, dropdown) in self.wep_widgets if dropdown.winfo_viewable() and dropdown.get() != '']
+        seleced_weps = [
+            (backend.weapons_list[dropdown.get()], self.colors[i]) 
+            for i, (_, dropdown) in enumerate(self.wep_widgets) 
+            if dropdown.winfo_viewable() and dropdown.get() != ''
+        ]
 
         if seleced_weps:
             if self.master.settings.do_dmg_prints:
                 totaltime_elapsed = time.time()
             try:
-                for weapon in seleced_weps:
+                for weapon, color in seleced_weps:
                     # Get damage values by for DamageCalculate
                     x, y = weapon.DamageCalculate()
 
                     # Plot the weapon damage
-                    self.ax.plot(x, y, label=f'{weapon.name}')
+                    self.ax.plot(x, y, label=f'{weapon.name}', color=color)
 
                 # Set the axis labels and title
                 self.ax.set_xlabel(self.master.settings.graph_xlabel)
@@ -148,18 +181,21 @@ class GraphMenu(tk.Frame):
         gen_but_enabled = 'normal' if wep_names else 'disabled'
         self.generate_button.config(state=gen_but_enabled)
 
-    def set_numweapons(self, evt):
-        # Get ammount of weps requested
-        ammount = int(self.num_weps_combo.get()) - 1
+    def set_numweapons(self, evt=None):  # Allow for no arguments
+        # Get amount of weapons requested
+        amount = int(self.num_weps_combo.get()) - 1
 
-        # Redraw combos based on ammount
+        # Redraw combos and color buttons based on amount
         for idx, tuple in enumerate(self.wep_widgets):
             label, combo = tuple
-            if idx <= ammount:
+            color_button = self.color_buttons[idx]
+            if idx <= amount:
                 label.grid(row=(idx+1), column=0, **self.master.default_padding)
                 combo.grid(row=(idx+1), column=1, **self.master.default_padding)
+                color_button.grid(row=(idx+1), column=2, **self.master.default_padding)  # Place color button
             else:
                 label.grid_forget()
                 combo.grid_forget()
+                color_button.grid_forget()  # Hide color button
         # Focus the frame, not the combo
         self.graph_frame.focus()
