@@ -209,7 +209,7 @@ class Weapon:
             elif self.burst_weapon:
                 # Checks to make sure there is still ammo left
                 if ti['ammo_total'] == 0:
-                    total_damage = total_damage
+                    ti['total_dmg'] = ti['total_dmg']
                 # Checks to see if weapon needs a reload
                 elif ti['ammo_magazine'] == 0:
                     fire_timer += ti['reload_time']
@@ -236,7 +236,7 @@ class Weapon:
                         fire_timer = round(fire_timer, round_coeff)
             
                 ti['time_elapsed'] = round(ti['time_elapsed'] + x_increments, 5)
-                t_dmg.append(total_damage)
+                t_dmg.append(ti['total_dmg'])
                 # Logging
                 if do_cmd_prints:
                     if stale_dmg != t_dmg[tick]:
