@@ -53,6 +53,8 @@
         "ammo_type": 1,
         "elemental_type": 1,
         "fusion_weapon": true,
+        "burst_weapon": true,
+        "burst_bullets": 3,
         "perk_indices": [
             4,
             10
