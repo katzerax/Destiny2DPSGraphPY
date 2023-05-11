@@ -127,13 +127,19 @@ class Weapon:
 
         if not self.burst_weapon:
             fire_delay = round(60/self.fire_rate, round_coeff)
-        else:
+        elif self.burst_weapon and not self.fusion_weapon:
             #this rate of fire calculation may need some looking at :P, but basically it takes a rate of fire and then
             #just cuts it in half, half to shoot in a burst, the other to pause between shots..
             #for delay first shot, might just have it be equal to the normal fire delay? who knows. <--- this is what i did
             #5 minutes later rox here: i made DFS burst weapons have to complete a full charge sequence despite '120 RPM' not actually meaning 120 rpm... it just means 500ms charge time (since 500ms = 2 shots/second = 120rpm? idfk)
             fire_delay = round((60/self.fire_rate)/2, round_coeff)
             burst_delay = round(((60/self.fire_rate)/2)/self.burst_bullets, round_coeff)
+
+            # Rox: This looks more correct for stormchaser but i may be wrong...
+            # Requires more evidence I think
+        elif self.burst_weapon and self.fusion_weapon:
+            fire_delay = round((60/self.fire_rate)/2, round_coeff)
+            burst_delay = round(((60/self.fire_rate))/self.burst_bullets, round_coeff) 
 
         fusion_delay = round(60/self.fire_rate, round_coeff)
         fire_timer = fusion_delay if self.fusion_weapon else 0
