@@ -18,6 +18,13 @@ def create_weapon(weapon_settings: dict):
     weapons_list[str(weapon_settings['name'])] = new_weapon
     return True
 
+def delete_weapon(wep_name):
+    if wep_name in weapons_list.keys():
+        del weapons_list[wep_name]
+        return True
+    else:
+        return False
+    
 class Weapon:
     def __init__(self, name:str, fire_rate:float, reload_time:float, damage_per_shot:int, 
                  mag_cap:int, ammo_total:int, ammo_type:int=1, elemental_type:int=1, 
