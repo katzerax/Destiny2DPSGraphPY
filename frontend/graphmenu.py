@@ -34,13 +34,13 @@ class GraphMenu(tk.Frame):
         self.config_frame.pack(side=tk.LEFT, fill=tk.Y)
 
         # No. of weps
-        wep_count = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
+        wep_count = [f'{i+1}' for i in range(10)]
         self.num_weps_label = tk.Label(self.config_frame, text='Number of Weapons', **self.master.label_style)
         self.num_weps_label.grid(row=0, column=0, **self.master.default_padding)
 
         self.num_weps_combo = ttk.Combobox(self.config_frame, values=wep_count, width=3, state='readonly')
         self.num_weps_combo.grid(row=0, column=1, **self.master.default_padding)
-        self.num_weps_combo.set(wep_count[0]) # Changed it to one wep by default
+        self.num_weps_combo.set(wep_count[self.master.settings.graph_initial_slots - 1]) # Changed to use settings
         self.num_weps_combo.bind("<<ComboboxSelected>>", self.set_numweapons)
 
         def random_color():
@@ -50,7 +50,11 @@ class GraphMenu(tk.Frame):
             return '#{:02x}{:02x}{:02x}'.format(r,g,b)
 
         # Save the colors in an array with random default colors
-        self.colors = [random_color() for _ in range(10)]
+        # Now load from settings if exist
+        if self.master.settings.graph_colors == 'random':
+            self.colors = [random_color() for _ in range(10)]
+        else:
+            self.colors = self.master.settings.graph_colors.split(',')
 
         # Create square color picker buttons with a Label inside
         self.color_buttons = [
@@ -76,9 +80,9 @@ class GraphMenu(tk.Frame):
             label, combo = multi
             label.grid(row=(idx+1), column=0, **self.master.default_padding)
             combo.grid(row=(idx+1), column=1, **self.master.default_padding)
-            combo.bind("<<ComboboxSelected>>",lambda e: self.graph_frame.focus())
-            # Display only 3 by default - no more - K
-            if idx > 0: # Changed it to one by default
+            combo.bind("<<ComboboxSelected>>",lambda e: self.focus())
+            # Display specified from settings :)
+            if idx > self.master.settings.graph_initial_slots - 1:
                 label.grid_forget()
                 combo.grid_forget()
 
@@ -181,8 +185,8 @@ class GraphMenu(tk.Frame):
         gen_but_enabled = 'normal' if wep_names else 'disabled'
         self.generate_button.config(state=gen_but_enabled)
 
-    def set_numweapons(self, evt=None):  # Allow for no arguments
-        # Get amount of weapons requested
+    def set_numweapons(self, *_):
+        # Get amount of weapons
         amount = int(self.num_weps_combo.get()) - 1
 
         # Redraw combos and color buttons based on amount
@@ -192,10 +196,9 @@ class GraphMenu(tk.Frame):
             if idx <= amount:
                 label.grid(row=(idx+1), column=0, **self.master.default_padding)
                 combo.grid(row=(idx+1), column=1, **self.master.default_padding)
-                color_button.grid(row=(idx+1), column=2, **self.master.default_padding)  # Place color button
+                color_button.grid(row=(idx+1), column=2, **self.master.default_padding)
             else:
                 label.grid_forget()
                 combo.grid_forget()
-                color_button.grid_forget()  # Hide color button
-        # Focus the frame, not the combo
-        self.graph_frame.focus()
+                color_button.grid_forget()
+        self.focus()

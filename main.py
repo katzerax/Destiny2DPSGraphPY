@@ -18,6 +18,7 @@ class Settings:
         self.check_and_create_settings_file(ini_path)
         with open(ini_path, 'r', encoding='utf-8') as f:
             self.config.read_file(f)
+
         self.interface_theme = self.config.get('Interface', 'theme')
         self.log_mode = self.config.get('Interface', 'log_mode')
         self.do_dmg_prints = self.config.getboolean('Interface', 'dmg_prints')
@@ -29,6 +30,8 @@ class Settings:
         self.graph_xlim = self.config.getint('Graph', 'xlim')
         self.graph_ylabel = self.config.get('Graph', 'ylabel')
         self.graph_ylim = self.config.getint('Graph', 'ylim')
+        self.graph_initial_slots = self.config.getint('Graph', 'initial_slots')
+        self.graph_colors = self.config.get('Graph', 'colors')
 
     def check_and_create_settings_file(self, ini_path):
         if not os.path.exists(ini_path):
@@ -48,7 +51,9 @@ class Settings:
                     'xlabel': 'Time (seconds)',
                     'xlim': '45',
                     'ylabel': 'DPS',
-                    'ylim': '300000'
+                    'ylim': '300000',
+                    'initial_wep_slots': '3',
+                    'slot_colors': ''
                 }
             }
 
@@ -72,6 +77,8 @@ class Settings:
         self.graph_xlim = 45
         self.graph_ylabel = 'DPS'
         self.graph_ylim = 300000
+        self.graph_initial_slots = 3
+        self.graph_colors = ''
 
         self.save_settings()
 
@@ -87,6 +94,8 @@ class Settings:
         self.config.set('Graph', 'xlim', str(self.graph_xlim))
         self.config.set('Graph', 'ylabel', self.graph_ylabel)
         self.config.set('Graph', 'ylim', str(self.graph_ylim))
+        self.config.set('Graph', 'initial_slots', str(self.graph_initial_slots))
+        self.config.set('Graph', 'colors', self.graph_colors)
 
         with open('backend/settings.ini', 'w') as f:
             self.config.write(f)

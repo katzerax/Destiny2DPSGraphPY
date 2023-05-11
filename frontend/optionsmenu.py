@@ -31,6 +31,8 @@ class OptionsMenu(tk.Frame):
         interface_theme_choices = ['Dark', 'Light']
         interface_logmode_choices = ['App', 'Console', 'Both']
         exp_exts = ['json', 'csv', 'pickle']
+        graph_initial_slot_choices = [f'{i+1}' for i in range(10)]
+        graph_saved_colors = False if self.master.settings.graph_colors == 'random' else True
 
         # Input validation
         val_int = self.register(self.master.util_valint)
@@ -45,53 +47,73 @@ class OptionsMenu(tk.Frame):
             'graph_xlabel': tk.StringVar(value=self.master.settings.graph_xlabel),
             'graph_xlim': tk.IntVar(value=self.master.settings.graph_xlim),
             'graph_ylabel': tk.StringVar(value=self.master.settings.graph_ylabel),
-            'graph_ylim': tk.IntVar(value=self.master.settings.graph_ylim)
+            'graph_ylim': tk.IntVar(value=self.master.settings.graph_ylim),
+            'graph_initial_slots': tk.IntVar(value=self.master.settings.graph_initial_slots),
+            'graph_colors': tk.BooleanVar(value=graph_saved_colors)
         }
         # Widgets
         self.menu_widgets = {
             # Graph
             'graph': {
                 'header': tk.Label(self, text='Graph', **self.master.label_style),
+
                 'title': (tk.Label(self, text='Graph Title', **self.master.label_style),
                           tk.Entry(self, textvariable=self.menu_vars['graph_title'])),
+
                 'xlabel': (tk.Label(self, text='X Axis Name', **self.master.label_style),
-                        tk.Entry(self, textvariable=self.menu_vars['graph_xlabel'])),
+                           tk.Entry(self, textvariable=self.menu_vars['graph_xlabel'])),
+
                 'xlim': (tk.Label(self, text='X Axis Upper Limit', **self.master.label_style),
-                        tk.Entry(self, textvariable=self.menu_vars['graph_xlim'],
+                         tk.Entry(self, textvariable=self.menu_vars['graph_xlim'],
                                  validate='key', validatecommand=(val_int, '%S'))),
+
                 'ylabel': (tk.Label(self, text='Y Axis Name', **self.master.label_style),
-                        tk.Entry(self, textvariable=self.menu_vars['graph_ylabel'])),
+                           tk.Entry(self, textvariable=self.menu_vars['graph_ylabel'])),
+
                 'ylim': (tk.Label(self, text='Y Axis Upper Limit', **self.master.label_style),
-                        tk.Entry(self, textvariable=self.menu_vars['graph_ylim'],
-                                 validate='key', validatecommand=(val_int, '%S')))
+                         tk.Entry(self, textvariable=self.menu_vars['graph_ylim'],
+                                 validate='key', validatecommand=(val_int, '%S'))),
+
+                'initial_slots': (tk.Label(self, text='Initial Weapon Slots', **self.master.label_style),
+                                  ttk.Combobox(self, values=graph_initial_slot_choices, width=3, state='readonly')),
+
+                'colors': (tk.Checkbutton(self, text='Save Current Colors',
+                                          variable=self.menu_vars['graph_colors'], **self.master.check_button_style))
             },
             # Import / Export
             'impexp': {
                 'header': tk.Label(self, text='Import / Export', **self.master.label_style),
+
                 'export': (tk.Button(self, text='Export As', 
                                      command=self.export_weps_hdlr, **self.master.button_style),
-                        ttk.Combobox(self, values=exp_exts, **self.master.combo_style)),
+                           ttk.Combobox(self, values=exp_exts, **self.master.combo_style)),
+
                 'log_impff': (tk.Button(self, text='Log Current Weapons', 
                                         command=self.print_weps, **self.master.button_style),
-                            tk.Button(self, text='Import From File', 
-                                      command=self.import_weps_hdlr, **self.master.button_style)),
+                              tk.Button(self, text='Import From File', 
+                                        command=self.import_weps_hdlr, **self.master.button_style)),
+
                 'auto_save_toggle': tk.Checkbutton(self, text='Auto Save / Load', variable=self.menu_vars['autosave'], 
                                                    command=self.toggle_autosave, **self.master.check_button_style),
+
                 'auto_save_path': (tk.Button(self, text='Auto-Save Path',
                                              command=self.set_auto_import_hdlr, **self.master.button_style),
-                                  tk.Entry(self, textvariable=self.menu_vars['autosave_path'], state='readonly'))
+                                   tk.Entry(self, textvariable=self.menu_vars['autosave_path'], state='readonly'))
             },
             # GUI
             'interface': {
                 'header': tk.Label(self, text='Interface', **self.master.label_style),
+
                 'theme': (tk.Label(self, text='Theme', **self.master.label_style),
-                        ttk.Combobox(self, values=interface_theme_choices, **self.master.combo_style)),
+                          ttk.Combobox(self, values=interface_theme_choices, **self.master.combo_style)),
+
                 'logmode': (tk.Label(self, text='Log Mode', **self.master.label_style),
                             ttk.Combobox(self, values=interface_logmode_choices, **self.master.combo_style)),
+
                 'debugmode_dmgprints': (tk.Checkbutton(self, text='Debug Mode', **self.master.check_button_style,
-                                            variable=self.menu_vars['debug_mode']),
+                                                       variable=self.menu_vars['debug_mode']),
                                         tk.Checkbutton(self, text='Print Dmg Steps', **self.master.check_button_style,
-                                            variable=self.menu_vars['dmg_prints']))
+                                                       variable=self.menu_vars['dmg_prints']))
             },
         }
 
@@ -99,6 +121,7 @@ class OptionsMenu(tk.Frame):
         if self.master.settings.debug_mode:
             self.menu_widgets['debug'] = {
                 'header': tk.Label(self, text='Debug', **self.master.label_style),
+
                 'clearcache': (tk.Button(self, text='Clear Graph Cache',
                                         command=self.debug_ccache, **self.master.button_style),
                                 tk.Button(self, text='testfunc :)',
@@ -109,6 +132,7 @@ class OptionsMenu(tk.Frame):
         self.menu_widgets['impexp']['export'][1].set(exp_exts[0])
         self.menu_widgets['interface']['theme'][1].set(self.master.settings.interface_theme)
         self.menu_widgets['interface']['logmode'][1].set(self.master.settings.log_mode)
+        self.menu_widgets['graph']['initial_slots'][1].set(self.master.settings.graph_initial_slots)
 
         # Bind extra functions
         self.menu_widgets['impexp']['auto_save_path'][0].bind('<Button-3>', self.clear_auto_import)
@@ -393,6 +417,12 @@ class OptionsMenu(tk.Frame):
         self.master.settings.graph_xlim = self.menu_vars['graph_xlim'].get()
         self.master.settings.graph_ylabel = self.menu_vars['graph_ylabel'].get()
         self.master.settings.graph_ylim = self.menu_vars['graph_ylim'].get()
+        self.master.settings.graph_initial_slots = self.menu_widgets['graph']['initial_slots'][1].get()
+        if self.menu_vars['graph_colors'].get():
+            self.master.settings.graph_colors = ''.join(f'{e},' for e in self.master.graphmenu.colors).strip(',')
+        else:
+            self.master.settings.graph_colors = 'random'
+
         self.master.settings.save_settings()
         self.master.settings.restart_gui(self.master.master)
 
