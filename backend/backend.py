@@ -257,7 +257,7 @@ class Weapon:
                             print(f'Weapon: {self.name} | Damage at {tick/100} secs: {t_dmg[tick]} | DPS: [{round(t_dmg[tick]/(tick/100), 1)}] | Per Shot: < {ti["dmg_output"]} > ')
                             stale_dmg = t_dmg[tick]
 
-        dps = [(t_dmg[i] / x[i]) for i in range(ticks) if not i == 0]
+        dps = [round(t_dmg[i] / x[i], round_coeff) for i in range(ticks) if not i == 0]
         # tick bug !!!
         dps.insert(0, 0)
         # Cache graph data

@@ -1,9 +1,10 @@
 import time
+import os
+import csv
 import tkinter as tk
 import tkinter.colorchooser
 import random
 from tkinter import ttk
-from tkinter.filedialog import asksaveasfile
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 import matplotlib as mpl
@@ -86,16 +87,31 @@ class GraphMenu(tk.Frame):
                 label.grid_forget()
                 combo.grid_forget()
 
+        # Spacer
+        spacer = tk.Label(self.config_frame, text='', **self.master.label_style)
+        spacer.grid(row=14, column=0)
+
         # Generate graph button
         self.generate_button = tk.Button(self.config_frame, text="Generate Graph",
                                             command=self.generate_graph, **self.master.button_style)
-        self.generate_button.grid(row=15, column=0, padx=8, pady=5, sticky=tk.W)
+        self.generate_button.grid(row=15, column=0, **self.master.default_padding)
         self.update_weapons()
 
+        # Clear selections button
+        self.clear_button = tk.Button(self.config_frame, text='Clear Selections',
+                                      command=self.clear_selections, **self.master.button_style)
+        self.clear_button.grid(row=15, column=1, **self.master.default_padding)
+
         # Save graph button
-        self.save_button = tk.Button(self.config_frame, text="Save Graph", 
+        self.save_button = tk.Button(self.config_frame, text="Save Graph To", 
                                            command=self.save_graph, **self.master.button_style)
-        self.save_button.grid(row=15, column=1, padx=8, pady=5, sticky=tk.W)
+        self.save_button.grid(row=16, column=0, **self.master.default_padding)
+
+        # Save graph options
+        save_exts = ['png', 'csv', 'Both']
+        self.save_combo = ttk.Combobox(self.config_frame, values=save_exts, **self.master.combo_style)
+        self.save_combo.grid(row=16, column=1, **self.master.default_padding)
+        self.save_combo.set(save_exts[0])
 
     def get_color(self, index):
         color = tkinter.colorchooser.askcolor()[1]
@@ -129,6 +145,10 @@ class GraphMenu(tk.Frame):
 
         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
 
+    def clear_selections(self):
+        for (_, dropdown) in self.wep_widgets:
+            dropdown.set('')
+
     def generate_graph(self):
         # Clear previous plot
         self.ax.clear()
@@ -147,7 +167,7 @@ class GraphMenu(tk.Frame):
                 for weapon, color in seleced_weps:
                     # Get damage values by for DamageCalculate
                     x, y = weapon.DamageCalculate()
-
+                    # print('x: ', x, ' y: ', y)
                     # Plot the weapon damage
                     self.ax.plot(x, y, label=f'{weapon.name}', color=color)
 
@@ -172,11 +192,47 @@ class GraphMenu(tk.Frame):
             print('Graph Generation exited with code 1: No Selected Weapons')
 
     def save_graph(self):
-        file_path = asksaveasfile(defaultextension='.png', filetypes=[('All Files', '*.*')], initialdir='./', initialfile='dps_graph.png')
-        if file_path is None:
-            return
-        self.fig.savefig(file_path.name)
-        print(f'Saved graph as "{file_path.name}"')
+        ext = self.save_combo.get()
+        ext = ext if ext != 'Both' else ['png', 'csv']
+        fbasename = f'./graph/graph{time.time()}'
+
+        if not os.path.exists('./graph/'):
+            os.mkdir('./graph/')
+
+        if 'png' in ext:
+            self.fig.savefig(f'{fbasename}.png')
+            print(f'Saved graph to "{fbasename}.png"')
+
+        if 'csv' in ext:
+            (lines, labels) = self.ax.get_legend_handles_labels()
+            if not lines or not labels:
+                return
+
+            # get y data
+            # dont get x data like this because matplot formats the floats we use
+            # in scientific notation, so its just easier to build out the x plot manually
+            d_y = [list(line.get_ydata()) for line in lines]
+
+            # maybe make x_increments accessable here somehow
+            x_increments = 0.01
+            # create row names (x data)
+            # Same generation of x from backend
+            d_names = [f't{round(i * x_increments, 5)}' for i in range(len(d_y[0]) + 1)]
+
+            # create dicts of x/y data
+            d = [dict(zip(d_names, dset)) for dset in d_y]
+
+            # make sure to insert space for weapon name
+            d_names.insert(0, 'weapon')
+            # add weapon name to each dict
+            for idx, dset in enumerate(d):
+                dset['weapon'] = labels[idx]
+
+            with open(f'{fbasename}.csv', 'w', newline='') as f:
+                writer = csv.DictWriter(f, fieldnames=d_names)
+                writer.writeheader()
+                writer.writerows(d)
+            print(f'Saved graph to "{fbasename}.csv"')
 
     def update_weapons(self):
         wep_names = list(backend.weapons_list.keys())
