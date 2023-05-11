@@ -283,7 +283,7 @@ class OptionsMenu(tk.Frame):
                         if not success:
                             reclaim(temp_bak)
                             return 4
-                    self.master.graphmenu.update_weapons()
+                    self.master.util_update_wep_names()
                     return 0
             # Import pickle
             elif file_path.endswith('.pickle'):
@@ -298,7 +298,7 @@ class OptionsMenu(tk.Frame):
                             reclaim(temp_bak)
                             return (6, wep.backend_version)
                     backend.weapons_list = data
-                    self.master.graphmenu.update_weapons()
+                    self.master.util_update_wep_names()
                     return 0
             else:
                 return 7

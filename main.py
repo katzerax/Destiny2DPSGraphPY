@@ -196,10 +196,18 @@ class GUI(tk.Frame):
                     self.optionsmenu.import_weps_hdlr(self.settings.auto_save_path)
                 else:
                     print(f'Auto Import Error: Expected file at `{self.settings.auto_save_path}` and none existed')
+        
+        # Initial weaponsmenu
+        self.util_update_wep_names(first=True)
+        self.weaponsmenu.show_new_weapon()
 
         # Display navbar and first menu
         self.navbar.pack(side=tk.LEFT, fill=tk.Y)
         self.graphmenu.pack(side=tk.RIGHT, fill=tk.Y)
+
+    def util_update_wep_names(self, first:bool=False):
+        self.graphmenu.update_weapons()
+        self.weaponsmenu.update_weapons(first=first)
 
     def util_valfloat(self, char):
         if char in '0123456789.':

@@ -28,8 +28,7 @@ class WeaponsMenu(tk.Frame):
         self.creation_frame.pack(side=tk.LEFT, fill=tk.Y)
 
         # Combobox options
-        type_options = ['Single Weapon', 'Weapon Swap']
-        perk_choices = [value[0] for value in backend.PERKS_LIST.values()]
+        self.perk_choices = [value[0] for value in backend.PERKS_LIST.values()]
 
         # Input validation
         val_int = self.register(self.master.util_valint)
@@ -38,34 +37,38 @@ class WeaponsMenu(tk.Frame):
         # Widget vars
         self.creation_vars = {
             'name': tk.StringVar(),
-            'dmg_per_shot': tk.IntVar(),
+            'fire_rate': tk.StringVar(),
+            'reload_time': tk.StringVar(),
+            'damage_per_shot': tk.IntVar(),
             'mag_cap': tk.IntVar(),
             'ammo_total': tk.IntVar(),
             'enhance1': tk.BooleanVar(),
             'enhance2': tk.BooleanVar(),
-            'burst_wep': tk.BooleanVar(),
+            'burst_weapon': tk.BooleanVar(),
             'burst_bullets': tk.IntVar(),
-            'fusion_wep': tk.BooleanVar()
+            'fusion_weapon': tk.BooleanVar()
         }
 
         # Widgets
         self.creation_widgets = {
             'header': tk.Label(cf, text="Weapon Creation", **self.master.label_style),
 
-            'type': (tk.Label(cf, text="Type", **self.master.label_style),
-                    ttk.Combobox(cf, values=type_options, width=17, state='disabled')),
+            'weapon': (tk.Label(cf, text="Weapon", **self.master.label_style),
+                    ttk.Combobox(cf, **self.master.combo_style)),
 
             'name': (tk.Label(cf, text="Name", **self.master.label_style),
                     tk.Entry(cf, textvariable=self.creation_vars['name'])),
 
             'fire_rate': (tk.Label(cf, text="Fire Rate", **self.master.label_style),
-                          tk.Entry(cf, validate='key', validatecommand=(val_float, '%S'))),
+                          tk.Entry(cf, textvariable=self.creation_vars['fire_rate'], 
+                                    validate='key', validatecommand=(val_float, '%S'))),
 
             'reload_time': (tk.Label(cf, text="Reload Time", **self.master.label_style),
-                            tk.Entry(cf, validate='key', validatecommand=(val_float, '%S'))),
+                            tk.Entry(cf, textvariable=self.creation_vars['reload_time'],
+                                     validate='key', validatecommand=(val_float, '%S'))),
 
-            'dmg_per_shot': (tk.Label(cf, text="Damage per Shot", **self.master.label_style),
-                                tk.Entry(cf, textvariable=self.creation_vars['dmg_per_shot'],
+            'damage_per_shot': (tk.Label(cf, text="Damage per Shot", **self.master.label_style),
+                                tk.Entry(cf, textvariable=self.creation_vars['damage_per_shot'],
                                          validate='key', validatecommand=(val_int, '%S'))),
 
             'mag_cap': (tk.Label(cf, text="Magazine Capacity", **self.master.label_style),
@@ -77,100 +80,217 @@ class WeaponsMenu(tk.Frame):
                                       validate='key', validatecommand=(val_int, '%S'))),
 
             'perk1': (tk.Label(cf, text="Perk 1", **self.master.label_style),
-                      ttk.Combobox(cf, values=perk_choices, **self.master.combo_style)),
+                      ttk.Combobox(cf, values=self.perk_choices, **self.master.combo_style)),
 
             'perk2': (tk.Label(cf, text="Perk 2", **self.master.label_style),
-                      ttk.Combobox(cf, values=perk_choices, **self.master.combo_style)),
+                      ttk.Combobox(cf, values=self.perk_choices, **self.master.combo_style)),
 
             'enhance': (tk.Checkbutton(cf, text="Perk 1 Enhanced", 
                                         variable=self.creation_vars['enhance1'], **self.master.check_button_style),
                         tk.Checkbutton(cf, text="Perk 2 Enhanced", 
                                         variable=self.creation_vars['enhance2'], **self.master.check_button_style)),
 
-            'burst_fusion_toggle': (tk.Checkbutton(cf, text="Burst Weapon", variable=self.creation_vars['burst_wep'],
+            'burst_fusion_toggle': (tk.Checkbutton(cf, text="Burst Weapon", variable=self.creation_vars['burst_weapon'],
                                                     command=self.toggle_burst, **self.master.check_button_style),
-                                    tk.Checkbutton(cf, text="Fusion Weapon", variable=self.creation_vars['fusion_wep'],
+                                    tk.Checkbutton(cf, text="Fusion Weapon", variable=self.creation_vars['fusion_weapon'],
                                                    **self.master.check_button_style)),
 
             'burst_bullets': (tk.Label(cf, text="Bullets Per Burst", **self.master.label_style),
                               tk.Entry(cf, textvariable=self.creation_vars['burst_bullets'],
                                        validate='key', validatecommand=(val_int, '%S'))),
 
-            'create_wep': tk.Button(cf, text="Create Weapon", command=self.create_weapon_hdlr, **self.master.button_style)
+            'interface': (tk.Button(cf, text="Create Weapon", command=self.create_weapon_hdlr, **self.master.button_style),
+                          tk.Button(cf, text='Edit Weapon', command=lambda: self.create_weapon_hdlr(editing=True), **self.master.button_style),
+                          tk.Button(cf, text='Delete Weapon', command=self.delete_weapon, **self.master.button_style))
         }
 
-        # Default vals
-        self.creation_widgets['type'][1].set(type_options[0])
-        self.creation_widgets['perk1'][1].set(perk_choices[0])
-        self.creation_widgets['perk2'][1].set(perk_choices[0])
-        self.creation_widgets['fire_rate'][1].insert(0, '0')
-        self.creation_widgets['reload_time'][1].insert(0, '0')
-
         # Grid placement
-        for idx, keyval in enumerate(self.creation_widgets.copy().items()):
-            key, multi = keyval
-            # Just place single objects in (x, 0)
-            if not type(multi) is tuple:
-                multi.grid(row=(idx+1), column=0, **self.master.default_padding)
-                # Save grid column into tuple
-                self.creation_widgets[key] = (multi, idx+1)
+        for idx, (name, widgset) in enumerate(self.creation_widgets.copy().items()):
+            # Deal with interface buttons later
+            if name == 'interface':
                 continue
-            # Place tuples in (x, 0) (x, 1)
-            label, usrinput = multi
-            label.grid(row=(idx+1), column=0, **self.master.default_padding)
-            usrinput.grid(row=(idx + 1), column=1, **self.master.default_padding)
-            self.creation_widgets[key] = (label, usrinput, idx+1)
-            # Bind defocus to combos
-            if isinstance(usrinput, ttk.Combobox):
-                usrinput.bind("<<ComboboxSelected>>",lambda e: self.focus())
+            # Single objects
+            grid = ({'row': idx, 'column': 0},
+                    {'row': idx, 'column': 1})
+            if not type(widgset) is tuple:
+                widgset.grid(**grid[0], **self.master.default_padding)
+                self.creation_widgets[name] = (widgset, grid[0])
+                continue
+            # Multi objects
+            for idy, widget in enumerate(widgset):
+                widget.grid(**grid[idy], **self.master.default_padding)
+                # Bind defocus to combos
+                if isinstance(widget, ttk.Combobox):
+                    widget.bind("<<ComboboxSelected>>",lambda e: self.focus())
+            obj1, obj2 = widgset
+            self.creation_widgets[name] = (obj1, obj2, grid)
 
-        # Hide on start
+        # Bind extra functions
+        self.creation_widgets['weapon'][1].bind('<<ComboboxSelected>>', self.select_weapon)
+
+    def update_weapons(self, first:bool=False):
+        wep_names = list(backend.weapons_list.keys())
+        # Disable selection if no weapons
+        state = 'disabled' if not wep_names else 'readonly'
+
+        wep_names.append('New Weapon')
+        self.creation_widgets['weapon'][1].config(values=wep_names, state=state)
+        if first:
+            self.creation_widgets['weapon'][1].set(wep_names[-1])
+
+    def select_weapon(self, name:str=None, *_):
+        wep_name = name if not name is None else self.creation_widgets['weapon'][1].get()
+        current_weps = list(backend.weapons_list.keys())
+
+        if not wep_name in current_weps:
+            self.show_new_weapon()
+        else:
+            self.creation_widgets['weapon'][1].set(wep_name)
+            self.show_existing_weapon(weapon=backend.weapons_list[wep_name])
+
+        self.focus()
+
+    def show_new_weapon(self):
+        # How many weapons exist named 'New Weapon {x}'
+        new_weps_count = len([name for name in backend.weapons_list.keys() if name.startswith('New Weapon')]) + 1
+        print(new_weps_count)
+
+        # Tk vars
+        for var in self.creation_vars.values():
+            if isinstance(var, tk.StringVar):
+                var.set(str(0))
+            var.set(0)
+        self.creation_vars['name'].set(f'New Weapon {new_weps_count}')
+        # Listboxes
+        self.creation_widgets['perk1'][1].set(self.perk_choices[0])
+        self.creation_widgets['perk2'][1].set(self.perk_choices[0])
+
+        # Hide
         self.creation_widgets['burst_bullets'][0].grid_forget()
         self.creation_widgets['burst_bullets'][1].grid_forget()
 
+        # Show creation button
+        if self.creation_widgets['interface'][1].winfo_viewable():
+            self.creation_widgets['interface'][1].grid_forget()
+            self.creation_widgets['interface'][2].grid_forget()
+        row = len(self.creation_widgets) + 1
+        self.creation_widgets['interface'][0].grid(row=row, column=0, **self.master.default_padding)
+
+    def show_existing_weapon(self, weapon:backend.Weapon):
+        wep_settings = weapon.get_full_settings()
+
+        # Tk vars
+        for set_name, value in wep_settings.items():
+            if set_name in self.creation_vars.keys():
+                if isinstance(self.creation_vars[set_name], tk.StringVar):
+                    self.creation_vars[set_name].set(str(value))
+                if type(value) is bool:
+                    value = 0 if value == False else 1
+                self.creation_vars[set_name].set(value)
+
+        # Perks
+        if wep_settings['perk_indices']:
+            if len(wep_settings['perk_indices']) == 1:
+                self.creation_widgets['perk1'][1].set(self.perk_choices[wep_settings['perk_indices'][0]])
+                self.creation_widgets['perk1'][1].set(self.perk_choices[0])
+            else:
+                for idx, index in enumerate(wep_settings['perk_indices']):
+                    self.creation_widgets[f'perk{idx+1}'][1].set(self.perk_choices[index])
+        else:
+            self.creation_widgets['perk1'][1].set(self.perk_choices[0])
+            self.creation_widgets['perk2'][1].set(self.perk_choices[0])
+
+        # Show or hide burst bullets
+        if wep_settings['burst_weapon']:
+            if not self.creation_widgets['burst_bullets'][0].winfo_viewable():
+                self.toggle_burst()
+        else:
+            if self.creation_widgets['burst_bullets'][0].winfo_viewable():
+                self.toggle_burst()
+
+        # Show edit / delete buttons
+        if self.creation_widgets['interface'][0].winfo_viewable():
+            self.creation_widgets['interface'][0].grid_forget()
+        row = len(self.creation_widgets) + 1
+        self.creation_widgets['interface'][1].grid(row=row, column=0, **self.master.default_padding)
+        self.creation_widgets['interface'][2].grid(row=row, column=1, **self.master.default_padding)
+  
     def toggle_burst(self):
-        label, entry, row = self.creation_widgets['burst_bullets']
+        label, entry, (grid1, grid2) = self.creation_widgets['burst_bullets']
         if label.winfo_viewable():
             label.grid_forget()
             entry.grid_forget()
         else:
-            label.grid(row=row, column=0, **self.master.default_padding)
-            entry.grid(row=row, column=1, **self.master.default_padding)
+            label.grid(**grid1, **self.master.default_padding)
+            entry.grid(**grid2, **self.master.default_padding)
 
-    def create_weapon_hdlr(self):
-        exitcode = self.create_weapon()
-        basestr = f'Weapon creation exited with code {exitcode}:'
+    def create_weapon_hdlr(self, editing:bool=False):
+        exitcode = self.create_weapon(editing=editing)
+        verb1, verb2, verb3 = ('Edit', 'edited', 'editing') if editing else ('Creation', 'created', 'creating')
+        basestr = f'Weapon {verb1} exited with code {exitcode}:'
         match exitcode:
             case 0:
                 # NOTE by all means if you are gonna change this do so
-                messagebox.showinfo('Success', 'Weapon created successfully')
+                messagebox.showinfo('Success', f'Weapon {verb2} successfully')
                 print(f'{basestr} Success')
             case 1:
-                messagebox.showerror('Name Error', 'Make sure the name for your weapon contains at least one letter')
+                messagebox.showerror('Name Error', 'The name "New Weapon" is not allowed.')
                 print(f'{basestr} Name Error')
             case 2:
-                messagebox.showerror('Float Error', 'Make sure Fire Rate and Reload Time are valid numbers')
-                print(f'{basestr} Floating Point Error')
+                print(f'{basestr} Overwrite Denied')
             case 3:
-                messagebox.showerror('Integer Error', 'Make sure Damage per Shot, Mag Size, and Ammo Total are valid numbers')
+                messagebox.showerror('Name Error', 'Make sure the name for your weapon contains at least one letter.')
+                print(f'{basestr} Name Error')
+            case 4:
+                messagebox.showerror('Float Error', 'Make sure Fire Rate and Reload Time are valid numbers.')
+                print(f'{basestr} Floating Point Error')
+            case 5:
+                messagebox.showerror('Integer Error', 'Make sure Damage per Shot, Mag Size, and Ammo Total are valid numbers.')
                 print(f'{basestr} Integer Error')
+            case 6:
+                messagebox.showerror('Deletion Error', 'You should have never hit this error! Please report this as an issue on Github!')
+                print(f'{basestr} Unknown Error')
             case _:
-                messagebox.showerror('Creation Error', 'There was an error creating your weapon')
+                messagebox.showerror(f'{verb1} Error', f'There was an error {verb3} your weapon')
                 print(f'{basestr} Unknown Error')
         
-    def create_weapon(self):
+    # NOTE I merged creation with editing but they could (and probably should) be split
+    # result would likely be 5 methods (2 already): gather_fields, create, create_hdlr, edit, edit_hdlr
+    def create_weapon(self, editing:bool=False):
         # Strings
-        name = self.creation_vars['name'].get()
+        name = self.creation_vars['name'].get().strip()
+        if name == 'New Weapon':
+            return 1
+        if not editing:
+            if name in backend.weapons_list.keys():
+                confirm = messagebox.askokcancel('Creation Warning', f'A weapon named "{name}" already exists!\nProceeding will overwrite the configuration of "{name}".')
+                if not confirm:
+                    return 2
+            name_change = False
+        else:
+            old_name = self.creation_widgets['weapon'][1].get()
+            confirm = messagebox.askokcancel('Edit Warning', f'Are you sure you want to edit "{old_name}"?\nProceeding will overwrite the configuration of "{old_name}".')
+            if not confirm:
+                return 2
+            name_change = False if name == old_name else True
+
+        # Validate name
+        for teststr in [name]:
+            if not self.test_str(teststr):
+                return 3
 
         # Floats
         try:
-            fire_rate = float(self.creation_widgets['fire_rate'][1].get())
-            reload_time = float(self.creation_widgets['reload_time'][1].get())
+            fire_rate = float(self.creation_vars['fire_rate'].get())
+            reload_time = float(self.creation_vars['reload_time'].get())
+            for testfloat in [fire_rate, reload_time]:
+                if not self.test_float(testfloat):
+                    return 4
         except ValueError:
-            return 2
+            return 4
 
         # Integers
-        dmg_per_shot = self.creation_vars['dmg_per_shot'].get()
+        damage_per_shot = self.creation_vars['damage_per_shot'].get()
         mag_cap = self.creation_vars['mag_cap'].get()
         ammo_total = self.creation_vars['ammo_total'].get()
         burst_bullets = self.creation_vars['burst_bullets'].get()
@@ -178,26 +298,17 @@ class WeaponsMenu(tk.Frame):
         # Bools
         enhance1 = self.creation_vars['enhance1'].get()
         enhance2 = self.creation_vars['enhance2'].get()
-        burst_wep = self.creation_vars['burst_wep'].get()
-        fusion_wep = self.creation_vars['fusion_wep'].get()
+        burst_weapon = self.creation_vars['burst_weapon'].get()
+        fusion_weapon = self.creation_vars['fusion_weapon'].get()
 
-        # Validation
-        for teststr in [name]:
-            if not self.test_str(teststr):
-                return 1
-
-        for testfloat in [fire_rate, reload_time]:
-            if not self.test_float(testfloat):
-                return 2
-
-        ints = [dmg_per_shot, mag_cap, ammo_total]
-        if burst_wep:
+        # Integers (continued)
+        ints = [damage_per_shot, mag_cap, ammo_total]
+        if burst_weapon:
             ints.append(burst_bullets)
-
         for testint in ints:
             if not self.test_int(testint):
-                return 3
-        
+                return 5
+
         # Perks
         perk1 = self.creation_widgets['perk1'][1].get()
         perk2 = self.creation_widgets['perk2'][1].get()
@@ -208,27 +319,67 @@ class WeaponsMenu(tk.Frame):
             'name': str(name),
             'fire_rate': float(fire_rate),
             'reload_time': float(reload_time),
-            'damage_per_shot': int(dmg_per_shot),
+            'damage_per_shot': int(damage_per_shot),
             'mag_cap': int(mag_cap),
             'ammo_total': int(ammo_total),
-            'fusion_weapon': bool(fusion_wep),
-            'burst_weapon': bool(burst_wep),
+            'fusion_weapon': bool(fusion_weapon),
+            'burst_weapon': bool(burst_weapon),
             'burst_bullets': int(burst_bullets),
             'perk_indices': perk_indices,
             'enhance1': bool(enhance1),
             'enhance2': bool(enhance2)
         }
-        print('Attempting to create weapon with options:')
+
+        verb = 'edit' if editing else 'create'
+        print(f'Attempting to {verb} weapon with options:')
         pprint(weapon_options, sort_dicts=False)
 
+        if name_change:
+                if backend.delete_weapon(old_name):
+                    if backend.create_weapon(weapon_options):
+                        self.master.util_update_wep_names()
+                        if self.master.settings.do_auto_save and self.master.settings.auto_save_path:
+                            self.master.optionsmenu.export_weps_hdlr(self.master.settings.auto_save_path)
+                        self.select_weapon(name=name)
+                        return 0
+                    else:
+                        return 5
+                else:
+                    return 6
+
         if backend.create_weapon(weapon_options):
-            self.master.graphmenu.update_weapons()
+            self.master.util_update_wep_names()
             if self.master.settings.do_auto_save and self.master.settings.auto_save_path:
                 self.master.optionsmenu.export_weps_hdlr(self.master.settings.auto_save_path)
+            self.select_weapon(name=name)
             return 0
         else:
-            return 4
+            return 5
         
+    # NOTE Probably should use a handler for this but its literally 2 possible errors
+    # and second error case should never happen anyway
+    def delete_weapon(self):
+        name = self.creation_vars['name'].get()
+
+        confirm = messagebox.askokcancel('Deletion Warning', f'Are you sure you want to delete "{name}"?\nProceeding will permanently delete the configuration of "{name}".')
+        if not confirm:
+            print('Weapon Deletion exited with code 1: Deletion Denied')
+            return
+        
+        if backend.delete_weapon(name):
+            messagebox.showinfo('Success', f'Weapon deleted successfully')
+            self.master.util_update_wep_names()
+            if self.master.settings.do_auto_save and self.master.settings.auto_save_path:
+                self.master.optionsmenu.export_weps_hdlr(self.master.settings.auto_save_path)
+            self.show_new_weapon()
+            self.update_weapons(first=True)
+            print('Weapon Deletion exited with code 0: Success')
+            return
+        else:
+            messagebox.showinfo('Deletion Error', 'You should have never hit this error! Please report this as an issue on Github!')
+            print('Weapon Deletion exited with code 2: Unknown Error')
+            return
+
     def test_str(self, target):
         if len(target) < 1:
             return False
