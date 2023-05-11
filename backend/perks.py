@@ -291,6 +291,9 @@ PERKS_LIST = {
     8: ('Target Lock', '', TargetLock),
     9: ('High Impact Reserves', HighImpactReserves.__doc__, HighImpactReserves),
     10: ('Firing Line', FiringLine.__doc__, FiringLine),
+    11: ('STOP', ''),
+    12: ('DONT', ''),
     13: ('Explosive Payload', ExplosivePayload.__doc__, ExplosivePayload),
+    14: ('DO NOT', ''),
     15: ('Bait and Switch', BaitNSwitch.__doc__, BaitNSwitch),
 }
