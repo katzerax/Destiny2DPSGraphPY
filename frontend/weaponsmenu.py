@@ -126,7 +126,7 @@ class WeaponsMenu(tk.Frame):
             self.creation_widgets[name] = (obj1, obj2, grid)
 
         # Bind extra functions
-        self.creation_widgets['weapon'][1].bind('<<ComboboxSelected>>', self.select_weapon)
+        self.creation_widgets['weapon'][1].bind('<<ComboboxSelected>>', lambda _: self.select_weapon())
 
     def update_weapons(self, first:bool=False):
         wep_names = list(backend.weapons_list.keys())
@@ -139,7 +139,7 @@ class WeaponsMenu(tk.Frame):
             self.creation_widgets['weapon'][1].set(wep_names[-1])
 
     def select_weapon(self, name:str=None, *_):
-        wep_name = name if not name is None else self.creation_widgets['weapon'][1].get()
+        wep_name = self.creation_widgets['weapon'][1].get() if name is None else name
         current_weps = list(backend.weapons_list.keys())
 
         if not wep_name in current_weps:
@@ -153,7 +153,6 @@ class WeaponsMenu(tk.Frame):
     def show_new_weapon(self):
         # How many weapons exist named 'New Weapon {x}'
         new_weps_count = len([name for name in backend.weapons_list.keys() if name.startswith('New Weapon')]) + 1
-        print(new_weps_count)
 
         # Tk vars
         for var in self.creation_vars.values():
