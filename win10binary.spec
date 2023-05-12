@@ -10,7 +10,8 @@ a = Analysis(
     binaries=[],
     datas=[
     ('backend/*', 'backend'),
-    ('frontend/*', 'frontend')
+    ('frontend/*', 'frontend'),
+    ('images/*', 'images'),
     ],
     hiddenimports=[],
     hookspath=[],
