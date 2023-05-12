@@ -1,10 +1,10 @@
 import time
 import os
 import csv
-import tkinter as tk
-import tkinter.colorchooser
 import random
-from tkinter import ttk
+import tkinter as tk
+from tkinter import ttk, colorchooser
+from tkinter.filedialog import asksaveasfilename
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 import matplotlib as mpl
@@ -25,6 +25,7 @@ class GraphMenu(tk.Frame):
         self.init_menu()
 
     def init_menu(self):
+        self.generated = 0
         self.wep_select_ui()
         self.graph_ui()
         self.set_numweapons()
@@ -35,7 +36,7 @@ class GraphMenu(tk.Frame):
         self.config_frame.pack(side=tk.LEFT, fill=tk.Y)
 
         # No. of weps
-        wep_count = [f'{i+1}' for i in range(10)]
+        wep_count = [str(i+1) for i in range(10)]
         self.num_weps_label = tk.Label(self.config_frame, text='Number of Weapons', **self.master.label_style)
         self.num_weps_label.grid(row=0, column=0, **self.master.default_padding)
 
@@ -81,11 +82,7 @@ class GraphMenu(tk.Frame):
             label, combo = multi
             label.grid(row=(idx+1), column=0, **self.master.default_padding)
             combo.grid(row=(idx+1), column=1, **self.master.default_padding)
-            combo.bind("<<ComboboxSelected>>",lambda e: self.focus())
-            # Display specified from settings :)
-            if idx > self.master.settings.graph_initial_slots - 1:
-                label.grid_forget()
-                combo.grid_forget()
+            combo.bind("<<ComboboxSelected>>", lambda e: self.focus())
 
         # Spacer
         spacer = tk.Label(self.config_frame, text='', **self.master.label_style)
@@ -112,12 +109,9 @@ class GraphMenu(tk.Frame):
         self.save_combo = ttk.Combobox(self.config_frame, values=save_exts, **self.master.combo_style)
         self.save_combo.grid(row=16, column=1, **self.master.default_padding)
         self.save_combo.set(save_exts[0])
+        self.save_combo.bind("<<ComboboxSelected>>", lambda e: self.focus())
 
-    def get_color(self, index):
-        color = tkinter.colorchooser.askcolor()[1]
-        if color is not None:
-            self.colors[index] = color
-            self.color_buttons[index].config(bg=color)
+        self.check_generated()
 
     def graph_ui(self):
         self.graph_frame = tk.Frame(self, **self.frame_style)
@@ -144,6 +138,20 @@ class GraphMenu(tk.Frame):
         self.ax.set_ylim(0, self.master.settings.graph_ylim)
 
         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
+
+    def get_color(self, index):
+        color = colorchooser.askcolor()[1]
+        if color is not None:
+            self.colors[index] = color
+            self.color_buttons[index].config(bg=color)
+
+    def check_generated(self):
+        if not self.generated:
+            self.save_button.config(state='disabled')
+            self.save_combo.config(state='disabled')
+        else:
+            self.save_button.config(state='normal')
+            self.save_combo.config(state='readonly')
 
     def clear_selections(self):
         for (_, dropdown) in self.wep_widgets:
@@ -185,6 +193,8 @@ class GraphMenu(tk.Frame):
                     totaltime_elapsed = round(totaltime_elapsed - time.time(), 2) * -1
                     print(f'Total calculation time: {totaltime_elapsed} secs')
                 print('Graph Generation exited with code 0: Success')
+                self.generated = 1
+                self.check_generated()
             except Exception as e:
                 print('Error Occured during Graph Generation:')
                 print(e)
@@ -194,18 +204,29 @@ class GraphMenu(tk.Frame):
     def save_graph(self):
         ext = self.save_combo.get()
         ext = ext if ext != 'Both' else ['png', 'csv']
-        fbasename = f'./graph/graph{time.time()}'
-
-        if not os.path.exists('./graph/'):
-            os.mkdir('./graph/')
 
         if 'png' in ext:
-            self.fig.savefig(f'{fbasename}.png')
-            print(f'Saved graph to "{fbasename}.png"')
+            fname = asksaveasfilename(
+                initialfile='dps_graph.png',
+                filetypes=[('All Files', '*.*')],
+                defaultextension='.png'
+            )
+            if not fname:
+                return
+            self.fig.savefig(fname)
+            print(f'Saved graph image to "{fname}"')
 
         if 'csv' in ext:
             (lines, labels) = self.ax.get_legend_handles_labels()
             if not lines or not labels:
+                return
+            
+            fname = asksaveasfilename(
+                initialfile='dps_graph_info.csv',
+                filetypes=[('All Files', '*.*')],
+                defaultextension='.csv'
+            )
+            if not fname:
                 return
 
             # get y data
@@ -228,11 +249,11 @@ class GraphMenu(tk.Frame):
             for idx, dset in enumerate(d):
                 dset['weapon'] = labels[idx]
 
-            with open(f'{fbasename}.csv', 'w', newline='') as f:
+            with open(fname, 'w', newline='') as f:
                 writer = csv.DictWriter(f, fieldnames=d_names)
                 writer.writeheader()
                 writer.writerows(d)
-            print(f'Saved graph to "{fbasename}.csv"')
+            print(f'Saved graph data to "{fname}"')
 
     def update_weapons(self):
         wep_names = list(backend.weapons_list.keys())
