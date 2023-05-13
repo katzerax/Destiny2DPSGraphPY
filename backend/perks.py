@@ -229,11 +229,12 @@ def CascadePoint(self):
 
 # 13 - Explosive Payload
 class ExplosivePayload(Perk):
+    # Rox: 20%?????????? since when?????? also why was this not just.. changed lmao to include the **_
     """Flat 20% damage increase"""
     def __init__(self, isenhanced:bool, **_):
         super().__init__(isenhanced)
 
-    def output(self, dmg_output):
+    def output(self, dmg_output, **_):
         dmg_output *= 1.2
 
         return {'dmg_output': dmg_output}
