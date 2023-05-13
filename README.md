@@ -25,7 +25,7 @@ Alternatively, download from the main github repo directly (this is considered t
 ```
 git clone https://github.com/katzerax/Destiny2DPSGraphPY.git
 cd Destiny2DPSGraphPY
-pip install requirements.txt
+pip install -r requirements.txt
 ```
 6.0 and greater will be packaged into a zip file. Unzip the contents to a directory that works well. There should be several python files including main, perks, backend, etc. There should also be a settings.ini file, and if not it will generate one for you.
 
