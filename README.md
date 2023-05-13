@@ -19,13 +19,13 @@ Install [Python 3.11.0](https://www.python.org/downloads/release/python-3110/). 
 Download the [latest release](https://github.com/katzerax/Destiny2DPSGraphPY/releases/latest) in the [releases](https://github.com/katzerax/Destiny2DPSGraphPY/releases) tab (this is considered the stable release)
 Unzip the file to a folder, then open a command prompt to the project directory and run:
 ```
-pip install requirements.txt
+pip install -r requirements.txt
 ```
 Alternatively, download from the main github repo directly (this is considered the development release, which may not be stable).
 ```
 git clone https://github.com/katzerax/Destiny2DPSGraphPY.git
 cd Destiny2DPSGraphPY
-pip install requirements.txt
+pip install -r requirements.txt
 ```
 6.0 and greater will be packaged into a zip file. Unzip the contents to a directory that works well. There should be several python files including main, perks, backend, etc. There should also be a settings.ini file, and if not it will generate one for you.
 
@@ -66,6 +66,7 @@ The weapons creation menu allows you to well, create weapons. As mentioned in th
 
 #### Non-required stats:
 - Perks
+- Origin Trait
 - Enhanced Perks
     - Self explanatory, check these boxes if the corresponding perks are enhanced
     - For enhanced perks that do not augment a relevant stat, these checks will be ignored
@@ -152,3 +153,4 @@ If you choose your log mode to be in app, or both, the console output will be lo
     - ongoing but done for now
 5. ~~create instructions for how to obtain every stat to use for the program~~
 6. QA test the whole program before a public announcement
+7. acknowledge https://docs.google.com/spreadsheets/d/1rY_iChu08CVnIMfHliZQwup10-GnmPtEu5FG0DNy8VM/edit#gid=641183241
