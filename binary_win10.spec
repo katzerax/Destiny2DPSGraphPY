@@ -12,6 +12,7 @@ a = Analysis(
     ('backend/*', 'backend'),
     ('frontend/*', 'frontend'),
     ('images/*', 'images'),
+    ('presets.json', '_presets.json'),
     ],
     hiddenimports=[],
     hookspath=[],
