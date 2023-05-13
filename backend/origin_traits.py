@@ -2,18 +2,13 @@ import stat
 import math
 import random
 
-ORIGIN_TRAITS_LIST = {
-    0: ("Null", "No selection"),
-    1: ("Veist Stinger", "Random chance to provide ammo back to the magazine from the reserves.")
-}
-
-
 #Superclass
 class OriginTrait():
     def __init__(self):
         self.enabled = True
 
 class VeistStinger(OriginTrait):
+    """Random chance to provide ammo back to the magazine from the reserves."""
     def __init__(self, **_):
         self.veist_check = 0
 
@@ -28,6 +23,11 @@ class VeistStinger(OriginTrait):
                 ammo_magazine += math.floor(mag_cap * 0.25)
 
         return {'ammo_magazine': ammo_magazine}
+    
+ORIGIN_TRAITS_LIST = {
+    0: ('Null', 'No selection'),
+    1: ('Veist Stinger', VeistStinger.__doc__, VeistStinger),
+}
 
 
 # def RunnethOver(self):
