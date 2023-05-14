@@ -186,13 +186,6 @@ class GraphMenu(tk.Frame):
                     # Plot the weapon damage
                     self.ax.plot(x, y, label=f'{weapon.name}', color=color)
 
-                # Set the axis labels and title
-                self.ax.set_xlabel(self.master.settings.graph_xlabel)
-                self.ax.set_xlim(0, self.master.settings.graph_xlim)
-                self.ax.set_ylabel(self.master.settings.graph_ylabel)
-                self.ax.set_ylim(0, self.master.settings.graph_ylim)
-                self.ax.set_title(self.master.settings.graph_title)
-
                 # Add legend and re-draw
                 self.ax.legend(facecolor=self.master.navbar_bg)
                 self.canvas.draw()
