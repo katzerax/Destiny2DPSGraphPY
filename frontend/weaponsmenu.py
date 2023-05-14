@@ -207,7 +207,7 @@ class WeaponsMenu(tk.Frame):
 
         # Origin Traits
         if wep_settings['origin_trait_indices']:
-            for index in wep_settings['origin_trait_indices']:
+            for idx, index in enumerate(wep_settings['origin_trait_indices']):
                 self.creation_widgets['origin_trait'][1].set(self.origin_choices[index])
         else:
             self.creation_widgets['origin_trait'][1].set(self.origin_choices[0])

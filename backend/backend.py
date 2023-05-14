@@ -84,7 +84,7 @@ class Weapon:
         return [PERKS_LIST[perk_index][2](isenhanced=[enhance[idx]], **fs) for idx, perk_index in enumerate(self.perk_indices)]
     
     def gen_origin_literals(self):
-        return [ORIGIN_TRAITS_LIST[origin_index][2] for origin_index in self.origin_trait_indices]
+        return [ORIGIN_TRAITS_LIST[origin_index][2] for idx, origin_index in enumerate(self.origin_trait_indices)]
 
     def get_full_settings(self):
         return {
