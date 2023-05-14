@@ -1,20 +1,18 @@
-import stat
 import math
 import random
 
-#Superclass
-class OriginTrait():
+# Superclass
+class OriginTrait:
     def __init__(self):
         self.enabled = True
 
 class VeistStinger(OriginTrait):
     """Random chance to provide ammo back to the magazine from the reserves."""
-    def __init__(self, **_):
+    def __init__(self):
         super().__init__()
         self.veist_check = 0
 
     def output(self, ammo_fired, ammo_magazine, mag_cap, **_):
-
         if ammo_fired != self.veist_check:
             veist_proc = round(random.randrange(1,100), 5)
             self.veist_check = ammo_fired
