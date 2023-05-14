@@ -18,7 +18,7 @@ class VeistStinger(OriginTrait):
             self.veist_check = ammo_fired
             if ammo_magazine == 0:
                 veist_proc = 1
-            if veist_proc >= 90:
+            if veist_proc >= 90 and ammo_magazine >= mag_cap:
                 ammo_magazine += math.floor(mag_cap * 0.25)
 
         return {'ammo_magazine': ammo_magazine}
