@@ -154,13 +154,20 @@ class GraphMenu(tk.Frame):
             self.save_combo.config(state='readonly')
 
     def clear_selections(self):
+        self.clear_graph()
         for (_, dropdown) in self.wep_widgets:
             dropdown.set('')
 
+
+    def clear_graph(self):
+        for line in self.ax.lines:
+            line.remove()
+        self.ax.legend_ = None
+        self.canvas.draw()
+
     def generate_graph(self):
         # Clear previous plot
-        self.ax.clear()
-        
+        self.clear_graph()
         # Loop through weapon dropdowns
         seleced_weps = [
             (backend.weapons_list[dropdown.get()], self.colors[i]) 
@@ -178,13 +185,6 @@ class GraphMenu(tk.Frame):
                     # print('x: ', x, ' y: ', y)
                     # Plot the weapon damage
                     self.ax.plot(x, y, label=f'{weapon.name}', color=color)
-
-                # Set the axis labels and title
-                self.ax.set_xlabel(self.master.settings.graph_xlabel)
-                self.ax.set_xlim(0, self.master.settings.graph_xlim)
-                self.ax.set_ylabel(self.master.settings.graph_ylabel)
-                self.ax.set_ylim(0, self.master.settings.graph_ylim)
-                self.ax.set_title(self.master.settings.graph_title)
 
                 # Add legend and re-draw
                 self.ax.legend(facecolor=self.master.navbar_bg)
