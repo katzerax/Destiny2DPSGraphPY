@@ -10,6 +10,7 @@ class OriginTrait():
 class VeistStinger(OriginTrait):
     """Random chance to provide ammo back to the magazine from the reserves."""
     def __init__(self, **_):
+        super().__init__()
         self.veist_check = 0
 
     def output(self, ammo_fired, ammo_magazine, mag_cap, **_):

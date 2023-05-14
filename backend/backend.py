@@ -203,10 +203,11 @@ class Weapon:
 
             if self.has_orgin_traits:
                 for origin_trait in origin_traits:
-                    if origin_trait.enabled:
-                        origin_output = origin_trait.output(**ti)
-                        for key, value in origin_output.items():
-                            ti[key] = value
+                    # Rox: it keeps failing this bc it doesnt think it has an enabled variable??
+                    #if origin_trait.enabled:
+                    origin_output = origin_trait.output(**ti)
+                    for key, value in origin_output.items():
+                        ti[key] = value
 
             # Standard Weapon
             if not self.burst_weapon:
