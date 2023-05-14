@@ -26,7 +26,7 @@ class VeistStinger(OriginTrait):
         return {'ammo_magazine': ammo_magazine}
     
 ORIGIN_TRAITS_LIST = {
-    0: ('Null', 'No selection'),
+    0: ('Null', 'No selection', None),
     1: ('Veist Stinger', VeistStinger.__doc__, VeistStinger),
 }
 

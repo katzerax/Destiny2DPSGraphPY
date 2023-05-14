@@ -87,7 +87,7 @@ class WeaponsMenu(tk.Frame):
                       ttk.Combobox(cf, values=self.perk_choices, **self.master.combo_style)),
 
             'origin_trait': (tk.Label(cf, text="Origin Trait", **self.master.label_style),
-                      ttk.Combobox(cf, values=self.origin_choices, **self.master.combo_style)),
+                             ttk.Combobox(cf, values=self.origin_choices, **self.master.combo_style)),
 
             'enhance': (tk.Checkbutton(cf, text="Perk 1 Enhanced", 
                                         variable=self.creation_vars['enhance1'], **self.master.check_button_style),
@@ -206,9 +206,8 @@ class WeaponsMenu(tk.Frame):
             self.creation_widgets['perk2'][1].set(self.perk_choices[0])
 
         # Origin Traits
-        if wep_settings['origin_trait_indices']:
-            for idx, index in enumerate(wep_settings['origin_trait_indices']):
-                self.creation_widgets['origin_trait'][1].set(self.origin_choices[index])
+        if wep_settings['origin_trait']:
+                self.creation_widgets['origin_trait'][1].set(self.origin_choices[wep_settings['origin_trait']])
         else:
             self.creation_widgets['origin_trait'][1].set(self.origin_choices[0])
 
@@ -329,8 +328,10 @@ class WeaponsMenu(tk.Frame):
 
         # Origin Trait
         origin_trait = self.creation_widgets['origin_trait'][1].get()
-        origin_trait_indices = [index for index, originname in backend.ORIGIN_TRAITS_LIST.items() if list(originname)[0] in origin_trait]
-        origin_trait_indices = None if origin_trait_indices == [0] else origin_trait_indices
+        for idx, (otname, _, _ ) in backend.ORIGIN_TRAITS_LIST.items():
+            if origin_trait == otname:
+                origin_trait = idx
+                break
 
         weapon_options = {
             'name': str(name),
@@ -345,7 +346,7 @@ class WeaponsMenu(tk.Frame):
             'perk_indices': perk_indices,
             'enhance1': bool(enhance1),
             'enhance2': bool(enhance2),
-            'origin_trait_indices': origin_trait_indices
+            'origin_trait': origin_trait
         }
 
         verb = 'edit' if editing else 'create'

@@ -30,7 +30,7 @@ class Weapon:
     def __init__(self, name:str, fire_rate:float, reload_time:float, damage_per_shot:int, 
                  mag_cap:int, ammo_total:int, ammo_type:int=1, elemental_type:int=1, 
                  enhance1:bool=False, enhance2:bool=False, fusion_weapon:bool=False, burst_weapon:bool=False, 
-                 burst_bullets:int=0, perk_indices:list=[], buff_indices:list=[], origin_trait_indices:list=[]):
+                 burst_bullets:int=0, perk_indices:list=[], buff_indices:list=[], origin_trait:int=0):
         # Positional args
         self.name = name
         self.fire_rate = fire_rate
@@ -67,14 +67,14 @@ class Weapon:
 
         self.buff_indices = buff_indices
 
-        self.origin_trait_indices = origin_trait_indices
-        self.has_orgin_traits = True if self.origin_trait_indices else False
+        self.origin_trait = origin_trait
+        self.has_orgin_trait = True if self.origin_trait else False
 
         if self.has_perks:
             self.perk_literals = self.gen_perk_literals()
 
-        if self.has_orgin_traits:
-            self.origin_literals = self.gen_origin_literals()
+        if self.has_orgin_trait:
+            self.origin_literal = self.gen_origin_literals()
         
         self.cached_graph_data = None
 
@@ -84,7 +84,7 @@ class Weapon:
         return [PERKS_LIST[perk_index][2](isenhanced=[enhance[idx]], **fs) for idx, perk_index in enumerate(self.perk_indices)]
     
     def gen_origin_literals(self):
-        return [ORIGIN_TRAITS_LIST[origin_index][2] for idx, origin_index in enumerate(self.origin_trait_indices)]
+        return ORIGIN_TRAITS_LIST[self.origin_trait][2]
 
     def get_full_settings(self):
         return {
@@ -103,7 +103,7 @@ class Weapon:
             'enhance1': self.enhance1,
             'enhance2': self.enhance2,
             'buff_indices': self.buff_indices,
-            'origin_trait_indices': self.origin_trait_indices,
+            'origin_trait': self.origin_trait,
         }
 
     def get_pruned_settings(self):
@@ -128,8 +128,7 @@ class Weapon:
 
         # perk bug !!!
         perks = copy.deepcopy(self.perk_literals) if self.has_perks else None
-
-        origin_traits = copy.deepcopy(self.origin_literals) if self.has_orgin_traits else None
+        origin_trait = copy.deepcopy(self.origin_literal) if self.has_orgin_trait else None
 
         # Graph config
         ticks = 4500
@@ -201,13 +200,13 @@ class Weapon:
                         for key, value in perk_output.items():
                             ti[key] = value
 
-            if self.has_orgin_traits:
-                for origin_trait in origin_traits:
+            if self.has_orgin_trait:
+                if origin_trait:
                     # Rox: it keeps failing this bc it doesnt think it has an enabled variable??
-                    #if origin_trait.enabled:
-                    origin_output = origin_trait.output(**ti)
-                    for key, value in origin_output.items():
-                        ti[key] = value
+                    if origin_trait.enabled:
+                        origin_output = origin_trait.output(**ti)
+                        for key, value in origin_output.items():
+                            ti[key] = value
 
             # Standard Weapon
             if not self.burst_weapon:

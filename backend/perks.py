@@ -280,7 +280,7 @@ class BaitNSwitch(Perk):
         return {'dmg_output': dmg_output}
 
 PERKS_LIST = {
-    0: ('Null', 'No selection'),
+    0: ('Null', 'No selection', None),
     1: ('Triple Tap', TripleTap.__doc__, TripleTap),
     2: ('Fourth Times the Charm', FourthTimesTheCharm.__doc__, FourthTimesTheCharm),
     3: ('Focused Fury', '', FocusedFury),
