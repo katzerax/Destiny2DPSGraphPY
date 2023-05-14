@@ -154,13 +154,20 @@ class GraphMenu(tk.Frame):
             self.save_combo.config(state='readonly')
 
     def clear_selections(self):
+        self.clear_graph()
         for (_, dropdown) in self.wep_widgets:
             dropdown.set('')
 
+
+    def clear_graph(self):
+        for line in self.ax.lines:
+            line.remove()
+        self.ax.legend_ = None
+        self.canvas.draw()
+
     def generate_graph(self):
         # Clear previous plot
-        self.ax.clear()
-        
+        self.clear_graph()
         # Loop through weapon dropdowns
         seleced_weps = [
             (backend.weapons_list[dropdown.get()], self.colors[i]) 
