@@ -20,6 +20,7 @@ class WeaponsMenu(tk.Frame):
 
     def init_menu(self):
         self.creation_ui()
+        self.buff_ui()
         self.pack_forget()
 
     def creation_ui(self):
@@ -131,6 +132,58 @@ class WeaponsMenu(tk.Frame):
 
         # Bind extra functions
         self.creation_widgets['weapon'][1].bind('<<ComboboxSelected>>', lambda _: self.select_weapon())
+
+    def buff_ui(self):
+        cf = self.buff_frame = tk.Frame(self, **self.frame_style)
+        self.buff_frame.pack(side=tk.RIGHT, fill=tk.Y)
+
+        self.buff_widgets = {
+            'header': tk.Label(cf, text='Buff / Debuff Calculator', **self.master.label_style),
+
+            'deb': (tk.Label(cf, text='Debuff', **self.master.label_style),
+                       ttk.Combobox(cf, **self.master.combo_style)),
+            
+            'deb_opt': tk.Checkbutton(cf, text='Constantly Applied', **self.master.check_button_style),
+
+            'buff': (tk.Label(cf, text='Empower', **self.master.label_style),
+                     ttk.Combobox(cf, **self.master.combo_style)),
+
+            'buff_opt': tk.Checkbutton(cf, text='Constantly Applied', **self.master.check_button_style),
+
+            'wdmg': (tk.Label(cf, text='Weapon Damage', **self.master.label_style),
+                       ttk.Combobox(cf, **self.master.combo_style)),
+            
+            'wdmg_opt': tk.Checkbutton(cf, text='Constantly Applied', **self.master.check_button_style),
+
+            'header2': tk.Label(cf, text='Misc', **self.master.label_style),
+
+            'packhunter': tk.Checkbutton(cf, text='Wolfpack Rounds', **self.master.check_button_style),
+
+            'pad': tk.Label(cf, text='', **self.master.label_style),
+
+            'total': (tk.Label(cf, text='Total Multiplier', **self.master.label_style),
+                     ttk.Entry(cf))
+        }
+
+        for idx, (name, widgset) in enumerate(self.buff_widgets.copy().items()):
+            # Deal with interface buttons later
+            if name == 'interface':
+                continue
+            # Single objects
+            grid = ({'row': idx, 'column': 0},
+                    {'row': idx, 'column': 1})
+            if not type(widgset) is tuple:
+                widgset.grid(**grid[0], **self.master.default_padding)
+                self.buff_widgets[name] = (widgset, grid[0])
+                continue
+            # Multi objects
+            for idy, widget in enumerate(widgset):
+                widget.grid(**grid[idy], **self.master.default_padding)
+                # Bind defocus to combos
+                if isinstance(widget, ttk.Combobox):
+                    widget.bind("<<ComboboxSelected>>",lambda e: self.focus())
+            obj1, obj2 = widgset
+            self.buff_widgets[name] = (obj1, obj2, grid)
 
     def update_weapons(self, first:bool=False):
         wep_names = list(backend.weapons_list.keys())

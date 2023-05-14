@@ -124,7 +124,7 @@ class GUI(tk.Frame):
         # Instance settings
         self.settings = Settings()
 
-        self.default_padding = {'padx': 5, 'pady': 5, 'sticky': tk.W}
+        self.default_padding = {'padx': 5, 'pady': 5, 'sticky': 'NSW'}
         self.combo_style = {'width': 17, 'state': 'readonly'}
         # Access and apply settings
         if self.settings.interface_theme.lower() == 'dark':
@@ -175,6 +175,7 @@ class GUI(tk.Frame):
 
         # Enable window screenshots in debug mode
         if self.settings.debug_mode:
+            self.master.bind('<Control-a>', lambda _: self.optionsmenu.debug_testfunc())
             self.master.bind('<Control-s>', lambda e: self.optionsmenu.debug_ssgui(e))
 
         backend.set_do_dmg_prints(self.settings.do_dmg_prints)
