@@ -1,5 +1,6 @@
 from backend.perks import *
 from backend.buffs import *
+from backend.origin_traits import *
 import time
 import copy
 
@@ -29,7 +30,7 @@ class Weapon:
     def __init__(self, name:str, fire_rate:float, reload_time:float, damage_per_shot:int, 
                  mag_cap:int, ammo_total:int, ammo_type:int=1, elemental_type:int=1, 
                  enhance1:bool=False, enhance2:bool=False, fusion_weapon:bool=False, burst_weapon:bool=False, 
-                 burst_bullets:int=0, perk_indices:list=[], buff_indices:list=[]):
+                 burst_bullets:int=0, perk_indices:list=[], buff_indices:list=[], origin_trait:int=0):
         # Positional args
         self.name = name
         self.fire_rate = fire_rate
@@ -63,10 +64,17 @@ class Weapon:
 
         self.perk_indices = perk_indices
         self.has_perks = True if self.perk_indices else False
+
         self.buff_indices = buff_indices
+
+        self.origin_trait = origin_trait
+        self.has_orgin_trait = True if self.origin_trait else False
 
         if self.has_perks:
             self.perk_literals = self.gen_perk_literals()
+
+        if self.has_orgin_trait:
+            self.origin_literal = self.gen_origin_literals()
         
         self.cached_graph_data = None
 
@@ -74,6 +82,9 @@ class Weapon:
         fs = self.get_full_settings()
         enhance = [self.enhance1, self.enhance2]
         return [PERKS_LIST[perk_index][2](isenhanced=[enhance[idx]], **fs) for idx, perk_index in enumerate(self.perk_indices)]
+    
+    def gen_origin_literals(self):
+        return ORIGIN_TRAITS_LIST[self.origin_trait][2]()
 
     def get_full_settings(self):
         return {
@@ -92,6 +103,7 @@ class Weapon:
             'enhance1': self.enhance1,
             'enhance2': self.enhance2,
             'buff_indices': self.buff_indices,
+            'origin_trait': self.origin_trait,
         }
 
     def get_pruned_settings(self):
@@ -116,6 +128,7 @@ class Weapon:
 
         # perk bug !!!
         perks = copy.deepcopy(self.perk_literals) if self.has_perks else None
+        origin_trait = copy.deepcopy(self.origin_literal) if self.has_orgin_trait else None
 
         # Graph config
         ticks = 4500
@@ -128,10 +141,10 @@ class Weapon:
         if not self.burst_weapon:
             fire_delay = round(60/self.fire_rate, round_coeff)
         elif self.burst_weapon and not self.fusion_weapon:
-            #this rate of fire calculation may need some looking at :P, but basically it takes a rate of fire and then
-            #just cuts it in half, half to shoot in a burst, the other to pause between shots..
-            #for delay first shot, might just have it be equal to the normal fire delay? who knows. <--- this is what i did
-            #5 minutes later rox here: i made DFS burst weapons have to complete a full charge sequence despite '120 RPM' not actually meaning 120 rpm... it just means 500ms charge time (since 500ms = 2 shots/second = 120rpm? idfk)
+            # Burst fire mode cuts the normal fire delay between firing in half, although it adds the half back as a buffer between every fire delay.
+            # So half is firing the burst, the other half is waiting for the burst to be ready again
+            # For Fusion Weapons + Burst Weapons this is done similarly; however, Fusion Weapons wait their full charge sequence and don't start charging until the burst is done
+            # Currently Fusion charge time is dictated by RPM calculation (120 RPM = 0.5s fire delay : therefore, 500ms charge time)
             fire_delay = round((60/self.fire_rate)/2, round_coeff)
             burst_delay = round(((60/self.fire_rate)/2)/self.burst_bullets, round_coeff)
 
@@ -185,6 +198,14 @@ class Weapon:
                         perk_output = perk.output(**ti)
                         # Replace old tick_info values for any new ones sent from perk
                         for key, value in perk_output.items():
+                            ti[key] = value
+
+            if self.has_orgin_trait:
+                if origin_trait:
+                    # Rox: it keeps failing this bc it doesnt think it has an enabled variable??
+                    if origin_trait.enabled:
+                        origin_output = origin_trait.output(**ti)
+                        for key, value in origin_output.items():
                             ti[key] = value
 
             # Standard Weapon

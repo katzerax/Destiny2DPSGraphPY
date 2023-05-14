@@ -17,7 +17,7 @@ class TripleTap(Perk):
         self.tt_ammocheck = 0
 
     def output(self, ammo_magazine, ammo_total, ammo_fired, **_):
-        if ammo_fired != 0:
+        if ammo_fired:
             if self.tt_addcheck == 0:
                 if ammo_fired % 3 == 0:
                     ammo_magazine += 1
@@ -26,7 +26,7 @@ class TripleTap(Perk):
                     self.tt_ammocheck = ammo_fired
             else:
                 if self.tt_ammocheck != ammo_fired:
-                    self.tt_ammocheck = 0
+                    self.tt_addcheck = 0
 
         return {'ammo_magazine': ammo_magazine, 'ammo_total': ammo_total}
 
@@ -39,7 +39,7 @@ class FourthTimesTheCharm(Perk):
         self.fttc_ammocheck = 0
 
     def output(self, ammo_magazine, ammo_total, ammo_fired, **_):
-        if not ammo_fired:
+        if ammo_fired:
             if self.fttc_addcheck == 0:
                 if ammo_fired % 4 == 0:
                     ammo_magazine += 2
@@ -281,7 +281,7 @@ class BaitNSwitch(Perk):
         return {'dmg_output': dmg_output}
 
 PERKS_LIST = {
-    0: ('Null', 'No selection'),
+    0: ('Null', 'No selection', None),
     1: ('Triple Tap', TripleTap.__doc__, TripleTap),
     2: ('Fourth Times the Charm', FourthTimesTheCharm.__doc__, FourthTimesTheCharm),
     3: ('Focused Fury', '', FocusedFury),

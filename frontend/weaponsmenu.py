@@ -29,6 +29,7 @@ class WeaponsMenu(tk.Frame):
 
         # Combobox options
         self.perk_choices = [value[0] for value in backend.PERKS_LIST.values()]
+        self.origin_choices = [value[0] for value in backend.ORIGIN_TRAITS_LIST.values()]
 
         # Input validation
         val_int = self.register(self.master.util_valint)
@@ -84,6 +85,9 @@ class WeaponsMenu(tk.Frame):
 
             'perk2': (tk.Label(cf, text="Perk 2", **self.master.label_style),
                       ttk.Combobox(cf, values=self.perk_choices, **self.master.combo_style)),
+
+            'origin_trait': (tk.Label(cf, text="Origin Trait", **self.master.label_style),
+                             ttk.Combobox(cf, values=self.origin_choices, **self.master.combo_style)),
 
             'enhance': (tk.Checkbutton(cf, text="Perk 1 Enhanced", 
                                         variable=self.creation_vars['enhance1'], **self.master.check_button_style),
@@ -160,9 +164,11 @@ class WeaponsMenu(tk.Frame):
                 var.set(str(0))
             var.set(0)
         self.creation_vars['name'].set(f'New Weapon {new_weps_count}')
+
         # Listboxes
         self.creation_widgets['perk1'][1].set(self.perk_choices[0])
         self.creation_widgets['perk2'][1].set(self.perk_choices[0])
+        self.creation_widgets['origin_trait'][1].set(self.origin_choices[0])
 
         # Hide
         self.creation_widgets['burst_bullets'][0].grid_forget()
@@ -191,13 +197,19 @@ class WeaponsMenu(tk.Frame):
         if wep_settings['perk_indices']:
             if len(wep_settings['perk_indices']) == 1:
                 self.creation_widgets['perk1'][1].set(self.perk_choices[wep_settings['perk_indices'][0]])
-                self.creation_widgets['perk1'][1].set(self.perk_choices[0])
+                self.creation_widgets['perk2'][1].set(self.perk_choices[0])
             else:
                 for idx, index in enumerate(wep_settings['perk_indices']):
                     self.creation_widgets[f'perk{idx+1}'][1].set(self.perk_choices[index])
         else:
             self.creation_widgets['perk1'][1].set(self.perk_choices[0])
             self.creation_widgets['perk2'][1].set(self.perk_choices[0])
+
+        # Origin Traits
+        if wep_settings['origin_trait']:
+                self.creation_widgets['origin_trait'][1].set(self.origin_choices[wep_settings['origin_trait']])
+        else:
+            self.creation_widgets['origin_trait'][1].set(self.origin_choices[0])
 
         # Show or hide burst bullets
         if wep_settings['burst_weapon']:
@@ -314,6 +326,13 @@ class WeaponsMenu(tk.Frame):
         perk_indices = [index for index, perkname in backend.PERKS_LIST.items() if list(perkname)[0] in [perk1, perk2]]
         perk_indices = None if perk_indices == [0] else perk_indices
 
+        # Origin Trait
+        origin_trait = self.creation_widgets['origin_trait'][1].get()
+        for idx, (otname, _, _ ) in backend.ORIGIN_TRAITS_LIST.items():
+            if origin_trait == otname:
+                origin_trait = idx
+                break
+
         weapon_options = {
             'name': str(name),
             'fire_rate': float(fire_rate),
@@ -326,7 +345,8 @@ class WeaponsMenu(tk.Frame):
             'burst_bullets': int(burst_bullets),
             'perk_indices': perk_indices,
             'enhance1': bool(enhance1),
-            'enhance2': bool(enhance2)
+            'enhance2': bool(enhance2),
+            'origin_trait': origin_trait
         }
 
         verb = 'edit' if editing else 'create'
