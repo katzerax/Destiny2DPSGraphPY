@@ -20,6 +20,9 @@ class OptionsMenu(tk.Frame):
         self.pack()
         self.navname = 'Options'
 
+        self.frame_style = self.master.frame_style.copy()
+        self.frame_style['highlightthickness'] = 0
+
         self.init_menu()
 
     def init_menu(self):
@@ -31,7 +34,7 @@ class OptionsMenu(tk.Frame):
         interface_theme_choices = ['Dark', 'Light']
         interface_logmode_choices = ['App', 'Console', 'Both']
         exp_exts = ['json', 'csv', 'pickle']
-        graph_initial_slot_choices = [f'{i+1}' for i in range(10)]
+        graph_initial_slot_choices = [str(i+1) for i in range(10)]
         graph_saved_colors = False if self.master.settings.graph_colors == 'random' else True
 
         # Input validation
@@ -55,77 +58,83 @@ class OptionsMenu(tk.Frame):
         self.menu_widgets = {
             # Graph
             'graph': {
-                'header': tk.Label(self, text='Graph', **self.master.label_style),
+                'header': [tk.Label(self, text='Graph', **self.master.label_style)],
 
-                'title': (tk.Label(self, text='Graph Title', **self.master.label_style),
-                          tk.Entry(self, textvariable=self.menu_vars['graph_title'])),
+                'title': [tk.Label(self, text='Graph Title', **self.master.label_style),
+                          tk.Entry(self, textvariable=self.menu_vars['graph_title'])],
 
-                'xlabel': (tk.Label(self, text='X Axis Name', **self.master.label_style),
-                           tk.Entry(self, textvariable=self.menu_vars['graph_xlabel'])),
+                'xlabel': [tk.Label(self, text='X Axis Name', **self.master.label_style),
+                           tk.Entry(self, textvariable=self.menu_vars['graph_xlabel'])],
 
-                'xlim': (tk.Label(self, text='X Axis Upper Limit', **self.master.label_style),
+                'xlim': [tk.Label(self, text='X Axis Upper Limit', **self.master.label_style),
                          tk.Entry(self, textvariable=self.menu_vars['graph_xlim'],
-                                 validate='key', validatecommand=(val_int, '%S'))),
+                                 validate='key', validatecommand=(val_int, '%S'))],
 
-                'ylabel': (tk.Label(self, text='Y Axis Name', **self.master.label_style),
-                           tk.Entry(self, textvariable=self.menu_vars['graph_ylabel'])),
+                'ylabel': [tk.Label(self, text='Y Axis Name', **self.master.label_style),
+                           tk.Entry(self, textvariable=self.menu_vars['graph_ylabel'])],
 
-                'ylim': (tk.Label(self, text='Y Axis Upper Limit', **self.master.label_style),
+                'ylim': [tk.Label(self, text='Y Axis Upper Limit', **self.master.label_style),
                          tk.Entry(self, textvariable=self.menu_vars['graph_ylim'],
-                                 validate='key', validatecommand=(val_int, '%S'))),
+                                 validate='key', validatecommand=(val_int, '%S'))],
 
-                'initial_slots': (tk.Label(self, text='Initial Weapon Slots', **self.master.label_style),
-                                  ttk.Combobox(self, values=graph_initial_slot_choices, width=3, state='readonly')),
+                'initial_slots': [tk.Label(self, text='Initial Weapon Slots', **self.master.label_style),
+                                  ttk.Combobox(self, values=graph_initial_slot_choices, width=3, state='readonly')],
+                
+                'initial_slots:go': [{}, {'sticky': 'NSW'}],
 
-                'colors': (tk.Checkbutton(self, text='Save Current Colors',
-                                          variable=self.menu_vars['graph_colors'], **self.master.check_button_style))
+                'colors': [tk.Checkbutton(self, text='Save Current Colors',
+                                          variable=self.menu_vars['graph_colors'], **self.master.check_button_style)],
             },
             # Import / Export
             'impexp': {
-                'header': tk.Label(self, text='Import / Export', **self.master.label_style),
+                'header': [tk.Label(self, text='Import / Export', **self.master.label_style)],
 
-                'export': (tk.Button(self, text='Export As', 
+                'export': [tk.Button(self, text='Export As', 
                                      command=self.export_weps_hdlr, **self.master.button_style),
-                           ttk.Combobox(self, values=exp_exts, **self.master.combo_style)),
+                           ttk.Combobox(self, values=exp_exts, **self.master.combo_style)],
 
-                'log_impff': (tk.Button(self, text='Log Current Weapons', 
+                'export:go': [{}, {'sticky': 'NSEW'}],
+
+                'log_impff': [tk.Button(self, text='Log Current Weapons', 
                                         command=self.print_weps, **self.master.button_style),
                               tk.Button(self, text='Import From File', 
-                                        command=self.import_weps_hdlr, **self.master.button_style)),
+                                        command=self.import_weps_hdlr, **self.master.button_style)],
 
-                'auto_save_toggle': tk.Checkbutton(self, text='Auto Save / Load', variable=self.menu_vars['autosave'], 
-                                                   command=self.toggle_autosave, **self.master.check_button_style),
+                'auto_save_toggle': [tk.Checkbutton(self, text='Auto Save / Load', variable=self.menu_vars['autosave'], 
+                                                   command=self.toggle_autosave, **self.master.check_button_style)],
 
-                'auto_save_path': (tk.Button(self, text='Auto-Save Path',
+                'auto_save_path': [tk.Button(self, text='Auto-Save Path',
                                              command=self.set_auto_import_hdlr, **self.master.button_style),
-                                   tk.Entry(self, textvariable=self.menu_vars['autosave_path'], state='readonly'))
+                                   tk.Entry(self, textvariable=self.menu_vars['autosave_path'], state='readonly')],
+
+                'auto_save_path:go': [{}, {'sticky': 'NSEW'}]
             },
             # GUI
             'interface': {
-                'header': tk.Label(self, text='Interface', **self.master.label_style),
+                'header': [tk.Label(self, text='Interface', **self.master.label_style)],
 
-                'theme': (tk.Label(self, text='Theme', **self.master.label_style),
-                          ttk.Combobox(self, values=interface_theme_choices, **self.master.combo_style)),
+                'theme': [tk.Label(self, text='Theme', **self.master.label_style),
+                          ttk.Combobox(self, values=interface_theme_choices, **self.master.combo_style)],
 
-                'logmode': (tk.Label(self, text='Log Mode', **self.master.label_style),
-                            ttk.Combobox(self, values=interface_logmode_choices, **self.master.combo_style)),
+                'logmode': [tk.Label(self, text='Log Mode', **self.master.label_style),
+                            ttk.Combobox(self, values=interface_logmode_choices, **self.master.combo_style)],
 
-                'debugmode_dmgprints': (tk.Checkbutton(self, text='Debug Mode', **self.master.check_button_style,
+                'debugmode_dmgprints': [tk.Checkbutton(self, text='Debug Mode', **self.master.check_button_style,
                                                        variable=self.menu_vars['debug_mode']),
                                         tk.Checkbutton(self, text='Print Dmg Steps', **self.master.check_button_style,
-                                                       variable=self.menu_vars['dmg_prints']))
+                                                       variable=self.menu_vars['dmg_prints'])]
             },
         }
 
         # Debug mode widgets
         if self.master.settings.debug_mode:
             self.menu_widgets['debug'] = {
-                'header': tk.Label(self, text='Debug', **self.master.label_style),
+                'header': [tk.Label(self, text='Debug', **self.master.label_style)],
 
-                'clearcache': (tk.Button(self, text='Clear Graph Cache',
+                'clearcache': [tk.Button(self, text='Clear Graph Cache',
                                         command=self.debug_ccache, **self.master.button_style),
                                 tk.Button(self, text='testfunc :)',
-                                          command=self.debug_testfunc, **self.master.button_style))
+                                          command=self.debug_testfunc, **self.master.button_style)]
             }
 
         # Default combobox vals
@@ -139,56 +148,65 @@ class OptionsMenu(tk.Frame):
 
         # Grid placement
         max_outer_column = 2
-        chunks = [list(self.menu_widgets.copy().items())[x:x+max_outer_column] for x in range(0, len(self.menu_widgets), max_outer_column)]
-        ro = 0
-        for chunk in chunks:
-            # Store current offset, add to total. This assures sections are alligned vertically
-            cro = max([len(widgetgroup) for _, widgetgroup in chunk])
-            ro += cro + 1
-            # One grid space of padding after first outer column
-            if not ro-cro-1 == 0:
-                spacer = tk.Label(self, text=' ', **self.master.label_style)
-                spacer.grid(row=ro-cro-1, column=0, **self.master.default_padding)
-            step = 0
-            for combined in chunk:
-                # Set columns stepping by 2 based on index of group
-                groupname, widgetgroup = combined
-                column = step
-                step += 2
-                for idz, widget_keyval in enumerate(widgetgroup.items()):
-                    key, widget = widget_keyval
-                    grid = ({'row': idz+(ro-cro), 'column': column},
-                            {'row': idz+(ro-cro), 'column': column+1})
-                    # Handle single elements first
-                    if not type(widget) is tuple:
-                        widget.grid(**grid[0], **self.master.default_padding)
-                        self.menu_widgets[groupname][key] = (widget, grid[0])
+        self.menu_containers = {}
+        # Create 2D array with xlim of max_outer_column
+        outer_columns =\
+            [list(self.menu_widgets.copy().items())[x:x+max_outer_column] for x in range(0, len(self.menu_widgets), max_outer_column)]
+        # Outer x
+        for idx, outer_row in enumerate(outer_columns):
+            # Outer y
+            for idy, (group, widgets) in enumerate(outer_row):
+                # Create container frames for each group
+                container = self.menu_containers[group] = tk.Frame(self, **self.frame_style)
+                container.grid(row=idx, column=idy, sticky='NSEW')
+
+                # Grid each widget to its container
+                rewind = 0
+                offset = 1 if idx > 0 else 0
+                for idz, (setname, widgset) in enumerate(widgets.items()):
+
+                    # Grid overides
+                    if ':go' in setname:
+                        origname = setname.split(':go')[0]
+                        for idc, obj in enumerate(widgets[origname]):
+                            obj.grid_configure(**widgset[idc])
+                        rewind += 1
                         continue
-                    # Handle label + input elements
-                    label, usrinput = widget
-                    label.grid(**grid[0], **self.master.default_padding)
-                    usrinput.grid(**grid[1], **self.master.default_padding)
-                    self.menu_widgets[groupname][key] = (label, usrinput, grid)
-                    # Bind defocus to combos
-                    if isinstance(usrinput, ttk.Combobox):
-                        usrinput.bind("<<ComboboxSelected>>",lambda e: self.focus())
-            if chunk == chunks[-1]:
-                # Final Spacer
-                spacer = tk.Label(self, text=' ', **self.master.label_style)
-                spacer.grid(row=ro, column=0, **self.master.default_padding)
 
-        # Apply settings button (Always oriented bottom left)
-        self.apply_settings_button = tk.Button(self, text='Apply Settings', command=self.apply_settings, **self.master.button_style)
-        self.apply_settings_button.grid(row=ro+1, column=0, **self.master.default_padding)
+                    # Default gridding
+                    gi = {'in_': container, 'row': offset+idz-rewind, 'padx': 5, 'pady': 5}
+                    for idc, obj in enumerate(widgset):
+                        sticky = 'NSW' if idc % 2 == 0 else 'NSE'   
+                        if isinstance(obj, ttk.Combobox):
+                            obj.bind("<<ComboboxSelected>>", lambda _: self.focus())
+                        obj.grid(**gi, column=idc, sticky=sticky)
+                        obj.lift()
 
-        # Reset Settings button
-        self.reset_settings_button = tk.Button(self, text='Reset Settings', command=self.reset_settings, **self.master.button_style)
-        self.reset_settings_button.grid(row=ro+1, column=1, **self.master.default_padding)
+            # Add interact buttons manually-ish
+            if outer_row == outer_columns[-1]:
+                fcont = self.menu_containers['interact_buttons'] = tk.Frame(self, **self.frame_style)
+                fcont.grid(column=0, row=len(self.menu_containers)-1)
+                for idv, obj in enumerate([tk.Button(fcont, text='Apply Settings', command=self.apply_settings, **self.master.button_style),
+                                           tk.Button(fcont, text='Reset Settings', command=self.reset_settings, **self.master.button_style)]):
+                    obj.grid(row=1, column=idv, padx=5, pady=5)
+
+        for container in self.menu_containers.values():
+            cols, rows = container.grid_size()
+            for i in range(rows):
+                container.grid_rowconfigure(
+                    index=i,
+                    minsize=36
+                )
+            for i in range(cols):
+                container.grid_columnconfigure(
+                    index=i,
+                    weight=1
+                )
 
         # Hide on start
         if not self.master.settings.do_auto_save:
-            self.menu_widgets['impexp']['auto_save_path'][0].grid_forget()
-            self.menu_widgets['impexp']['auto_save_path'][1].grid_forget()
+            self.menu_widgets['impexp']['auto_save_path'][0].grid_remove()
+            self.menu_widgets['impexp']['auto_save_path'][1].grid_remove()
 
     def clear_auto_import(self, *_):
         confirm = messagebox.askokcancel('Auto Save / Load Warning', 'Are you sure you want to clear your Auto Save / Load path?')

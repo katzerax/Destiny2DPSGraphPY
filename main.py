@@ -134,7 +134,7 @@ class GUI(tk.Frame):
             self.frame_style = {'bg': '#1E1E1E', 'highlightcolor': '#000000', 'highlightbackground': '#000000', 'highlightthickness': 2}
             self.frame_bg = "#1E1E1E"
             self.check_button_style = {'bg': '#1E1E1E', 'fg': '#CCCCCC', 'selectcolor': '#1E1E1E'}
-            self.button_style = {'bg': '#1E1E1E', 'fg': '#CCCCCC', 'height': 1, 'width': 17}
+            self.button_style = {'bg': '#1E1E1E', 'fg': '#CCCCCC', 'height': 1, 'width': 17, 'relief': 'ridge'}
             self.matplotlib_bg = "#1E1E1E"
             self.matplotlib_fg = "#CCCCCC"
             self.listbox_bg = "#808080"
