@@ -407,14 +407,13 @@ class OptionsMenu(tk.Frame):
             return e
     
     def toggle_autosave(self):
-        label, entry, gridpos = self.menu_widgets['impexp']['auto_save_path']
+        label, entry = self.menu_widgets['impexp']['auto_save_path']
         if label.winfo_viewable():
-            label.grid_forget()
-            entry.grid_forget()
+            label.grid_remove()
+            entry.grid_remove()
         else:
-            grid1, grid2 = gridpos
-            label.grid(**grid1, **self.master.default_padding)
-            entry.grid(**grid2, **self.master.default_padding)
+            label.grid()
+            entry.grid()
 
     def print_weps(self):
         print('Current list of weapons:\n')
