@@ -143,6 +143,7 @@ If you choose your log mode to be in app, or both, the console output will be lo
 
 ## Acknowledgements
 - A few months into our development of this project, [a reddit post appeared on r/DestinyTheGame](https://www.reddit.com/r/DestinyTheGame/comments/11d2f0g/i_created_a_new_dps_testing_tool/) which initially appeared to function similarly to the project we were programming. In some regards it is similar, but several parts of the logic as far as we can tell are very different, and so we produce different graphs. We still recommend  you check it out at https://www.hitthecrit.com/weapons.
+- We are also aware of a [PvE damage calculator spreadsheet](https://docs.google.com/spreadsheets/d/1rY_iChu08CVnIMfHliZQwup10-GnmPtEu5FG0DNy8VM) that we think you should additionally check out if you are interested in this sort of statistical analysis: https://docs.google.com/spreadsheets/d/1rY_iChu08CVnIMfHliZQwup10-GnmPtEu5FG0DNy8VM
 
 ## To-Do
 
@@ -153,4 +154,4 @@ If you choose your log mode to be in app, or both, the console output will be lo
     - ongoing but done for now
 5. ~~create instructions for how to obtain every stat to use for the program~~
 6. QA test the whole program before a public announcement
-7. acknowledge https://docs.google.com/spreadsheets/d/1rY_iChu08CVnIMfHliZQwup10-GnmPtEu5FG0DNy8VM/edit#gid=641183241
+7. ~~acknowledge https://docs.google.com/spreadsheets/d/1rY_iChu08CVnIMfHliZQwup10-GnmPtEu5FG0DNy8VM/edit#gid=641183241~~
