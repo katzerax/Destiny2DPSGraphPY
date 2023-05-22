@@ -5,7 +5,6 @@ from pprint import pprint
 import backend.backend as backend
 
 class WeaponsMenu(tk.Frame):
-
     def __init__(self, master):
         super().__init__(master=master)
         self.master = master

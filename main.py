@@ -2,13 +2,11 @@ import sys
 import os
 import configparser
 import tkinter as tk
-
 from frontend.graphmenu import GraphMenu
 from frontend.weaponsmenu import WeaponsMenu
 from frontend.optionsmenu import OptionsMenu
 from frontend.logemenu import LogMenu
 from frontend.navbar import NavBar
-
 import backend.backend as backend
 
 class Settings:
@@ -18,7 +16,6 @@ class Settings:
         self.check_and_create_settings_file(ini_path)
         with open(ini_path, 'r', encoding='utf-8') as f:
             self.config.read_file(f)
-
         self.interface_theme = self.config.get('Interface', 'theme')
         self.log_mode = self.config.get('Interface', 'log_mode')
         self.do_dmg_prints = self.config.getboolean('Interface', 'dmg_prints')
@@ -79,7 +76,6 @@ class Settings:
         self.graph_ylim = 300000
         self.graph_initial_slots = 3
         self.graph_colors = ''
-
         self.save_settings()
 
     def save_settings(self):
@@ -113,7 +109,6 @@ class GUI(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
         self.master = master
-        #self.master.iconbitmap("icon_transparent-01.ico")
         self.master.title('Destiny2DPSGraphPY')
         self.master.resizable(False, False)
         self.pack()
@@ -123,7 +118,6 @@ class GUI(tk.Frame):
     def load_settings(self):
         # Instance settings
         self.settings = Settings()
-
         self.default_padding = {'padx': 5, 'pady': 5, 'sticky': 'NSW'}
         self.combo_style = {'width': 17, 'state': 'readonly'}
         # Access and apply settings
@@ -163,8 +157,8 @@ class GUI(tk.Frame):
             'height': 5,
             'highlightthickness': 0,
             'borderwidth': 0,
-            'highlightcolor': '#000000', #
-            'selectbackground': self.listbox_bg, #808080
+            'highlightcolor': '#000000',
+            'selectbackground': self.listbox_bg,
             'selectforeground': '#FFFFFF',
             'selectborderwidth': 0,
             'activestyle': 'none',
@@ -232,7 +226,6 @@ class GUI(tk.Frame):
             return False
 
 def redirect_logs(text_widget: tk.Widget, log_mode: str):
-    
     def write_to_app(string):
         text_widget.config(state=tk.NORMAL)
         text_widget.insert(tk.END, string)
@@ -268,7 +261,6 @@ def global_start_gui():
     img = tk.PhotoImage(file='images/simpleicon-notext.png')
     # Set the window icon
     root.iconphoto(False, img)
-    #root.iconbitmap("icon_transparent-01.ico")
     app = GUI(master=root)
     app.mainloop()
 

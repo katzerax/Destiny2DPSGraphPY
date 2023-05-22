@@ -12,7 +12,6 @@ from pprint import pprint
 import backend.backend as backend
 
 class OptionsMenu(tk.Frame):
-
     def __init__(self, master):
         super().__init__(master=master)
         self.master = master
@@ -353,7 +352,6 @@ class OptionsMenu(tk.Frame):
         basestr = f'Weapon Export exited with code {exitcode}:'
         match exitcode:
             case 0:
-                # NOTE Having a popup for a success is kinda aids ill work on something else
                 if not path:
                     messagebox.showinfo('Success', 'Weapon list exported successfully')
                 print(f'{basestr} Success')
@@ -393,7 +391,7 @@ class OptionsMenu(tk.Frame):
                 case '.csv':
                     d = [weapon.get_full_settings() for weapon in backend.weapons_list.values()]
                     d_names = d[0].keys()
-                    with open(fpathname+ext, 'w', newline='') as f:  # 'newline=""' is often used to avoid extra newline on Windows
+                    with open(fpathname+ext, 'w', newline='') as f:
                         writer = csv.DictWriter(f, fieldnames=d_names)
                         writer.writeheader()
                         writer.writerows(d)

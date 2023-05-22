@@ -11,7 +11,6 @@ import matplotlib as mpl
 import backend.backend as backend
 
 class GraphMenu(tk.Frame):
-
     def __init__(self, master):
         super().__init__(master=master)
         self.master = master
@@ -42,7 +41,7 @@ class GraphMenu(tk.Frame):
 
         self.num_weps_combo = ttk.Combobox(self.config_frame, values=wep_count, width=3, state='readonly')
         self.num_weps_combo.grid(row=0, column=1, **self.master.default_padding)
-        self.num_weps_combo.set(wep_count[self.master.settings.graph_initial_slots - 1]) # Changed to use settings
+        self.num_weps_combo.set(wep_count[self.master.settings.graph_initial_slots - 1])
         self.num_weps_combo.bind("<<ComboboxSelected>>", self.set_numweapons)
 
         def random_color():
@@ -157,7 +156,6 @@ class GraphMenu(tk.Frame):
         self.clear_graph()
         for (_, dropdown) in self.wep_widgets:
             dropdown.set('')
-
 
     def clear_graph(self):
         for line in self.ax.lines:

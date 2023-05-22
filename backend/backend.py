@@ -252,7 +252,6 @@ class Weapon:
                     # Rox: I want to test how things function without this 'ammo_fired' reset, as it may prove to be more beneficial to track specific needs within specific perks
                     #ammo_fired = 0
                     ti['ammo_magazine'] = ti['mag_cap']
-
                 elif ti['time_elapsed'] >= fire_timer:
                     # Checks to ensure that weapon is still within burst timing/bullet ammount
                     if ti['burst_shot'] >= 0 and ti['burst_shot'] < self.burst_bullets:

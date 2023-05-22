@@ -2,8 +2,6 @@ import stat
 import math
 import random
 
-
-
 #Superclass
 class Buff():
     def __init__(self):
@@ -31,14 +29,11 @@ class WellofRadiance(Buff):
         # elif self.well_cast and (time_elapsed - self.well_timer) > 25:
         #     self.well_cast = 0
 
-
 def WardofDawn(self):
     pass
 
-
 def Shadowshot(self):
     pass
-
 
 def WolfPack(self):
     pass

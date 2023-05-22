@@ -28,7 +28,6 @@ ORIGIN_TRAITS_LIST = {
     1: ('Veist Stinger', VeistStinger.__doc__, VeistStinger),
 }
 
-
 # def RunnethOver(self):
 #     pass
 

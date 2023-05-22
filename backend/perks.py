@@ -130,9 +130,7 @@ class RapidHit(Perk):
         self.rapid_hit_stacks = 0
         
     def output(self, ammo_fired, reload_time, round_coeff, **_):
-        
         self.rapid_hit_stacks = math.floor(ammo_fired)
-        
         match self.rapid_hit_stacks:
             case 0:
                 return reload_time
@@ -146,7 +144,6 @@ class RapidHit(Perk):
                 reload_time = round(reload_time / 1.17, round_coeff)
             case 5 | _:
                 reload_time = round(reload_time / 1.2, round_coeff)
-        
         return {'reload_time': reload_time}
 
 # 7 - Vorpal Weapon
@@ -155,7 +152,6 @@ class VorpalWeapon(Perk):
     def __init__(self, isenhanced:bool, ammo_type, **_):
         super().__init__(isenhanced)
         self.ammo_type = ammo_type
-
         match self.ammo_type:
             case 1: # Primary Ammo
                 self.damage_scalar = 1.2
@@ -172,7 +168,6 @@ class VorpalWeapon(Perk):
 class TargetLock(Perk):
     def __init__(self, isenhanced:bool, **_):
         super().__init__(isenhanced)
-        
         if not isenhanced:
             self.tl_bonus1 = 1.1673
             self.tl_bonus2 = 1.4
@@ -181,13 +176,11 @@ class TargetLock(Perk):
             self.tl_bonus2 = 1.45
         
     def output(self, dmg_output, ammo_fired, mag_cap, **_):
-
         tl_scalar = (ammo_fired / mag_cap) / 1.105
         if tl_scalar >= (0.125 / 1.105) and tl_scalar <= 1:
             dmg_output = ((1 - tl_scalar) * (dmg_output * self.tl_bonus1)) + (tl_scalar * (dmg_output * self.tl_bonus2))
         elif tl_scalar > 1:
             dmg_output *= self.tl_bonus2
-
         return {'dmg_output': dmg_output}
 
 # 9 - High Impact Reserves
@@ -195,18 +188,15 @@ class HighImpactReserves(Perk):
     """Linearly increases weapon damage from (12.1% - 25.6%) as magazine drops from 50% capacity to empty."""
     def __init__(self, isenhanced:bool, mag_cap, **_):
         super().__init__(isenhanced)
-
         if not isenhanced:
             self.hir_mag = (mag_cap/2)
         elif isenhanced:
             self.hir_mag = (mag_cap/(4/3))
 
     def output(self, ammo_magazine, dmg_output, enhanced_perks, **_):
-
         if ammo_magazine < self.hir_mag:
             hir_scalar = ammo_magazine / self.hir_mag
             dmg_output = (hir_scalar * (dmg_output * 1.125)) + ((1 - hir_scalar) * (dmg_output * 1.255))
-
         return {'dmg_output': dmg_output}
 
 # 10 - Firing Line
@@ -236,7 +226,6 @@ class ExplosivePayload(Perk):
 
     def output(self, dmg_output, **_):
         dmg_output *= 1.2
-
         return {'dmg_output': dmg_output}
 
 # 14 - Frenzy
@@ -258,7 +247,6 @@ class BaitNSwitch(Perk):
             self.bns_timer = 11
 
     def output(self, ammo_fired, dmg_output, time_elapsed, **_):
-
         if self.bns_proc == 0:
             if (ammo_fired - self.ammo_fired_bns) >= 1:
                 dmg_output *= 1.35

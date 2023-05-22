@@ -1,7 +1,6 @@
 import tkinter as tk
 
 class NavBar(tk.Frame):
-
     def __init__(self, master, menus:list):
         super().__init__(master=master)
         self.master = master
