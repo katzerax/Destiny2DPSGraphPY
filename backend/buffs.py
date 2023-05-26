@@ -10,10 +10,10 @@ class Buff():
 class WellofRadiance(Buff):
     """25%% damage bonus in an area, as well as a healing bonus + has ability to max reload speed w/ Lunafactions."""
     def __init__(self):
-        pass
-        #self.well_warlocks = well_warlocks
-        #self.well_cast = 0
-        #self.well_timer = 0
+        #pass
+        self.well_warlocks = 0 # well_warlocks
+        self.well_cast = 0
+        self.well_timer = 0
 
     def output(self, dmg_output, time_elapsed, **_):
         pass
@@ -40,5 +40,8 @@ def WolfPack(self):
 
 BUFFS_LIST = {
     0: ("Null", "No selection"),
-    1: ("Well of Radiance", WellofRadiance.__doc__, WellofRadiance)
+    1: ("Well of Radiance", WellofRadiance.__doc__, WellofRadiance),
+    2: ("Ward of Dawn", WardofDawn.__doc__, WardofDawn),
+    3: ("Shadowshot", Shadowshot.__doc__, Shadowshot),
+    4: ("Wolf Pack", WolfPack.__doc__, WolfPack)
 }

@@ -30,6 +30,7 @@ class WeaponsMenu(tk.Frame):
         # Combobox options
         self.perk_choices = [value[0] for value in backend.PERKS_LIST.values()]
         self.origin_choices = [value[0] for value in backend.ORIGIN_TRAITS_LIST.values()]
+        self.buff_choices = [value[0] for value in backend.BUFFS_LIST.values()]
 
         # Input validation
         val_int = self.register(self.master.util_valint)
@@ -140,17 +141,17 @@ class WeaponsMenu(tk.Frame):
             'header': tk.Label(cf, text='Buff / Debuff Calculator', **self.master.label_style),
 
             'deb': (tk.Label(cf, text='Debuff', **self.master.label_style),
-                       ttk.Combobox(cf, **self.master.combo_style)),
+                       ttk.Combobox(cf, values=self.buff_choices, **self.master.combo_style)),
             
             'deb_opt': tk.Checkbutton(cf, text='Constantly Applied', **self.master.check_button_style),
 
             'buff': (tk.Label(cf, text='Empower', **self.master.label_style),
-                     ttk.Combobox(cf, **self.master.combo_style)),
+                     ttk.Combobox(cf, values=self.buff_choices,**self.master.combo_style)),
 
             'buff_opt': tk.Checkbutton(cf, text='Constantly Applied', **self.master.check_button_style),
 
             'wdmg': (tk.Label(cf, text='Weapon Damage', **self.master.label_style),
-                       ttk.Combobox(cf, **self.master.combo_style)),
+                       ttk.Combobox(cf, values=self.buff_choices, **self.master.combo_style)),
             
             'wdmg_opt': tk.Checkbutton(cf, text='Constantly Applied', **self.master.check_button_style),
 
@@ -161,7 +162,7 @@ class WeaponsMenu(tk.Frame):
             'pad': tk.Label(cf, text='', **self.master.label_style),
 
             'total': (tk.Label(cf, text='Total Multiplier', **self.master.label_style),
-                     ttk.Entry(cf))
+                     ttk.Entry(cf, state="readonly"))
         }
 
         for idx, (name, widgset) in enumerate(self.buff_widgets.copy().items()):
