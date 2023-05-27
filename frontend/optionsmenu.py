@@ -150,7 +150,7 @@ class OptionsMenu(tk.Frame):
         self.menu_containers = {}
         # Create 2D array with xlim of max_outer_column
         outer_columns =\
-            [list(self.menu_widgets.copy().items())[x:x+max_outer_column] for x in range(0, len(self.menu_widgets), max_outer_column)]
+            [list(self.menu_widgets.items())[x:x+max_outer_column] for x in range(0, len(self.menu_widgets), max_outer_column)]
         # Outer x
         for idx, outer_row in enumerate(outer_columns):
             # Outer y
