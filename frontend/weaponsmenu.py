@@ -417,11 +417,12 @@ class WeaponsMenu(tk.Frame):
 
         # Buffs
         buff_indices = {}
-        for flag in ['deb', 'buff', 'wdmg']:
-            buff_indices[flag] = [[k for k, (name, _, _) in backend.DEBUFFS_LIST.items() if name == flag][0], self.menu_vars['buffcalc'][f'{flag}_cnst'].get()]
+        for flag, choice in {'deb': backend.DEBUFFS_LIST, 'buff': backend.BUFFS_LIST, 'wdmg': backend.WEAPON_BOOSTS_LIST}.items():
+            index = [k for k, (name, _, _) in choice.items() if name == self.menu_widgets['buffcalc'][flag][1].get()]
+            buff_indices[flag] = [index[0] if index else 0, self.menu_vars['buffcalc'][f'{flag}_cnst'].get()]
 
         for k, v in buff_indices.copy().items():
-            if v == 0:
+            if not v[0]:
                 del buff_indices[k]
 
         # Origin Trait
