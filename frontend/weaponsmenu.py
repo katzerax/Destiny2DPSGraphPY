@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
-from pprint import pprint
+from math import prod
 import backend.backend as backend
 
 class WeaponsMenu(tk.Frame):
@@ -25,9 +25,12 @@ class WeaponsMenu(tk.Frame):
         # Combobox options
         self.perk_choices = [v[0] for v in backend.PERKS_LIST.values()]
         self.origin_choices = [v[0] for v in backend.ORIGIN_TRAITS_LIST.values()]
-        self.buff_choices = [v[0] for v in backend.BUFFS_LIST.values()]
-        self.debuff_choices = [v[0] for v in backend.DEBUFFS_LIST.values()]
-        self.wdmg_choices = [v[0] for v in backend.WEAPON_BOOSTS_LIST.values()]
+
+        self.buff_choices = {
+            'buff': [v[0] for v in backend.BUFFS_LIST.values()],
+            'deb': [v[0] for v in backend.DEBUFFS_LIST.values()],
+            'wdmg': [v[0] for v in backend.WEAPON_BOOSTS_LIST.values()]
+        }
 
         # Input validation
         val_int = self.register(self.master.util_valint)
@@ -50,6 +53,9 @@ class WeaponsMenu(tk.Frame):
             },
 
             'buffcalc': {
+                'deb_cnst': tk.BooleanVar(),
+                'buff_cnst': tk.BooleanVar(),
+                'wdmg_cnst': tk.BooleanVar(),
                 'total': tk.StringVar()
             }
         }
@@ -120,23 +126,28 @@ class WeaponsMenu(tk.Frame):
                 'header': [tk.Label(self, text='Buff / Debuff Calculator', **self.master.label_style)],
 
                 'deb': [tk.Label(self, text='Debuff', **self.master.label_style),
-                        ttk.Combobox(self, values=self.debuff_choices, **self.master.combo_style)],
+                        ttk.Combobox(self, values=self.buff_choices['deb'], **self.master.combo_style)],
                 
-                'deb_opt': [tk.Checkbutton(self, text='Constantly Applied', **self.master.check_button_style)],
+                'deb_cnst': [tk.Checkbutton(self, variable=self.menu_vars['buffcalc']['deb_cnst'], 
+                                            text='Constantly Applied', **self.master.check_button_style)],
 
                 'buff': [tk.Label(self, text='Empower', **self.master.label_style),
-                         ttk.Combobox(self, values=self.buff_choices, **self.master.combo_style)],
+                         ttk.Combobox(self, values=self.buff_choices['buff'], **self.master.combo_style)],
 
-                'buff_opt': [tk.Checkbutton(self, text='Constantly Applied', **self.master.check_button_style)],
+                'buff_cnst': [tk.Checkbutton(self, variable=self.menu_vars['buffcalc']['buff_cnst'], 
+                                             text='Constantly Applied', **self.master.check_button_style)],
 
                 'wdmg': [tk.Label(self, text='Weapon Damage', **self.master.label_style),
-                         ttk.Combobox(self, values=self.wdmg_choices, **self.master.combo_style)],
+                         ttk.Combobox(self, values=self.buff_choices['wdmg'], **self.master.combo_style)],
                 
-                'wdmg_opt': [tk.Checkbutton(self, text='Constantly Applied', **self.master.check_button_style)],
+                'wdmg_cnst': [tk.Checkbutton(self, variable=self.menu_vars['buffcalc']['wdmg_cnst'], 
+                                             text='Constantly Applied', **self.master.check_button_style)],
 
                 'misc': [tk.Label(self, text='Misc', **self.master.label_style)],
 
                 'packhunter': [tk.Checkbutton(self, text='Wolfpack Rounds', **self.master.check_button_style)],
+
+                'pad': [],
 
                 'total': [tk.Label(self, text='Total Multiplier', **self.master.label_style),
                           ttk.Entry(self, textvariable=self.menu_vars['buffcalc']['total'], state="readonly")]
@@ -196,10 +207,8 @@ class WeaponsMenu(tk.Frame):
                 )
 
         # Bind extra functions
-        for combo in [self.menu_widgets['buffcalc']['deb'][1],
-                      self.menu_widgets['buffcalc']['buff'][1],
-                      self.menu_widgets['buffcalc']['wdmg'][1]]:
-            combo.bind('<<ComboboxSelected>>', lambda _: self.update_multitotal())
+        for k in ['deb', 'buff', 'wdmg']:
+            self.menu_widgets['buffcalc'][k][1].bind('<<ComboboxSelected>>', lambda _: self.update_multitotal())
         self.menu_widgets['creation']['weapon'][1].bind('<<ComboboxSelected>>', lambda _: self.select_weapon())
 
     def update_weapons(self, first:bool=False):
@@ -243,9 +252,8 @@ class WeaponsMenu(tk.Frame):
         self.menu_widgets['creation']['perk1'][1].set(self.perk_choices[0])
         self.menu_widgets['creation']['perk2'][1].set(self.perk_choices[0])
         self.menu_widgets['creation']['origin_trait'][1].set(self.origin_choices[0])
-        self.menu_widgets['buffcalc']['deb'][1].set(self.debuff_choices[0])
-        self.menu_widgets['buffcalc']['buff'][1].set(self.buff_choices[0])
-        self.menu_widgets['buffcalc']['wdmg'][1].set(self.wdmg_choices[0])
+        for k in ['deb', 'buff', 'wdmg']:
+            self.menu_widgets['buffcalc'][k][1].set(self.buff_choices[k][0])
 
         # Show creation buttons
         self.menu_widgets['creation']['interface'][0].grid(column=0)
@@ -278,7 +286,22 @@ class WeaponsMenu(tk.Frame):
             self.menu_widgets['creation']['perk1'][1].set(self.perk_choices[0])
             self.menu_widgets['creation']['perk2'][1].set(self.perk_choices[0])
 
-        # Origin Traits
+        # Buffs
+        if wep_settings['buff_indices']:
+            for k in ['deb', 'buff', 'wdmg']:
+                if k in wep_settings['buff_indices']:
+                    self.menu_widgets['buffcalc'][k][1].set(self.buff_choices[k][wep_settings['buff_indices'][k][0]])
+                    self.menu_vars['buffcalc'][f'{k}_cnst'].set(wep_settings['buff_indices'][k][1])
+                else:
+                    self.menu_widgets['buffcalc'][k][1].set(self.buff_choices[k][0])
+                    self.menu_vars['buffcalc'][f'{k}_cnst'].set(0)
+        else:
+            for k in ['deb', 'buff', 'wdmg']:
+                self.menu_widgets['buffcalc'][k][1].set(self.buff_choices[k][0])
+                self.menu_vars['buffcalc'][f'{k}_cnst'].set(0)
+        self.update_multitotal()
+
+        # Origin trait
         if wep_settings['origin_trait']:
                 self.menu_widgets['creation']['origin_trait'][1].set(self.origin_choices[wep_settings['origin_trait']])
         else:
@@ -392,6 +415,15 @@ class WeaponsMenu(tk.Frame):
         perk_indices = [index for index, perkname in backend.PERKS_LIST.items() if list(perkname)[0] in [perk1, perk2]]
         perk_indices = None if perk_indices == [0] else perk_indices
 
+        # Buffs
+        buff_indices = {}
+        for flag in ['deb', 'buff', 'wdmg']:
+            buff_indices[flag] = [[k for k, (name, _, _) in backend.DEBUFFS_LIST.items() if name == flag][0], self.menu_vars['buffcalc'][f'{flag}_cnst'].get()]
+
+        for k, v in buff_indices.copy().items():
+            if v == 0:
+                del buff_indices[k]
+
         # Origin Trait
         origin_trait = self.menu_widgets['creation']['origin_trait'][1].get()
         for idx, (otname, _, _ ) in backend.ORIGIN_TRAITS_LIST.items():
@@ -412,7 +444,8 @@ class WeaponsMenu(tk.Frame):
             'perk_indices': perk_indices,
             'enhance1': bool(enhance1),
             'enhance2': bool(enhance2),
-            'origin_trait': int(origin_trait)
+            'origin_trait': int(origin_trait),
+            'buff_indices': buff_indices
         }
 
         if editing and namechange:
@@ -424,6 +457,7 @@ class WeaponsMenu(tk.Frame):
             if self.master.settings.do_auto_save and self.master.settings.auto_save_path:
                 self.master.optionsmenu.export_weps_hdlr(self.master.settings.auto_save_path)
             self.menu_widgets['creation']['weapon'][1].set(name)
+            self.select_weapon(name=name)
             return self.weapon_ecreate_hdlr(0, editing, verb, name) 
         else:
             return self.weapon_ecreate_hdlr(7, editing)
@@ -449,26 +483,15 @@ class WeaponsMenu(tk.Frame):
             print('Weapon Deletion exited with code 2: Unknown Error')
 
     def update_multitotal(self):
-        deb = self.menu_widgets['buffcalc']['deb'][1].get()
-        buff = self.menu_widgets['buffcalc']['buff'][1].get()
-        wdmg = self.menu_widgets['buffcalc']['wdmg'][1].get()
+        vals = [ref.multiplier
+                for choices in [backend.DEBUFFS_LIST.values(),
+                                backend.BUFFS_LIST.values(),
+                                backend.WEAPON_BOOSTS_LIST.values()]
+                for (name, _, ref) in choices
+                for n1 in [self.menu_widgets['buffcalc'][n2][1].get() for n2 in ['deb', 'buff', 'wdmg']]
+                if name == n1 and name != 'Null']
 
-        if deb != 'Null':
-            deb = [ref.multiplier for (name, _, ref) in backend.DEBUFFS_LIST.values() if name == deb][0]
-        else:
-            deb = 1
-        
-        if buff != 'Null':
-            buff = [ref.multiplier for (name, _, ref) in backend.BUFFS_LIST.values() if name == buff][0]
-        else:
-            buff = 1
-
-        if wdmg != 'Null':
-            wdmg = [ref.multiplier for (name, _, ref) in backend.WEAPON_BOOSTS_LIST.values() if name == wdmg][0]
-        else:
-            wdmg = 1
-
-        self.menu_vars['buffcalc']['total'].set(str(round(deb * buff * wdmg, 2)))
+        self.menu_vars['buffcalc']['total'].set(str(round(prod(vals), 2)))
         self.focus()
 
     def test_str(self, target):

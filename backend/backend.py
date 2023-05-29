@@ -4,11 +4,9 @@ from backend.origin_traits import *
 import time
 import copy
 
-VERSION = 6
+VERSION = 7
 
-weapons_list = {
-
-}
+weapons_list = {}
 
 def create_weapon(weapon_settings: dict):
     try:
@@ -25,12 +23,13 @@ def delete_weapon(wep_name):
         return True
     else:
         return False
-    
+
 class Weapon:
     def __init__(self, name:str, fire_rate:float, reload_time:float, damage_per_shot:int, 
                  mag_cap:int, ammo_total:int, ammo_type:int=1, elemental_type:int=1, 
                  enhance1:bool=False, enhance2:bool=False, fusion_weapon:bool=False, burst_weapon:bool=False, 
-                 burst_bullets:int=0, perk_indices:list=[], buff_indices:list=[], origin_trait:int=0):
+                 burst_bullets:int=0, perk_indices:list=[], buff_indices:dict={}, origin_trait:int=0):
+        
         # Positional args
         self.name = name
         self.fire_rate = fire_rate
@@ -66,12 +65,16 @@ class Weapon:
         self.has_perks = True if self.perk_indices else False
 
         self.buff_indices = buff_indices
+        self.has_buffs = True if self.buff_indices else False
 
         self.origin_trait = origin_trait
         self.has_orgin_trait = True if self.origin_trait else False
 
         if self.has_perks:
             self.perk_literals = self.gen_perk_literals()
+
+        if self.has_buffs:
+            self.buff_literals = self.gen_buff_literals()
 
         if self.has_orgin_trait:
             self.origin_literal = self.gen_origin_literals()
@@ -82,6 +85,18 @@ class Weapon:
         fs = self.get_full_settings()
         enhance = [self.enhance1, self.enhance2]
         return [PERKS_LIST[perk_index][2](isenhanced=[enhance[idx]], **fs) for idx, perk_index in enumerate(self.perk_indices)]
+    
+    def gen_buff_literals(self):
+        arr = []
+        for k, v in self.buff_indices.items():
+            match k:
+                case 'deb':
+                    arr.append(DEBUFFS_LIST[v[0]][2](isconstant=v[1]))
+                case 'buff':
+                    arr.append(BUFFS_LIST[v[0]][2](isconstant=v[1]))
+                case 'wdmg':
+                    arr.append(WEAPON_BOOSTS_LIST[v[0]][2](isconstant=v[1]))
+        return arr
     
     def gen_origin_literals(self):
         return ORIGIN_TRAITS_LIST[self.origin_trait][2]()
@@ -128,6 +143,7 @@ class Weapon:
 
         # perk bug !!!
         perks = copy.deepcopy(self.perk_literals) if self.has_perks else None
+        buffs = copy.deepcopy(self.buff_literals) if self.has_buffs else None
         origin_trait = copy.deepcopy(self.origin_literal) if self.has_orgin_trait else None
 
         # Graph config
@@ -158,7 +174,7 @@ class Weapon:
         fire_timer = fusion_delay if self.fusion_weapon else 0
 
         # Init defaults
-        # Any given value in ti may be passed to or returned by a perk class
+        # Any given value in ti may be passed to or returned by a perk/buff/ot class
         ti = {
             # Current mag
             'ammo_magazine': self.mag_cap,
@@ -184,29 +200,35 @@ class Weapon:
         
         # Start main sim loop
         for tick in range(ticks):
-            # No more e+17 pls!!!
+            # Reset damage
             ti['dmg_output'] = self.damage_per_shot
 
             # Perks
-            # NOTE Im sure I can do this in a nasty list comp but I really dont want to
             if self.has_perks:
                 # On each perk
                 for perk in perks:
                     # If enabled
                     if perk.enabled:
-                        # Run perk output
+                        # Run output
                         perk_output = perk.output(**ti)
-                        # Replace old tick_info values for any new ones sent from perk
-                        for key, value in perk_output.items():
-                            ti[key] = value
+                        # Replace old tick_info values for any new ones
+                        for k, v in perk_output.items():
+                            ti[k] = v
 
+            # Buffs
+            if self.has_buffs:
+                for buff in buffs:
+                    if buff.enabled:
+                        buff_output = buff.output(**ti)
+                        for k, v in buff_output.items():
+                            ti[k] = v
+
+            # Origin trait
             if self.has_orgin_trait:
-                if origin_trait:
-                    # Rox: it keeps failing this bc it doesnt think it has an enabled variable??
-                    if origin_trait.enabled:
-                        origin_output = origin_trait.output(**ti)
-                        for key, value in origin_output.items():
-                            ti[key] = value
+                if origin_trait.enabled:
+                    origin_output = origin_trait.output(**ti)
+                    for k, v in origin_output.items():
+                        ti[k] = v
 
             # Standard Weapon
             if not self.burst_weapon:
@@ -278,7 +300,6 @@ class Weapon:
                             stale_dmg = t_dmg[tick]
 
         dps = [round(t_dmg[i] / x[i], round_coeff) for i in range(ticks) if not i == 0]
-        # tick bug !!!
         dps.insert(0, 0)
         # Cache graph data
         self.cached_graph_data = (x, dps)
