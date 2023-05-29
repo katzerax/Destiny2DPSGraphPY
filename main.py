@@ -49,8 +49,8 @@ class Settings:
                     'xlim': '45',
                     'ylabel': 'DPS',
                     'ylim': '300000',
-                    'initial_wep_slots': '3',
-                    'slot_colors': ''
+                    'initial_slots': '3',
+                    'colors': 'random'
                 }
             }
 
