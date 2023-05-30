@@ -166,6 +166,7 @@ class VorpalWeapon(Perk):
     
 # 8 - Target Lock
 class TargetLock(Perk):
+    """Landing hits within 0.2 seconds of each other grant a scaling damage buff up to 40%"""
     def __init__(self, isenhanced:bool, **_):
         super().__init__(isenhanced)
         if not isenhanced:
@@ -219,7 +220,7 @@ def CascadePoint(self):
 
 # 13 - Explosive Payload
 class ExplosivePayload(Perk):
-    # Rox: 20%?????????? since when?????? also why was this not just.. changed lmao to include the **_
+    # m: yamato is an idiot this scales off the precision multiplier of the gun lol
     """Flat 20% damage increase"""
     def __init__(self, isenhanced:bool, **_):
         super().__init__(isenhanced)
@@ -229,8 +230,17 @@ class ExplosivePayload(Perk):
         return {'dmg_output': dmg_output}
 
 # 14 - Frenzy
-def Frenzy(self):
-    pass
+class Frenzy(Perk):
+    """20% damage increase while you have dealt or recieved damage in the last 5 seconds"""
+    # m: we are just always going to assume being in combat but in fairness we could
+    # absolutely code the 5 / 5.5 (enh) checks for toggling the perk, even if it would
+    # never happen in actuality :P
+    def __init__(self, isenhanced:bool, **_):
+        super().__init__(isenhanced)
+
+    def output(self, dmg_output, **_):
+        dmg_output *= 1.2
+        return {'dmg_output': dmg_output}
 
 # 15 - Bait and Switch
 class BaitNSwitch(Perk):
@@ -277,12 +287,12 @@ PERKS_LIST = {
     5: ('Overflow', Overflow.__doc__, Overflow),
     6: ('Rapid Hit', RapidHit.__doc__, RapidHit),
     7: ('Vorpal Weapon', VorpalWeapon.__doc__, VorpalWeapon),
-    8: ('Target Lock', '', TargetLock),
+    8: ('Target Lock', TargetLock.__doc__, TargetLock),
     9: ('High Impact Reserves', HighImpactReserves.__doc__, HighImpactReserves),
     10: ('Firing Line', FiringLine.__doc__, FiringLine),
     11: ('STOP', ''),
     12: ('DONT', ''),
     13: ('Explosive Payload', ExplosivePayload.__doc__, ExplosivePayload),
-    14: ('DO NOT', ''),
+    14: ('Frenzy', Frenzy.__doc__, Frenzy),
     15: ('Bait and Switch', BaitNSwitch.__doc__, BaitNSwitch),
 }
