@@ -194,7 +194,7 @@ class HighImpactReserves(Perk):
         elif isenhanced:
             self.hir_mag = (mag_cap/(4/3))
 
-    def output(self, ammo_magazine, dmg_output, enhanced_perks, **_):
+    def output(self, ammo_magazine, dmg_output, **_):
         if ammo_magazine < self.hir_mag:
             hir_scalar = ammo_magazine / self.hir_mag
             dmg_output = (hir_scalar * (dmg_output * 1.125)) + ((1 - hir_scalar) * (dmg_output * 1.255))
