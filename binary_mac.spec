@@ -7,9 +7,9 @@ a = Analysis(
     pathex=['.'],
     binaries=[],
     datas=[
-    ('backend/*', '_backend'),
-    ('frontend/*', '_frontend'),
-    ('images/*', '_images'),
+    ('backend/*', 'backend'),
+    ('frontend/*', 'frontend'),
+    ('images/*', 'images'),
     ('presets.json', '.'),
     ],
     hiddenimports=[],
