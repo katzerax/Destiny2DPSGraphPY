@@ -135,15 +135,15 @@ class RapidHit(Perk):
             case 0:
                 return reload_time
             case 1:
-                reload_time = round(reload_time / 1.1, round_coeff)
+                reload_time = round(reload_time * 0.99, round_coeff)
             case 2:
-                reload_time = round(reload_time / 1.13, round_coeff)
+                reload_time = round(reload_time * 0.96, round_coeff)
             case 3:
-                reload_time = round(reload_time / 1.15, round_coeff)
+                reload_time = round(reload_time * 0.95, round_coeff)
             case 4:
-                reload_time = round(reload_time / 1.17, round_coeff)
+                reload_time = round(reload_time * 0.945, round_coeff)
             case 5 | _:
-                reload_time = round(reload_time / 1.2, round_coeff)
+                reload_time = round(reload_time * 0.92, round_coeff)
         return {'reload_time': reload_time}
 
 # 7 - Vorpal Weapon
