@@ -1,8 +1,6 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-
 block_cipher = None
-
 
 a = Analysis(
     ['main.py'],
@@ -12,7 +10,7 @@ a = Analysis(
     ('backend/*', 'backend'),
     ('frontend/*', 'frontend'),
     ('images/*', 'images'),
-    ('presets.json', '_presets.json'),
+    ('presets.json', '.'),
     ],
     hiddenimports=[],
     hookspath=[],
@@ -42,7 +40,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='images/icon-transparent-01.ico'
+    icon='images/icon-transparent-01.ico',
 )
 coll = COLLECT(
     exe,
@@ -52,5 +50,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='main',
+    name='Destiny2DPSGraphPY',
 )
