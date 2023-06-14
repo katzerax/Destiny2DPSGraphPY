@@ -151,17 +151,16 @@ class VorpalWeapon(Perk):
     """Flat damage increase of 10% to heavies, 15% to specials, and 20% to primaries."""
     def __init__(self, isenhanced:bool, ammo_type, **_):
         super().__init__(isenhanced)
-        self.ammo_type = ammo_type
-        match self.ammo_type:
+        match ammo_type:
             case 1: # Primary Ammo
-                self.damage_scalar = 1.2
+                self.scalar = 1.2
             case 2: # Special Ammo
-                self.damage_scalar = 1.15
-            case 3 | _: # Heavy Ammo
-                self.damage_scalar = 1.1
+                self.scalar = 1.15
+            case 3: # Heavy Ammo
+                self.scalar = 1.1
 
     def output(self, dmg_output, **_):
-        dmg_output *= self.damage_scalar
+        dmg_output *= self.scalar
         return {'dmg_output': dmg_output}
     
 # 8 - Target Lock
@@ -170,17 +169,17 @@ class TargetLock(Perk):
     def __init__(self, isenhanced:bool, **_):
         super().__init__(isenhanced)
         if not isenhanced:
-            self.tl_bonus1 = 1.1673
-            self.tl_bonus2 = 1.4
+            self.bonus1 = 1.1673
+            self.bonus2 = 1.4
         elif isenhanced:
-            self.tl_bonus1 = 1.1882
-            self.tl_bonus2 = 1.45
+            self.bonus1 = 1.1882
+            self.bonus2 = 1.45
         
     def output(self, dmg_output, ammo_fired, mag_cap, **_):
-        tl_scalar = (ammo_fired / mag_cap) / 1.105
-        if tl_scalar >= (0.125 / 1.105) and tl_scalar <= 1:
-            dmg_output = ((1 - tl_scalar) * (dmg_output * self.tl_bonus1)) + (tl_scalar * (dmg_output * self.tl_bonus2))
-        elif tl_scalar > 1:
+        bonus_scalar = (ammo_fired / mag_cap) / 1.105
+        if bonus_scalar >= (0.125 / 1.105) and bonus_scalar <= 1:
+            dmg_output = ((1 - bonus_scalar) * (dmg_output * self.tl_bonus1)) + (bonus_scalar * (dmg_output * self.tl_bonus2))
+        elif bonus_scalar > 1:
             dmg_output *= self.tl_bonus2
         return {'dmg_output': dmg_output}
 
@@ -196,8 +195,8 @@ class HighImpactReserves(Perk):
 
     def output(self, ammo_magazine, dmg_output, **_):
         if ammo_magazine < self.hir_mag:
-            hir_scalar = ammo_magazine / self.hir_mag
-            dmg_output = (hir_scalar * (dmg_output * 1.125)) + ((1 - hir_scalar) * (dmg_output * 1.255))
+            scalar = ammo_magazine / self.hir_mag
+            dmg_output = (scalar * (dmg_output * 1.125)) + ((1 - scalar) * (dmg_output * 1.255))
         return {'dmg_output': dmg_output}
 
 # 10 - Firing Line
@@ -211,12 +210,47 @@ class FiringLine(Perk):
         return {'dmg_output': dmg_output}
 
 # 11 - Explosive Light
-def ExplosiveLight(self):
-    pass
+class ExplosiveLight(Perk):
+    """Nuts"""
+    def __init__(self, isenhanced:bool, WEAPON_FLAG:str, weapon_type:str='', **_):
+        super().__init__(isenhanced)
+        self.shotcount = 6
+
+        if WEAPON_FLAG == 'FRAMED':
+            match weapon_type:
+                case 'Grenade Launcher':
+                    self.scalar = 1.42
+                case 'Rocket Launcher' | _:
+                    self.scalar = 1.25
+        else:
+            self.scalar = 1.25
+
+    def output(self, dmg_output, **_):
+        dmg_output *= self.scalar
+        return {'dmg_output': dmg_output}
 
 # 12 - Cascade Point
-def CascadePoint(self):
-    pass
+class CascadePoint(Perk):
+    """Balls"""
+    def __init__(self, isenhanced:bool, WEAPON_FLAG:str, weapon_type:str='', **_):
+        super().__init__(isenhanced)
+        self.timer = 2.5
+
+        if WEAPON_FLAG == 'FRAMED':
+            match weapon_type:
+                case 'Machine Gun' | 'Submachine Gun':
+                    self.scalar = 0.7
+                case _:
+                    self.scalar = 0.6
+        else:
+            self.scalar = 0.6
+
+    def output(self, time_elapsed, fire_delay, **_):
+        if time_elapsed <= self.timer:
+            return {'fire_delay': fire_delay * self.scalar}
+        else:
+            self.enabled = False
+            return {'fire_delay': fire_delay}
 
 # 13 - Explosive Payload
 class ExplosivePayload(Perk):
@@ -290,8 +324,8 @@ PERKS_LIST = {
     8: ('Target Lock', TargetLock.__doc__, TargetLock),
     9: ('High Impact Reserves', HighImpactReserves.__doc__, HighImpactReserves),
     10: ('Firing Line', FiringLine.__doc__, FiringLine),
-    11: ('STOP', ''),
-    12: ('DONT', ''),
+    11: ('Explosive Light', ExplosiveLight.__doc__, ExplosiveLight),
+    12: ('Cascade Point', CascadePoint.__doc__, CascadePoint),
     13: ('Explosive Payload', ExplosivePayload.__doc__, ExplosivePayload),
     14: ('Frenzy', Frenzy.__doc__, Frenzy),
     15: ('Bait and Switch', BaitNSwitch.__doc__, BaitNSwitch),

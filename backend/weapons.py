@@ -1,13 +1,154 @@
 import copy
 import time
-from origin_traits import ORIGIN_TRAITS_LIST
-from perks import PERKS_LIST
-from buffs import BUFFS_LIST, WEAPON_BOOSTS_LIST, DEBUFFS_LIST
+from backend.origin_traits import ORIGIN_TRAITS_LIST
+from backend.perks import PERKS_LIST
+from backend.buffs import BUFFS_LIST, WEAPON_BOOSTS_LIST, DEBUFFS_LIST
+
+VERSION = 7
+
+def burst_wep_calculate(self):
+    if self.cached_graph_data:
+        if do_cmd_prints:
+            print(f'Found cached graph data for weapon: {self.name}')
+        return self.cached_graph_data
+    
+    if do_cmd_prints:
+        print(f'Starting damage calculation for weapon: {self.name}')
+        stale_dmg = 0
+        realtime_elapsed = time.time()
+
+    perks = copy.deepcopy(self.perk_literals) if self.has_perks else None
+    buffs = copy.deepcopy(self.buff_literals) if self.has_buffs else None
+    origin_trait = copy.deepcopy(self.origin_literal) if self.has_orgin_trait else None
+
+    ticks = 4500
+    x_increments = 0.01
+    x = [round(i * x_increments, 5) for i in range(ticks)]
+    round_coeff = len(str(x_increments).split(".")[1])
+    t_dmg = []
+
+    ti = {
+        # Current mag
+        'ammo_magazine': self.mag_cap,
+        # All available ammo
+        'ammo_total': self.ammo_total,
+        # Ammo types
+        'ammo_type': self.ammo_type,
+        'element': self.element,
+        # Ammo expended
+        'ammo_fired': 0,
+        # Mag size
+        'mag_cap': self.mag_cap,
+        # Reload time
+        'reload_time': self.reload_time,
+        # Damage output
+        'dmg_output': self.damage_per_shot,
+        # Running totals
+        'time_elapsed': 0,
+        'total_dmg': 0,
+        # Some perks require round coeff
+        'round_coeff': round_coeff,
+    }
+
+    # Burst fire mode cuts the normal fire delay between firing in half, although it adds the half back as a buffer between every fire delay.
+    # So half is firing the burst, the other half is waiting for the burst to be ready again
+    # For Fusion Weapons + Burst Weapons this is done similarly; however, Fusion Weapons wait their full charge sequence and don't start charging until the burst is done
+    # Currently Fusion charge time is dictated by RPM calculation (120 RPM = 0.5s fire delay : therefore, 500ms charge time)
+    burst_shot = 0
+    ti['fire_delay'] = round(( 60 / self.fire_rate ) / 2, round_coeff)
+    if not self.fusion_weapon:
+        burst_delay = round((( 60 / self.fire_rate ) / 2 ) / self.burst_bullets, round_coeff)
+        fire_timer = 0
+    else:
+        # Rox: This looks more correct for stormchaser but i may be wrong...
+        # Requires more evidence I think
+        burst_delay = round((( 60 / self.fire_rate ) ) / self.burst_bullets, round_coeff)
+        fusion_delay = round( 60 / self.fire_rate, round_coeff)
+        fire_timer = fusion_delay
+        # M: As of now agg LFRs are the only case where this will apply, but this is a pretty
+        # reasonable bandaid for the ammo problems they cause
+        ti['ammo_magazine'] *= self.burst_bullets
+        ti['mag_cap'] *= self.burst_bullets
+        ti['ammo_total'] *= self.burst_bullets
+
+    for tick in range(ticks):
+        ti['dmg_output'] = self.damage_per_shot
+
+        if self.has_perks:
+            for perk in perks:
+                if perk.enabled:
+                    perk_output = perk.output(**ti)
+                    for k, v in perk_output.items():
+                        ti[k] = v
+
+        if self.has_buffs:
+            for buff in buffs:
+                if buff.enabled:
+                    buff_output = buff.output(**ti)
+                    for k, v in buff_output.items():
+                        ti[k] = v
+
+        if self.has_orgin_trait:
+            if origin_trait.enabled:
+                origin_output = origin_trait.output(**ti)
+                for k, v in origin_output.items():
+                    ti[k] = v
+
+        # Burst type weapon
+        # Checks to make sure there is still ammo left
+        if ti['ammo_total'] == 0:
+            ti['total_dmg'] = ti['total_dmg']
+        # Checks to see if weapon needs a reload
+        elif ti['ammo_magazine'] == 0:
+            fire_timer += ti['reload_time']
+            fire_timer -= ti['fire_delay'] if self.fusion_weapon else 0
+            fire_timer = round(fire_timer, round_coeff)
+            # Rox: I want to test how things function without this 'ammo_fired' reset, as it may prove to be more beneficial to track specific needs within specific perks
+            #ammo_fired = 0
+            ti['ammo_magazine'] = ti['mag_cap']
+        elif ti['time_elapsed'] >= fire_timer:
+            # Checks to ensure that weapon is still within burst timing/bullet ammount
+            if burst_shot >= 0 and burst_shot < self.burst_bullets:
+                fire_timer += burst_delay
+                fire_timer = round(fire_timer, round_coeff)
+                ti['total_dmg'] += ti['dmg_output']
+                burst_shot += 1
+                ti['ammo_fired'] += 1
+                ti['ammo_magazine'] -= 1
+                ti['ammo_total'] -= 1
+            # Once weapon passes this, it gets the rest of the standard fire delay
+            elif burst_shot >= self.burst_bullets:
+                burst_shot = 0
+                fire_timer += (fusion_delay - burst_delay) if self.fusion_weapon else ti['fire_delay']
+                fire_timer = round(fire_timer, round_coeff)
+    
+        ti['time_elapsed'] = round(ti['time_elapsed'] + x_increments, 5)
+        t_dmg.append(ti['total_dmg'])
+        if do_cmd_prints:
+            if stale_dmg != t_dmg[tick]:
+                if tick != 0:
+                    print(f'Weapon: {self.name} | Damage at {tick/100} secs: {t_dmg[tick]} | DPS: [{round(t_dmg[tick]/(tick/100), 1)}] | Per Shot: < {ti["dmg_output"]} > ')
+                    stale_dmg = t_dmg[tick]
+
+    dps = [round(t_dmg[i] / x[i], round_coeff) for i in range(ticks) if not i == 0]
+    dps.insert(0, 0)
+    self.cached_graph_data = (x, dps)
+
+    if do_cmd_prints:
+        realtime_elapsed = round(realtime_elapsed - time.time(), 2) * -1000
+        print(f'Calculation for weapon: {self.name} took {realtime_elapsed} ms')
+
+    return x, dps
 
 # Weapon Superclass
 class BaseWeapon:
-    def __init__(self, name:str, enhance1:bool=False, enhance2:bool=False, perk_indices:list=[], buff_indices:dict={}, origin_trait:int=0):
+    BACKEND_VERSION = VERSION
+    def __init__(self, name:str, damage_per_shot:int, mag_cap:int, ammo_total:int,
+                  perk_indices:list=[], enhance1:bool=False, enhance2:bool=False, buff_indices:dict={}, origin_trait:int=0, **_):
         self.name = name
+        self.damage_per_shot = damage_per_shot
+        self.mag_cap = mag_cap
+        self.ammo_total = ammo_total
 
         self.perk_indices = perk_indices
         self.enhance1 = enhance1
@@ -22,7 +163,6 @@ class BaseWeapon:
         
         self.cached_graph_data = None
 
-    def gen_all_literals(self):
         if self.has_perks:
             self.perk_literals = self.gen_perk_literals()
 
@@ -58,19 +198,35 @@ class BaseWeapon:
             if value == False or 0 or not bool(value):
                 del settings[key]
         return settings
-    
-    def DamageCalculate(self):
-        # Here we would modify to remove all of the burst weapon code
-        # because we would redefine damagecalculate to tailor it to
-        # burst weapons
-        pass
 
 # Sandbox-type weapons (current structure)
 class SandboxWeapon(BaseWeapon):
     WEAPON_FLAG = 'SANDBOX'
-    def __init__(self) -> None:
-        super().__init__()
-        # Old Weapon class init code here, should just be direct copy
+    def __init__(self, fire_rate:float, reload_time:float, fusion_weapon:bool=False, burst_weapon:bool=False, burst_bullets:int=0, **settings):
+
+        # Positional args
+        self.fire_rate = fire_rate
+        self.reload_time = reload_time
+
+        # Isnt a frontend for these yet
+        self.ammo_type = 3
+        self.elemental_type = 3
+
+        # This input validation for burst and swap may be redundant
+        # because we will need to validate in the frontend anyway
+        self.fusion_weapon = fusion_weapon
+        if not burst_weapon or not burst_bullets:
+            self.burst_weapon = False
+            self.burst_bullets = 0
+        else:
+            if burst_bullets <= 0:
+                self.burst_weapon = 0
+                self.burst_bullets = 0
+            else:
+                self.burst_weapon = burst_weapon
+                self.burst_bullets = burst_bullets
+
+        super().__init__(**settings)
 
     def get_full_settings(self):
         return {
@@ -93,24 +249,202 @@ class SandboxWeapon(BaseWeapon):
         }
 
     def DamageCalculate(self):
-        pass
+        # Check for cached data
+        if self.cached_graph_data:
+            if do_cmd_prints:
+                print(f'Found cached graph data for weapon: {self.name}')
+            return self.cached_graph_data
+        
+        # Logging
+        if do_cmd_prints:
+            print(f'Starting damage calculation for weapon: {self.name}')
+            stale_dmg = 0
+            realtime_elapsed = time.time()
+
+        # perk bug !!!
+        perks = copy.deepcopy(self.perk_literals) if self.has_perks else None
+        buffs = copy.deepcopy(self.buff_literals) if self.has_buffs else None
+        origin_trait = copy.deepcopy(self.origin_literal) if self.has_orgin_trait else None
+
+        # Graph config
+        ticks = 4500
+        x_increments = 0.01
+        x = [round(i * x_increments, 5) for i in range(ticks)]
+        round_coeff = len(str(x_increments).split(".")[1])
+    
+        t_dmg = []
+
+        if not self.burst_weapon:
+            fire_delay = round(60/self.fire_rate, round_coeff)
+        elif self.burst_weapon and not self.fusion_weapon:
+            # Burst fire mode cuts the normal fire delay between firing in half, although it adds the half back as a buffer between every fire delay.
+            # So half is firing the burst, the other half is waiting for the burst to be ready again
+            # For Fusion Weapons + Burst Weapons this is done similarly; however, Fusion Weapons wait their full charge sequence and don't start charging until the burst is done
+            # Currently Fusion charge time is dictated by RPM calculation (120 RPM = 0.5s fire delay : therefore, 500ms charge time)
+            fire_delay = round((60/self.fire_rate)/2, round_coeff)
+            burst_delay = round(((60/self.fire_rate)/2)/self.burst_bullets, round_coeff)
+
+            # Rox: This looks more correct for stormchaser but i may be wrong...
+            # Requires more evidence I think
+        elif self.burst_weapon and self.fusion_weapon:
+            fire_delay = round((60/self.fire_rate)/2, round_coeff)
+            burst_delay = round(((60/self.fire_rate))/self.burst_bullets, round_coeff) 
+
+        fusion_delay = round(60/self.fire_rate, round_coeff)
+        fire_timer = fusion_delay if self.fusion_weapon else 0
+
+        # Init defaults
+        # Any given value in ti may be passed to or returned by a perk/buff/ot class
+        ti = {
+            # Current mag
+            'ammo_magazine': self.mag_cap,
+            # All available ammo
+            'ammo_total': self.ammo_total,
+            # Heavy, special, kinetic
+            'ammo_type': self.ammo_type,
+            # Ammo expended
+            'ammo_fired': 0,
+            'burst_shot': 0,
+            # Mag size
+            'mag_cap': self.mag_cap,
+            # Reload time
+            'reload_time': self.reload_time,
+            # Damage output
+            'dmg_output': self.damage_per_shot,
+            # Running totals
+            'time_elapsed': 0,
+            'total_dmg': 0,
+            # Some perks require round coeff
+            'round_coeff': round_coeff,
+        }
+        
+        # Start main sim loop
+        for tick in range(ticks):
+            # Reset damage
+            ti['dmg_output'] = self.damage_per_shot
+
+            # Perks
+            if self.has_perks:
+                # On each perk
+                for perk in perks:
+                    # If enabled
+                    if perk.enabled:
+                        # Run output
+                        perk_output = perk.output(**ti)
+                        # Replace old tick_info values for any new ones
+                        for k, v in perk_output.items():
+                            ti[k] = v
+
+            # Buffs
+            if self.has_buffs:
+                for buff in buffs:
+                    if buff.enabled:
+                        buff_output = buff.output(**ti)
+                        for k, v in buff_output.items():
+                            ti[k] = v
+
+            # Origin trait
+            if self.has_orgin_trait:
+                if origin_trait.enabled:
+                    origin_output = origin_trait.output(**ti)
+                    for k, v in origin_output.items():
+                        ti[k] = v
+
+            # Standard Weapon
+            if not self.burst_weapon:
+                # Checks to make sure there is still ammo left
+                if ti['ammo_total'] == 0:
+                    ti['total_dmg'] = ti['total_dmg']
+                # Checks to see if weapon needs a reload
+                elif ti['ammo_magazine'] == 0:
+                    fire_timer += ti['reload_time']
+                    fire_timer -= fire_delay if self.fusion_weapon == True else 0
+                    fire_timer = round(fire_timer, round_coeff)
+                    ti['ammo_fired'] = 0
+                    ti['ammo_magazine'] = ti['mag_cap']
+                # Checks to fire
+                elif ti['time_elapsed'] >= fire_timer:
+                    ti['total_dmg'] += ti['dmg_output']
+                    fire_timer += fire_delay
+                    fire_timer = round(fire_timer, round_coeff)
+                    ti['ammo_fired'] += 1
+                    ti['ammo_magazine'] -= 1
+                    ti['ammo_total'] -= 1
+
+                # Increments time value and appends total damage to a list to calculate over the index points later                        
+                ti['time_elapsed'] = round(ti['time_elapsed'] + x_increments, 5)
+                t_dmg.append(ti['total_dmg'])
+                # Logging
+                if do_cmd_prints:
+                    if stale_dmg != t_dmg[tick]:
+                        if tick != 0:
+                            print(f'Weapon: {self.name} | Damage at {tick/100} secs: {t_dmg[tick]} | DPS: [{round(t_dmg[tick]/(tick/100), 1)}] | Per Shot: <{ti["dmg_output"]}> ')
+                            stale_dmg = t_dmg[tick]
+
+            # Burst type weapon
+            elif self.burst_weapon:
+                # Checks to make sure there is still ammo left
+                if ti['ammo_total'] == 0:
+                    ti['total_dmg'] = ti['total_dmg']
+                # Checks to see if weapon needs a reload
+                elif ti['ammo_magazine'] == 0:
+                    fire_timer += ti['reload_time']
+                    fire_timer -= fire_delay if self.fusion_weapon else 0
+                    fire_timer = round(fire_timer, round_coeff)
+                    # Rox: I want to test how things function without this 'ammo_fired' reset, as it may prove to be more beneficial to track specific needs within specific perks
+                    #ammo_fired = 0
+                    ti['ammo_magazine'] = ti['mag_cap']
+                elif ti['time_elapsed'] >= fire_timer:
+                    # Checks to ensure that weapon is still within burst timing/bullet ammount
+                    if ti['burst_shot'] >= 0 and ti['burst_shot'] < self.burst_bullets:
+                        fire_timer += burst_delay
+                        fire_timer = round(fire_timer, round_coeff)
+                        ti['total_dmg'] += ti['dmg_output']
+                        ti['burst_shot'] += 1
+                        ti['ammo_fired'] += 1
+                        ti['ammo_magazine'] -= 1
+                        ti['ammo_total'] -= 1
+                    # Once weapon passes this, it gets the rest of the standard fire delay
+                    elif ti['burst_shot'] >= self.burst_bullets:
+                        ti['burst_shot'] = 0
+                        fire_timer += (fusion_delay - burst_delay) if self.fusion_weapon else fire_delay
+                        fire_timer = round(fire_timer, round_coeff)
+            
+                ti['time_elapsed'] = round(ti['time_elapsed'] + x_increments, 5)
+                t_dmg.append(ti['total_dmg'])
+                # Logging
+                if do_cmd_prints:
+                    if stale_dmg != t_dmg[tick]:
+                        if tick != 0:
+                            print(f'Weapon: {self.name} | Damage at {tick/100} secs: {t_dmg[tick]} | DPS: [{round(t_dmg[tick]/(tick/100), 1)}] | Per Shot: < {ti["dmg_output"]} > ')
+                            stale_dmg = t_dmg[tick]
+
+        dps = [round(t_dmg[i] / x[i], round_coeff) for i in range(ticks) if not i == 0]
+        dps.insert(0, 0)
+        # Cache graph data
+        self.cached_graph_data = (x, dps)
+        # Logging
+        if do_cmd_prints:
+            realtime_elapsed = round(realtime_elapsed - time.time(), 2) * -1000
+            print(f'Calculation for weapon: {self.name} took {realtime_elapsed} ms')
+
+        return x, dps
 
 # Frame-type weapons (new structure)
 class FramedWeapon(BaseWeapon):
     WEAPON_FLAG = 'FRAMED'
-    def __init__(self, archetype:str, reload_stat:int, damage_per_shot:int, 
-                 mag_cap:int, ammo_total:int, element:int, **settings):
-        super().__init__(**settings)
-
+    def __init__(self, archetype:str, reload_stat:int, element:str, fire_rate:int, fusion_weapon:bool=False, burst_weapon:bool=False, burst_bullets:int=0, **settings):
+        
         self.archetype = archetype
         self.element = element
-        self.damage_per_shot = damage_per_shot
-        self.mag_cap = mag_cap
-        self.ammo_total = ammo_total
-        self.reload_time = self.get_reload_speed(reload_stat, self.reload_upper, self.reload_middle, self.reload_lower)
+        self.fire_rate = fire_rate
+        self.fusion_weapon = fusion_weapon
+        self.burst_weapon = burst_weapon
+        self.burst_bullets = burst_bullets
         self.reload_stat = reload_stat
+        self.reload_time = self.get_reload_speed(reload_stat, self.reload_upper, self.reload_middle, self.reload_lower)
 
-        self.gen_all_literals()
+        super().__init__(**settings)
     
     def get_reload_speed(self, reload_stat, upper_scalar, mid_scalar, bot_scalar):
         return round((upper_scalar * (reload_stat ** 2) + mid_scalar * reload_stat + bot_scalar)/30, 2)
@@ -180,15 +514,17 @@ class FramedWeapon(BaseWeapon):
             'ammo_magazine': self.mag_cap,
             # All available ammo
             'ammo_total': self.ammo_total,
-            # Heavy, special, kinetic
+            # Ammo types
             'ammo_type': self.ammo_type,
+            'element': self.element,
             # Ammo expended
             'ammo_fired': 0,
-            'burst_shot': 0,
             # Mag size
             'mag_cap': self.mag_cap,
             # Reload time
             'reload_time': self.reload_time,
+            'reload_cap': self.reload_cap,
+            'fire_delay': fire_delay,
             # Damage output
             'dmg_output': self.damage_per_shot,
             # Running totals
@@ -236,20 +572,21 @@ class FramedWeapon(BaseWeapon):
             # Checks to see if weapon needs a reload
             elif ti['ammo_magazine'] == 0:
                 fire_timer += ti['reload_time']
-                fire_timer -= fire_delay if self.fusion_weapon else 0
+                # NOTE This looked incorect (was -=) so I changed it but please correct me if im wrong
+                fire_timer += ti['fire_delay'] if self.fusion_weapon else 0
                 fire_timer = round(fire_timer, round_coeff)
                 ti['ammo_fired'] = 0
                 ti['ammo_magazine'] = ti['mag_cap']
             # Checks to fire
             elif ti['time_elapsed'] >= fire_timer:
                 ti['total_dmg'] += ti['dmg_output']
-                fire_timer += fire_delay
+                fire_timer += ti['fire_delay']
                 fire_timer = round(fire_timer, round_coeff)
                 ti['ammo_fired'] += 1
                 ti['ammo_magazine'] -= 1
                 ti['ammo_total'] -= 1
 
-            # Increments time value and appends total damage to a list to calculate over the index points later                        
+            # Increment time value and append total damage                  
             ti['time_elapsed'] = round(ti['time_elapsed'] + x_increments, 5)
             t_dmg.append(ti['total_dmg'])
             # Logging
@@ -286,17 +623,11 @@ class PulseRifle(FramedWeapon):
     reload_lower = 96.6938
     reload_cap = 0.9
 
-    def __init__(self, fire_rate:int, burst_bullets:int=3, **settings):
-        super().__init__(**settings)
-
-        self.fire_rate = fire_rate
-        self.burst_bullets = burst_bullets
+    def __init__(self, burst_bullets:int=3, **settings):
+        super().__init__(burst_weapon=True, burst_bullets=burst_bullets, **settings)
 
     def DamageCalculate(self):
-        # Edited to ONLY have burst weapon code instead of both
-        # we wouldnt have to do this unless the calculation for a specific
-        # weapon type should require special alterations
-        pass
+        return burst_wep_calculate(self)
 
 # Scout Rifle
 class ScoutRifle(FramedWeapon):
@@ -309,10 +640,8 @@ class ScoutRifle(FramedWeapon):
     reload_lower = 103.15
     reload_cap = 0.93
 
-    def __init__(self, fire_rate:int, **settings):
+    def __init__(self, **settings):
         super().__init__(**settings)
-
-        self.fire_rate = fire_rate
 
 # Hand Cannon
 class HandCannon(FramedWeapon):
@@ -325,10 +654,8 @@ class HandCannon(FramedWeapon):
     reload_lower = 138.482
     reload_cap = 1.47
 
-    def __init__(self, fire_rate:int, **settings):
+    def __init__(self, **settings):
         super().__init__(**settings)
-
-        self.fire_rate = fire_rate
 
 # Submachine Gun
 class SubmachineGun(FramedWeapon):
@@ -341,10 +668,8 @@ class SubmachineGun(FramedWeapon):
     reload_lower = 85.4344
     reload_cap = 0.97
 
-    def __init__(self, fire_rate:int, **settings):
+    def __init__(self, **settings):
         super().__init__(**settings)
-
-        self.fire_rate = fire_rate
 
 # Auto Rifle
 class AutoRifle(FramedWeapon):
@@ -357,10 +682,8 @@ class AutoRifle(FramedWeapon):
     reload_lower = 92.5862
     reload_cap = 0.867
 
-    def __init__(self, fire_rate:int, **settings):
+    def __init__(self, **settings):
         super().__init__(**settings)
-
-        self.fire_rate = fire_rate
 
 # Sidearm
 class Sidearm(FramedWeapon):
@@ -373,12 +696,14 @@ class Sidearm(FramedWeapon):
     reload_lower = 68.6402
     reload_cap = 0.73
 
-    def __init__(self, fire_rate:int, burst_weapon:bool=False, burst_bullets:int=0, **settings):
+    def __init__(self, **settings):
         super().__init__(**settings)
 
-        self.fire_rate = fire_rate
-        self.burst_weapon = burst_weapon
-        self.burst_bullets = burst_bullets
+    def DamageCalculate(self):
+        if self.burst_weapon:
+            return burst_wep_calculate(self)
+        else:
+            return super().DamageCalculate()
 
 ####################
 ## Energy Weapons ##
@@ -395,10 +720,9 @@ class Shotgun(FramedWeapon):
     reload_lower = 42.4795
     reload_cap = 0.17
 
-    def __init__(self, fire_rate:int, **settings):
+    def __init__(self, **settings):
         super().__init__(**settings)
 
-        self.fire_rate = fire_rate
         self.reload_time = round(self.reload_time * self.mag_cap, 2)
 
         # NOTE damagecalculate would have to be redefined here to include single shell
@@ -421,10 +745,8 @@ class SniperRifle(FramedWeapon):
     reload_lower = 123.12
     reload_cap = 1.73
 
-    def __init__(self, fire_rate:int, **settings):
+    def __init__(self, **settings):
         super().__init__(**settings)
-
-        self.fire_rate = fire_rate
 
 # Fusion Rifle
 class FusionRifle(FramedWeapon):
@@ -438,10 +760,9 @@ class FusionRifle(FramedWeapon):
     reload_cap = 1.07
 
     def __init__(self, charge_time:int, **settings):
-        super().__init__(**settings)
-
+        fire_rate = round((1000 / charge_time) * 60, 0)
+        super().__init__(fire_rate=fire_rate, fusion_weapon=True, **settings)
         self.charge_time = charge_time
-        self.fire_rate = round((1000 / charge_time) * 60, 0)
 
 # Breach Grenade Launcher
 class BreachGL(FramedWeapon):
@@ -454,10 +775,8 @@ class BreachGL(FramedWeapon):
     reload_lower = 104.714
     reload_cap = 1.5
 
-    def __init__(self, fire_rate:int, **settings):
+    def __init__(self, **settings):
         super().__init__(**settings)
-
-        self.fire_rate = fire_rate
 
 # Trace Rifle
 class TraceRifle(FramedWeapon):
@@ -473,10 +792,8 @@ class TraceRifle(FramedWeapon):
     reload_lower = 92.5862
     reload_cap = 0.87
 
-    def __init__(self, fire_rate:int, **settings):
+    def __init__(self, **settings):
         super().__init__(**settings)
-
-        self.fire_rate = fire_rate
 
 ###################
 ## Power Weapons ##
@@ -493,10 +810,8 @@ class RocketLauncher(FramedWeapon):
     reload_lower = 131.542
     reload_cap = 2.1
 
-    def __init__(self, fire_rate:int, blast_radius:int, **settings):
+    def __init__(self, blast_radius:int, **settings):
         super().__init__(**settings)
-
-        self.fire_rate = fire_rate
         self.blast_radius = blast_radius
 
 # Grenade Launcher
@@ -510,10 +825,8 @@ class GrenadeLauncher(FramedWeapon):
     reload_lower = 132.442
     reload_cap = 1.97
 
-    def __init__(self, fire_rate:int, **settings):
+    def __init__(self, **settings):
         super().__init__(**settings)
-
-        self.fire_rate = fire_rate
 
 # Linear Fusion Rifle
 class LinearFusionRifle(FramedWeapon):
@@ -526,16 +839,16 @@ class LinearFusionRifle(FramedWeapon):
     reload_lower = 93.0427
     reload_cap = 1.13
 
-    def __init__(self, charge_time:int, burst_weapon:bool=False, burst_bullets:int=0, **settings):
-        super().__init__(**settings)
-
+    def __init__(self, charge_time:int, **settings):
+        fire_rate = round((1000 / charge_time) * 60, 0)
+        super().__init__(fire_rate=fire_rate, fusion_weapon=True, **settings)
         self.charge_time = charge_time
-        self.fire_rate = round((1000 / charge_time) * 60, 0)
-        self.burst_weapon = burst_weapon
-        self.burst_bullets = burst_bullets
 
-        # NOTE if aggressive frame make damagecalculate the burst version?
-        # or see if we can find a more intuitive way to do aggressive lfrs
+    def DamageCalculate(self):
+        if self.burst_weapon:
+            return burst_wep_calculate(self)
+        else:
+            return super().DamageCalculate()
 
 # Machine Gun
 class MachineGun(FramedWeapon):
@@ -548,10 +861,8 @@ class MachineGun(FramedWeapon):
     reload_lower = 194.189
     reload_cap = 1.4
 
-    def __init__(self, fire_rate:int, **settings):
+    def __init__(self, **settings):
         super().__init__(**settings)
-
-        self.fire_rate = fire_rate
 
 FRAMES_LIST = {
     'Kinetic': {
@@ -725,10 +1036,12 @@ FRAMES_LIST = {
         'Grenade Launcher': ( {
             'el_exclude': [0],
             'Adaptive Frame': {
-                'fire_rate': 120
+                'fire_rate': 120,
+                'blast_radius': 50
             },
             'Rapid-Fire Frame': {
-                'fire_rate': 150
+                'fire_rate': 150,
+                'blast_radius': 20
             }
         }, GrenadeLauncher ),
         'Linear Fusion Rifle': ( {
