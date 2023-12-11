@@ -28,6 +28,11 @@ cd Destiny2DPSGraphPY
 pip install -r requirements.txt
 ```
 6.0 and greater will be packaged into a zip file. Unzip the contents to a directory that works well. There should be several python files including main, perks, backend, etc. There should also be a settings.ini file, and if not it will generate one for you.
+There may also be a compiled binary for an OS, but you should be able to compile it yourself given what we include. You can compile currently to windows or mac, using:
+```
+pyinstaller [spec name of your os].spec
+```
+This is not necessary if you just want to run it through python. Just run main.py.
 
 ## Usage
 As of release 6.0, the code has been completely rewritten and overhauled to now utilize a GUI. See the instructions below.
