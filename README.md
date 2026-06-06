@@ -1,10 +1,13 @@
 # Destiny2DPSGraphPY
 
-This is a GUI python program that will produce a graph showing the Destiny 2 DPS over time for certain types of weapons. It is configurable for several things, but is assuming that you are consistently landing critical hits, reloading as soon as the magazine is empty, and preparing perks for dps phases (Bait n Switch, Overflow, etc.)
+⚠️ **NOTE** ⚠️
+Project is currently **Unmaintained**. Feel free to fork and continue it yourself, and I (K) MAY look at merge requests if they're submitted, but no guarantees.
+
+This is a GUI python program that will produce a graph showing the Destiny 2 DPS over time for certain types of weapons. It is configurable for several variables, and is assuming that you are consistently landing critical hits, reloading as soon as the magazine is empty, and preparing perks for dps phases (Bait n Switch, Overflow, etc.). Real world numbers reflecting misses or delayed reloads or non crit hits will result in lower damage than the graphs provide. We can't feasibly account for these things. Treat the graphs as Optimal scenarios given the provided variables. 
 
 The critical hits assumption also includes weapons that don't necessarily 'crit' such as rockets and grenade launchers, as these weapons don't come with perks that require crits.
 
-This is heavily based on the styling of [Prelapse's DPS over time graphs on YouTube](https://www.youtube.com/playlist?list=PLmMhH44rl0aVkIqWzaCr_wrYkk5EFAeIZ). The key difference is that [Prelapse manually enters every data point into a spreadsheet to graph them.](https://media.discordapp.net/attachments/1005973866075664504/1061868926239248416/image.png?width=810&height=117) In this project, this is done automatically with variables. This is fundamentally useful for automating the process, as well as allowing you to measure dps over time graphs on your own for whatever weapon you want. The goal of this project is to be able to simulate weapons within a reasonable degree to bypass needs to manually test and calculate damage.
+This is heavily based on the styling of [Prelapse's DPS over time graphs on YouTube](https://www.youtube.com/playlist?list=PLmMhH44rl0aVkIqWzaCr_wrYkk5EFAeIZ). The key difference is that [Prelapse manually enters every data point into a spreadsheet to graph them.](https://web.archive.org/web/20231212040521/https://media.discordapp.net/attachments/1005973866075664504/1061868926239248416/image.png?width=810&height=117) In this project, this is done automatically with variables. This is fundamentally useful for automating the process, as well as allowing you to measure dps over time graphs on your own for whatever weapon you want. The goal of this project is to be able to simulate weapons within a reasonable degree to bypass needs to manually test and calculate damage.
 
 It is a requirement to know some fundamentals of the weapon that is being tested, which includes: Rate of Fire in RPM, Reload Time in Seconds, Damage per Shot/Hit, Magazine Capacity, and the Total Ammount of Ammo (reserves + magazine).
 
@@ -42,12 +45,12 @@ python main.py
 ```
 
 ### Graph Menu 
-![Figure_1](https://media.discordapp.net/attachments/1103555681635799102/1105219855285764238/image.png?width=810&height=413)
+![Figure_1](https://web.archive.org/web/20231212041744/https://media.discordapp.net/attachments/1103555681635799102/1105219855285764238/image.png?width=810&height=413)
 
 This is the menu you will be utilizing to create and export graphs. At the top there is a dropdown for the number of weapons to compare, and the number of weapons you select there will indicate how many weapon dropdowns there will be. Select which weapons you have already generated, up to 10, and hit generate graph. It will take a moment to calculate for every weapon, and then display a graph like the one pictured above. You can make weapons in the weapons menu.
 
 ### Weapons Creation Menu 
-![figure_1](https://media.discordapp.net/attachments/1103555681635799102/1105293082028691529/1683592782.8141556.png)
+![figure_1](https://web.archive.org/web/20231212041744/https://media.discordapp.net/attachments/1103555681635799102/1105293082028691529/1683592782.8141556.png)
 
 The weapons creation menu allows you to well, create weapons. As mentioned in the top of the readme, damage calculations assume "best case scenario" for every possible situation. It also is, at its core, a single target sustained damage calculator. This forces us to assume some unrealistic scenarios (that aren't *that* far off from in game). It means buff perks like Frenzy, One for All, and Kill Clip will assume that you are starting your 'DPS Phase' immediately with a full buff timer even if in game you would likely lose a second or so. Perks like Killing Tally will be assumed to have a full stack count *and* a full magazine even if that is not possible in game.
 
@@ -91,7 +94,7 @@ Obviously kinetic / stasis / strand weapons now have infinite reserves. You can 
 For cases such as Touch of Malice where there is a bottomless mag, the same logic as above is applied, except you would also use the same value for magazine size as you used for ammo total, effectively creating a bottomless mag for a given ammount of shots
 
 ### Options Menu
-![figure_1](https://media.discordapp.net/attachments/1103555681635799102/1105291440139030538/1683592404.3157408.png)
+![figure_1](https://web.archive.org/web/20231212041744/https://media.discordapp.net/attachments/1103555681635799102/1105291440139030538/1683592404.3157408.png)
 
 (side note, settings.ini is stored in backend/ and is directly modifiable through there)
 #### Graph
@@ -132,10 +135,10 @@ Benefits of pickle backups currently include:
     - Enabling this will enable the Debug section of the settings menu and a few other developer functions
 - Print Dmg Steps
     - Enabling this will print damage information to the console every time a shot is fired during damage calculation
-    - This option affects the speed at which calculations are performed because the program will hang while printing to the console. **This is entirely dependant on what terminal you use!** See: [Why is printing so slow?](https://stackoverflow.com/a/3860319/14132711) This is left off by default, but even with this option enabled calculations are still *incredibly fast*. If you would still like to enable this option, **it is recommended you use App only logs** unless you understand how your terminal handles stdout. This is technically considered to be a dubug setting, but it will be left in because it looks cool :D
+    - This option affects the speed at which calculations are performed because the program will hang while printing to the console. **This is entirely dependant on what terminal you use!** See: [Why is printing so slow?](https://stackoverflow.com/questions/3857052/why-is-printing-to-stdout-so-slow-can-it-be-sped-up/3860319) This is left off by default, but even with this option enabled calculations are still *incredibly fast*. If you would still like to enable this option, **it is recommended you use App only logs** unless you understand how your terminal handles stdout. This is technically considered to be a debug setting, but it will be left in because it looks cool :D
 
 ### Log menu 
-![image](https://user-images.githubusercontent.com/65287118/236922026-34ed8448-1dc2-41e6-8b40-ff1c941e9812.png)
+![image](https://web.archive.org/web/20260606130602/https://user-images.githubusercontent.com/65287118/236922026-34ed8448-1dc2-41e6-8b40-ff1c941e9812.png)
 
 If you choose your log mode to be in app, or both, the console output will be located here.
 
@@ -147,7 +150,7 @@ If you choose your log mode to be in app, or both, the console output will be lo
 - [jade](https://github.com/iamjade4) (code logic fix suggestions)
 
 ## Acknowledgements
-- A few months into our development of this project, [a reddit post appeared on r/DestinyTheGame](https://www.reddit.com/r/DestinyTheGame/comments/11d2f0g/i_created_a_new_dps_testing_tool/) which initially appeared to function similarly to the project we were programming. In some regards it is similar, but several parts of the logic as far as we can tell are very different, and so we produce different graphs. We still recommend  you check it out at https://www.hitthecrit.com/weapons.
+- A few months into our development of this project, [a reddit post appeared on r/DestinyTheGame](https://web.archive.org/web/20230322175519/https://www.reddit.com/r/DestinyTheGame/comments/11d2f0g/i_created_a_new_dps_testing_tool/) which initially appeared to function similarly to the project we were programming. In some regards it is similar, but several parts of the logic as far as we can tell are very different, and so we produce different graphs. We still recommend  you check it out at https://www.hitthecrit.com/weapons.
 - We are also aware of a [PvE damage calculator spreadsheet](https://docs.google.com/spreadsheets/d/1rY_iChu08CVnIMfHliZQwup10-GnmPtEu5FG0DNy8VM) that we think you should additionally check out if you are interested in this sort of statistical analysis: https://docs.google.com/spreadsheets/d/1rY_iChu08CVnIMfHliZQwup10-GnmPtEu5FG0DNy8VM
 
 ## To-Do
